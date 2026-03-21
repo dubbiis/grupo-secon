@@ -78,6 +78,13 @@ class PlanSectionController extends Controller
             return response()->json(['error' => 'No hay prompt configurado para esta sección'], 422);
         }
 
+        // Guardar form_data del request (datos actuales, aunque no se haya pulsado Guardar)
+        $requestFormData = $request->input('form_data');
+        if (is_array($requestFormData) && !empty($requestFormData)) {
+            $planSection->update(['form_data' => $requestFormData]);
+            $planSection->refresh();
+        }
+
         // Marcar como generando
         $planSection->update(['status' => 'generando']);
 

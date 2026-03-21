@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
-export default function GeneradorIA({ uuid, section, initialText, onTextChange, onStatusChange }) {
+export default function GeneradorIA({ uuid, section, formData, initialText, onTextChange, onStatusChange }) {
     const [text, setText] = useState(initialText ?? "");
     const [generating, setGenerating] = useState(false);
     const [showCambios, setShowCambios] = useState(false);
@@ -63,7 +63,7 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
         setText("");
         streamSSE(
             `/planes/${uuid}/seccion/${section}/generar`,
-            null,
+            { form_data: formData ?? {} },
             () => setGenerating(true),
             () => setGenerating(false)
         );

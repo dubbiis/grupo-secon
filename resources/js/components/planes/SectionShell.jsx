@@ -102,6 +102,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                         <GeneradorIA
                             uuid={plan.uuid}
                             section={section.section_number}
+                            formData={formData}
                             initialText={generatedText}
                             onTextChange={(t) => setGeneratedText(t)}
                             onStatusChange={() => {}}
