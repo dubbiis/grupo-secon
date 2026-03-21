@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Send, ChevronDown, ChevronUp, Loader2, Zap } from "lucide-react";
+import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
@@ -118,7 +118,6 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                     <>
                                         <Loader2 size={13} className="text-[#208DCA] animate-spin" />
                                         <span className="text-xs text-white/40">Generando texto...</span>
-                                        {/* Pulsing dots */}
                                         <div className="flex gap-0.5">
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-0" />
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-1" />
@@ -127,8 +126,8 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                     </>
                                 ) : (
                                     <>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                                        <span className="text-xs text-white/50">Texto generado</span>
+                                        <Pencil size={12} className="text-white/30" />
+                                        <span className="text-xs text-white/50">Texto generado — editable</span>
                                     </>
                                 )}
                             </div>
@@ -145,14 +144,22 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                             )}
                         </div>
 
-                        {/* Text display */}
-                        <div
-                            ref={textRef}
-                            className="relative min-h-48 max-h-[500px] overflow-y-auto rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed whitespace-pre-wrap text-white/80 shadow-inner"
-                        >
-                            {text}
+                        {/* Editable text area */}
+                        <div className="relative">
+                            <textarea
+                                ref={textRef}
+                                value={text}
+                                onChange={(e) => {
+                                    setText(e.target.value);
+                                    onTextChange?.(e.target.value);
+                                }}
+                                readOnly={generating}
+                                rows={16}
+                                className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                placeholder="El texto generado aparecerá aquí. Puedes editarlo directamente."
+                            />
                             {generating && (
-                                <span className="inline-block w-0.5 h-4 bg-[#208DCA] ml-0.5 align-middle rounded-full animate-pulse" />
+                                <span className="absolute bottom-6 right-5 inline-block w-0.5 h-4 bg-[#208DCA] rounded-full animate-pulse" />
                             )}
                         </div>
 

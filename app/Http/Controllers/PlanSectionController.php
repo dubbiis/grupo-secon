@@ -63,9 +63,7 @@ class PlanSectionController extends Controller
             $plan->update(['status' => 'en_progreso']);
         }
 
-        return response()->json(['ok' => true, 'section' => [
-            'status' => $planSection->fresh()->status,
-        ]]);
+        return back();
     }
 
     public function generar(Request $request, string $uuid, int $section)
