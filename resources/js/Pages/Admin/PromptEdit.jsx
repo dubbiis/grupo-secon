@@ -1,16 +1,19 @@
 import { useForm, Link } from "@inertiajs/react";
-import { Shield, Save } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Shield, Save, Check, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
 const MODELS = ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo"];
 
-// Variables que pueden usarse en los prompts
 const COMMON_VARS = [
-    "nombre_evento", "organizador", "direccion", "tipo_evento", "tipo_espacio",
-    "num_asistentes", "fecha_inicio", "fecha_fin", "redactor", "num_habilitacion",
-    "contexto_secciones_anteriores",
+    "nombre_evento", "organizador", "direccion_evento", "tipo_evento", "nombre_espacio",
+    "num_asistentes", "fecha_evento", "horario_evento", "aforo_total", "num_accesos",
+    "perfil_publico", "hay_vips", "nombre_redactor", "num_habilitacion",
+    "espacios_json", "vips_json", "hospitales_reales", "comisarias_reales",
+    "datos_transporte_googlemaps", "contexto_secciones_anteriores",
 ];
 
 export default function PromptEdit({ prompt, flash }) {
@@ -21,117 +24,118 @@ export default function PromptEdit({ prompt, flash }) {
         max_tokens: prompt.max_tokens,
     });
 
-    const submit = (e) => {
-        e.preventDefault();
-        put(`/admin/prompts/${prompt.section_number}`);
-    };
+    const submit = (e) => { e.preventDefault(); put(`/admin/prompts/${prompt.section_number}`); };
 
-    const insertVar = (field, varName) => {
-        setData(field, data[field] + `{{${varName}}}`);
+    const insertVar = (varName) => {
+        setData("user_prompt_template", data.user_prompt_template + `{{${varName}}}`);
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            <header className="border-b bg-card sticky top-0 z-10">
+        <div className="min-h-screen bg-[#07090f] text-white">
+            <header className="border-b border-white/8 bg-black/30 backdrop-blur-sm sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-md bg-[#253C87] flex items-center justify-center">
-                        <Shield size={14} className="text-white" />
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center">
+                        <Shield size={13} className="text-white" />
                     </div>
-                    <span className="font-bold text-[#253C87]">Admin</span>
-                    <span className="text-muted-foreground text-sm">
-                        / <Link href="/admin/prompts" className="hover:underline">Prompts</Link>
+                    <span className="font-bold text-white">Admin</span>
+                    <span className="text-white/25 text-sm">
+                        / <Link href="/admin/prompts" className="hover:text-white transition-colors">Prompts</Link>
                         {" "}/ Sección {prompt.section_number}
                     </span>
                 </div>
             </header>
 
             <main className="max-w-4xl mx-auto px-6 py-8">
-                <div className="mb-6">
-                    <h1 className="text-xl font-bold">Sección {prompt.section_number}: {prompt.section_name}</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Edita el prompt que se envía a OpenAI</p>
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-white">
+                        §{prompt.section_number} — {prompt.section_name}
+                    </h1>
+                    <p className="text-sm text-white/35 mt-1">Edita el prompt que se envía a OpenAI para esta sección</p>
                 </div>
 
-                {flash?.success && (
-                    <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3">
-                        {flash.success}
-                    </div>
-                )}
+                <AnimatePresence>
+                    {flash?.success && (
+                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="mb-6 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 flex items-center gap-2">
+                            <Check size={14} />
+                            {flash.success}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <form onSubmit={submit} className="space-y-6">
-                    {/* Config */}
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Model + tokens */}
+                    <div className="grid grid-cols-2 gap-4 p-5 rounded-2xl bg-white/3 border border-white/8">
                         <div>
-                            <label className="text-sm font-medium mb-1.5 block">Modelo</label>
+                            <label className="text-xs font-semibold text-white/35 mb-1.5 block uppercase tracking-wide">Modelo</label>
                             <select
                                 value={data.model}
                                 onChange={(e) => setData("model", e.target.value)}
-                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="flex h-9 w-full rounded-lg border border-white/10 bg-white/6 px-3 py-1 text-sm text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                             >
                                 {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1.5 block">Max tokens</label>
+                            <label className="text-xs font-semibold text-white/35 mb-1.5 block uppercase tracking-wide">Max tokens</label>
                             <Input
                                 type="number"
                                 value={data.max_tokens}
                                 onChange={(e) => setData("max_tokens", parseInt(e.target.value))}
-                                min={512}
-                                max={16000}
+                                min={512} max={16000}
                             />
                         </div>
                     </div>
 
                     {/* Variables */}
-                    <div>
-                        <p className="text-sm font-medium mb-2">Variables disponibles</p>
+                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Code2 size={13} className="text-[#208DCA]" />
+                            <p className="text-xs font-semibold text-white/50 uppercase tracking-wide">Variables disponibles</p>
+                        </div>
                         <div className="flex flex-wrap gap-1.5">
                             {COMMON_VARS.map((v) => (
-                                <button
+                                <motion.button
                                     key={v}
                                     type="button"
-                                    onClick={() => insertVar("user_prompt_template", v)}
-                                    className="text-xs bg-[#253C87]/10 text-[#253C87] px-2 py-1 rounded-md font-mono hover:bg-[#253C87]/20 transition-colors"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => insertVar(v)}
+                                    className="text-xs bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 px-2 py-1 rounded-lg font-mono hover:bg-[#208DCA]/20 transition-colors"
                                 >
                                     {`{{${v}}}`}
-                                </button>
+                                </motion.button>
                             ))}
                         </div>
                     </div>
 
                     {/* System prompt */}
-                    <div>
-                        <label className="text-sm font-medium mb-1.5 block">System Prompt</label>
-                        <p className="text-xs text-muted-foreground mb-2">Instrucción de sistema. Define el rol y comportamiento del modelo.</p>
-                        <Textarea
-                            value={data.system_prompt}
-                            onChange={(e) => setData("system_prompt", e.target.value)}
-                            rows={6}
-                            className="font-mono text-xs"
-                        />
-                        {errors.system_prompt && <p className="text-destructive text-xs mt-1">{errors.system_prompt}</p>}
+                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
+                        <div>
+                            <label className="text-xs font-semibold text-white/50 mb-1 block uppercase tracking-wide">System Prompt</label>
+                            <p className="text-xs text-white/25">Instrucción de sistema. Define el rol y el tono del modelo.</p>
+                        </div>
+                        <Textarea value={data.system_prompt} onChange={(e) => setData("system_prompt", e.target.value)} rows={6} className="font-mono text-xs" />
+                        {errors.system_prompt && <p className="text-red-400 text-xs">{errors.system_prompt}</p>}
                     </div>
 
                     {/* User prompt template */}
-                    <div>
-                        <label className="text-sm font-medium mb-1.5 block">User Prompt Template</label>
-                        <p className="text-xs text-muted-foreground mb-2">
-                            Plantilla del mensaje usuario. Usa <code className="bg-muted px-1 rounded">{"{{variable}}"}</code> para insertar datos del formulario.
-                        </p>
-                        <Textarea
-                            value={data.user_prompt_template}
-                            onChange={(e) => setData("user_prompt_template", e.target.value)}
-                            rows={12}
-                            className="font-mono text-xs"
-                        />
-                        {errors.user_prompt_template && <p className="text-destructive text-xs mt-1">{errors.user_prompt_template}</p>}
+                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
+                        <div>
+                            <label className="text-xs font-semibold text-white/50 mb-1 block uppercase tracking-wide">User Prompt Template</label>
+                            <p className="text-xs text-white/25">
+                                Plantilla del mensaje usuario. Usa <code className="bg-white/8 px-1.5 py-0.5 rounded text-[#208DCA]">{"{{variable}}"}</code> para insertar datos del formulario.
+                            </p>
+                        </div>
+                        <Textarea value={data.user_prompt_template} onChange={(e) => setData("user_prompt_template", e.target.value)} rows={14} className="font-mono text-xs" />
+                        {errors.user_prompt_template && <p className="text-red-400 text-xs">{errors.user_prompt_template}</p>}
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <Button type="submit" variant="secon" disabled={processing} className="gap-2">
+                        <RippleButton type="submit" disabled={processing} className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2">
                             <Save size={14} />
                             {processing ? "Guardando..." : "Guardar prompt"}
-                        </Button>
+                        </RippleButton>
                         <Link href="/admin/prompts">
                             <Button type="button" variant="outline">Cancelar</Button>
                         </Link>

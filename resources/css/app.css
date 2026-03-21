@@ -38,6 +38,7 @@
     --secon-blue: #253C87;
     --secon-cyan: #208DCA;
 
+    /* Light theme (fallback, app always uses dark) */
     --background: oklch(1 0 0);
     --foreground: oklch(0.141 0.005 285.823);
     --card: oklch(1 0 0);
@@ -56,30 +57,30 @@
     --destructive-foreground: oklch(0.985 0 0);
     --border: oklch(0.92 0.004 286.32);
     --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.705 0.015 286.067);
+    --ring: #208DCA;
     --radius: 0.625rem;
 }
 
 .dark {
-    --background: oklch(0.141 0.005 285.823);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.21 0.006 285.885);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.21 0.006 285.885);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.92 0.004 286.32);
-    --primary-foreground: oklch(0.21 0.006 285.885);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.274 0.006 286.033);
-    --muted-foreground: oklch(0.705 0.015 286.067);
-    --accent: oklch(0.274 0.006 286.033);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.552 0.016 285.938);
+    --background: #07090f;
+    --foreground: #f1f5f9;
+    --card: #0d1018;
+    --card-foreground: #f1f5f9;
+    --popover: #131720;
+    --popover-foreground: #f1f5f9;
+    --primary: #208DCA;
+    --primary-foreground: #f8fafc;
+    --secondary: rgba(255,255,255,0.07);
+    --secondary-foreground: #f1f5f9;
+    --muted: rgba(255,255,255,0.06);
+    --muted-foreground: rgba(255,255,255,0.42);
+    --accent: rgba(255,255,255,0.07);
+    --accent-foreground: #f1f5f9;
+    --destructive: #ef4444;
+    --destructive-foreground: #f8fafc;
+    --border: rgba(255,255,255,0.1);
+    --input: rgba(255,255,255,0.08);
+    --ring: #208DCA;
 }
 
 @layer base {
@@ -87,6 +88,23 @@
         @apply border-border;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
     }
+
+    /* Dark-aware native selects */
+    select {
+        background-color: var(--input);
+        color: var(--foreground);
+        border-color: var(--border);
+    }
+    select option {
+        background-color: var(--popover);
+        color: var(--foreground);
+    }
+
+    /* Custom scrollbar for dark theme */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 }

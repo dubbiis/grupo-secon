@@ -20,9 +20,9 @@ export default function Seccion5({ plan, section, files = [] }) {
 
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
-            <div className="flex items-start gap-3 rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <Info size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-700">
+            <div className="flex items-start gap-3 rounded-xl bg-[#208DCA]/8 border border-[#208DCA]/20 p-4">
+                <Info size={16} className="text-[#208DCA] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-white/60">
                     Busca en Google Maps los hospitales, comisarías y recursos de emergencia cercanos al lugar del evento
                     e introduce la información en los campos siguientes. La IA utilizará estos datos reales para redactar la sección.
                 </p>

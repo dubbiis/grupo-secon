@@ -1,28 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Save, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import GeneradorIA from "./GeneradorIA";
 
-/**
- * Shell reutilizable para secciones con IA.
- * Props:
- *   plan, section, fields (array of rendered inputs), showIA, children
- */
 export default function SectionShell({ plan, section, formData, onFormChange, showIA = true, children }) {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [generatedText, setGeneratedText] = useState(section.generated_text ?? "");
     const saveTimerRef = useRef(null);
-
-    // Auto-save on form data change (debounced)
-    const autoSave = (data) => {
-        clearTimeout(saveTimerRef.current);
-        saveTimerRef.current = setTimeout(() => {
-            save(data, generatedText, section.status);
-        }, 2000);
-    };
 
     const save = (data, text, status) => {
         setSaving(true);
@@ -31,7 +19,11 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             { form_data: data, generated_text: text, status },
             {
                 preserveScroll: true,
-                onSuccess: () => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000); },
+                onSuccess: () => {
+                    setSaving(false);
+                    setSaved(true);
+                    setTimeout(() => setSaved(false), 2500);
+                },
                 onError: () => setSaving(false),
             }
         );
@@ -39,75 +31,85 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
 
     const confirm = () => {
         save(formData, generatedText, "listo");
-        // Navigate to next section
         const next = section.section_number + 1;
         if (next <= 15) {
-            setTimeout(() => {
-                router.visit(`/planes/${plan.uuid}/seccion/${next}`);
-            }, 400);
+            setTimeout(() => router.visit(`/planes/${plan.uuid}/seccion/${next}`), 400);
         }
     };
 
     return (
         <div className="space-y-6">
+
             {/* Section header */}
-            <div className="flex items-start justify-between">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+            <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/40 uppercase tracking-wide">
+                            <motion.span
+                                animate={{ opacity: [1, 0.4, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                className="w-1.5 h-1.5 rounded-full bg-[#208DCA]"
+                            />
                             Sección {section.section_number}
                         </span>
-                        {saved && (
-                            <motion.span
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="text-xs text-green-600 flex items-center gap-1"
-                            >
-                                <CheckCircle2 size={12} /> Guardado
-                            </motion.span>
-                        )}
+                        <AnimatePresence>
+                            {saved && (
+                                <motion.span
+                                    initial={{ opacity: 0, scale: 0.8, x: -8 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, x: -8 }}
+                                    className="inline-flex items-center gap-1 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                                >
+                                    <CheckCircle2 size={11} />
+                                    Guardado
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
                     </div>
-                    <h2 className="text-xl font-bold">{section.section_name}</h2>
+                    <h2 className="text-2xl font-bold text-white leading-tight">{section.section_name}</h2>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-2 flex-shrink-0 pt-1">
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => save(formData, generatedText, section.status)}
                         disabled={saving}
-                        className="gap-1.5"
+                        className="text-white/35 hover:text-white hover:bg-white/8 gap-1.5"
                     >
-                        <Save size={14} />
-                        {saving ? "Guardando..." : "Guardar"}
+                        <motion.span animate={saving ? { rotate: 360 } : { rotate: 0 }} transition={{ duration: 0.8, repeat: saving ? Infinity : 0, ease: "linear" }}>
+                            <Save size={13} />
+                        </motion.span>
+                        <span className="hidden sm:inline text-xs">{saving ? "..." : "Guardar"}</span>
                     </Button>
-                    <Button
-                        variant="secon"
+                    <RippleButton
                         size="sm"
                         onClick={confirm}
-                        className="gap-1.5"
+                        className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs"
                     >
                         Confirmar
-                        <ChevronRight size={14} />
-                    </Button>
+                        <ChevronRight size={13} />
+                    </RippleButton>
                 </div>
             </div>
 
-            {/* Form fields */}
-            <div className="space-y-4">
+            {/* Form card */}
+            <div className="rounded-2xl bg-white/3 border border-white/8 p-6 space-y-5 shadow-xl shadow-black/20">
                 {children}
             </div>
 
-            {/* IA generator */}
+            {/* AI generator */}
             {showIA && (
-                <div className="border-t pt-6">
-                    <GeneradorIA
-                        uuid={plan.uuid}
-                        section={section.section_number}
-                        initialText={generatedText}
-                        onTextChange={(t) => setGeneratedText(t)}
-                        onStatusChange={() => {}}
-                    />
+                <div className="rounded-2xl bg-white/2 border border-white/6 overflow-hidden">
+                    <div className="px-6 pt-5 pb-5">
+                        <GeneradorIA
+                            uuid={plan.uuid}
+                            section={section.section_number}
+                            initialText={generatedText}
+                            onTextChange={(t) => setGeneratedText(t)}
+                            onStatusChange={() => {}}
+                        />
+                    </div>
                 </div>
             )}
         </div>

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Send, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Sparkles, RefreshCw, Send, ChevronDown, ChevronUp, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
 export default function GeneradorIA({ uuid, section, initialText, onTextChange, onStatusChange }) {
     const [text, setText] = useState(initialText ?? "");
@@ -12,35 +13,22 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
     const [applyingCambios, setApplyingCambios] = useState(false);
     const textRef = useRef(null);
 
-    useEffect(() => {
-        setText(initialText ?? "");
-    }, [initialText]);
+    useEffect(() => { setText(initialText ?? ""); }, [initialText]);
 
     const scrollToBottom = () => {
-        if (textRef.current) {
-            textRef.current.scrollTop = textRef.current.scrollHeight;
-        }
+        if (textRef.current) textRef.current.scrollTop = textRef.current.scrollHeight;
     };
 
     const streamSSE = async (url, body, onStart, onEnd) => {
         onStart();
-
-        // SSE with fetch for POST
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const response = await fetch(url, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "Accept": "text/event-stream",
-            },
+            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken, "Accept": "text/event-stream" },
             body: body ? JSON.stringify(body) : undefined,
         });
 
-        if (!response.ok) {
-            onEnd();
-            return;
-        }
+        if (!response.ok) { onEnd(); return; }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -50,11 +38,9 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split("\n");
             buffer = lines.pop() ?? "";
-
             for (const line of lines) {
                 if (!line.startsWith("data: ")) continue;
                 const raw = line.slice(6).trim();
@@ -66,13 +52,10 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
                         onTextChange?.(accumulated);
                         scrollToBottom();
                     }
-                    if (parsed.done) {
-                        onStatusChange?.();
-                    }
+                    if (parsed.done) onStatusChange?.();
                 } catch {}
             }
         }
-
         onEnd();
     };
 
@@ -92,50 +75,63 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
             `/planes/${uuid}/seccion/${section}/cambios`,
             { instrucciones },
             () => setApplyingCambios(true),
-            () => {
-                setApplyingCambios(false);
-                setInstrucciones("");
-                setShowCambios(false);
-            }
+            () => { setApplyingCambios(false); setInstrucciones(""); setShowCambios(false); }
         );
     };
 
     return (
         <div className="space-y-4">
-            {/* Generate button */}
+
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-[#208DCA]" />
+                    <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">Generador IA</span>
+                </div>
+            </div>
+
+            {/* Generate button (when no text yet) */}
             {!text && !generating && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <Button
-                        variant="secon"
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                    <RippleButton
                         onClick={handleGenerar}
-                        className="gap-2"
+                        className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2 shadow-lg shadow-[#253C87]/25 hover:shadow-[#253C87]/40 hover:opacity-90"
                     >
-                        <Sparkles size={16} />
+                        <Zap size={15} />
                         Generar con IA
-                    </Button>
+                    </RippleButton>
                 </motion.div>
             )}
 
-            {/* Streaming text area */}
+            {/* Generated text */}
             <AnimatePresence>
                 {(text || generating) && (
                     <motion.div
-                        initial={{ opacity: 0, y: 8 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-3"
                     >
-                        {/* Header */}
+                        {/* Top bar */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 {generating ? (
                                     <>
-                                        <Loader2 size={14} className="text-[#208DCA] animate-spin" />
-                                        <span className="text-sm text-muted-foreground">Generando...</span>
+                                        <Loader2 size={13} className="text-[#208DCA] animate-spin" />
+                                        <span className="text-xs text-white/40">Generando texto...</span>
+                                        {/* Pulsing dots */}
+                                        <div className="flex gap-0.5">
+                                            {[0,1,2].map((i) => (
+                                                <motion.div key={i} className="w-1 h-1 rounded-full bg-[#208DCA]/60"
+                                                    animate={{ opacity: [0.3, 1, 0.3] }}
+                                                    transition={{ duration: 1, delay: i * 0.15, repeat: Infinity }}
+                                                />
+                                            ))}
+                                        </div>
                                     </>
                                 ) : (
                                     <>
-                                        <Sparkles size={14} className="text-[#208DCA]" />
-                                        <span className="text-sm font-medium">Texto generado</span>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                                        <span className="text-xs text-white/50">Texto generado</span>
                                     </>
                                 )}
                             </div>
@@ -144,37 +140,43 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleGenerar}
-                                    className="text-muted-foreground gap-1 text-xs"
+                                    className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
                                 >
-                                    <RefreshCw size={12} />
+                                    <RefreshCw size={11} />
                                     Regenerar
                                 </Button>
                             )}
                         </div>
 
-                        {/* Text */}
+                        {/* Text display */}
                         <div
                             ref={textRef}
-                            className="relative min-h-48 max-h-[500px] overflow-y-auto rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed whitespace-pre-wrap"
+                            className="relative min-h-48 max-h-[500px] overflow-y-auto rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed whitespace-pre-wrap text-white/80 shadow-inner"
                         >
                             {text}
                             {generating && (
-                                <span className="inline-block w-0.5 h-4 bg-[#208DCA] animate-pulse ml-0.5 align-middle" />
+                                <motion.span
+                                    animate={{ opacity: [1, 0, 1] }}
+                                    transition={{ duration: 0.7, repeat: Infinity }}
+                                    className="inline-block w-0.5 h-4 bg-[#208DCA] ml-0.5 align-middle rounded-full"
+                                />
                             )}
                         </div>
 
                         {/* Solicitar cambios */}
                         {!generating && text && (
-                            <div className="border rounded-lg overflow-hidden">
+                            <div className="rounded-xl border border-white/8 bg-white/2 overflow-hidden">
                                 <button
                                     onClick={() => setShowCambios(!showCambios)}
-                                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
+                                    className="w-full flex items-center justify-between px-4 py-3 text-xs font-medium text-white/50 hover:text-white hover:bg-white/4 transition-colors"
                                 >
                                     <span className="flex items-center gap-2">
-                                        <RefreshCw size={14} className="text-[#208DCA]" />
-                                        Solicitar cambios
+                                        <RefreshCw size={12} className="text-[#208DCA]" />
+                                        Solicitar cambios al texto
                                     </span>
-                                    {showCambios ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    <motion.div animate={{ rotate: showCambios ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                                        <ChevronDown size={13} />
+                                    </motion.div>
                                 </button>
 
                                 <AnimatePresence>
@@ -183,29 +185,28 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: "auto", opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="px-4 pb-4 space-y-3 border-t">
+                                            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-white/6">
                                                 <Textarea
                                                     value={instrucciones}
                                                     onChange={(e) => setInstrucciones(e.target.value)}
-                                                    placeholder="Ej: Cambia el número de asistentes a 5000, añade información sobre acceso para personas con movilidad reducida..."
+                                                    placeholder="Ej: Cambia el número de asistentes a 5.000, añade información sobre accesibilidad..."
                                                     rows={3}
-                                                    className="mt-3"
                                                 />
-                                                <Button
-                                                    variant="secon"
+                                                <RippleButton
                                                     size="sm"
                                                     onClick={handleCambios}
                                                     disabled={applyingCambios || !instrucciones.trim()}
-                                                    className="gap-2"
+                                                    className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2 text-xs"
                                                 >
                                                     {applyingCambios ? (
-                                                        <><Loader2 size={14} className="animate-spin" /> Aplicando...</>
+                                                        <><Loader2 size={12} className="animate-spin" /> Aplicando...</>
                                                     ) : (
-                                                        <><Send size={14} /> Aplicar cambios</>
+                                                        <><Send size={12} /> Aplicar cambios</>
                                                     )}
-                                                </Button>
+                                                </RippleButton>
                                             </div>
                                         </motion.div>
                                     )}

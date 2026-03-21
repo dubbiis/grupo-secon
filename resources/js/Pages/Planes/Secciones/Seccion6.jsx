@@ -49,7 +49,7 @@ export default function Seccion6({ plan, section }) {
                     <select
                         value={form.perfil_publico}
                         onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico: e.target.value }))}
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="flex h-9 w-full rounded-lg border border-white/10 bg-white/6 px-3 py-1 text-sm text-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_PUBLICO.map((t) => <option key={t} value={t}>{t}</option>)}

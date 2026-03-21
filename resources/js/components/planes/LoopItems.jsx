@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, Trash2, ChevronDown, GripVertical, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-/**
- * Reusable component for list-based sections.
- * Props:
- *   items: array of objects
- *   onChange: (items) => void
- *   fields: array of { key, label, type: 'text'|'email'|'tel'|'number'|'textarea', placeholder, required, wide }
- *   addLabel: string
- *   itemLabel: (item, i) => string
- */
 export default function LoopItems({ items = [], onChange, fields, addLabel = "Añadir ítem", itemLabel }) {
     const [expanded, setExpanded] = useState(null);
 
@@ -25,95 +15,121 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A�
     };
 
     const updateItem = (index, key, value) => {
-        const updated = items.map((item, i) => i === index ? { ...item, [key]: value } : item);
-        onChange(updated);
+        onChange(items.map((item, i) => i === index ? { ...item, [key]: value } : item));
     };
 
     const removeItem = (index) => {
-        const updated = items.filter((_, i) => i !== index);
-        onChange(updated);
+        onChange(items.filter((_, i) => i !== index));
         if (expanded === index) setExpanded(null);
         else if (expanded > index) setExpanded(expanded - 1);
     };
 
+    const hasContent = (item) => fields.some((f) => item[f.key]);
+
     return (
         <div className="space-y-2">
             <AnimatePresence initial={false}>
-                {items.map((item, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.97 }}
-                        className="border rounded-lg overflow-hidden"
-                    >
-                        <div
-                            className="flex items-center gap-2 px-3 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer select-none"
-                            onClick={() => setExpanded(expanded === i ? null : i)}
-                        >
-                            <GripVertical size={14} className="text-muted-foreground flex-shrink-0" />
-                            <span className="flex-1 text-sm font-medium truncate">
-                                {itemLabel ? itemLabel(item, i) : `Ítem ${i + 1}`}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); removeItem(i); }}
-                                className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                                <Trash2 size={13} />
-                            </button>
-                            {expanded === i ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        </div>
+                {items.map((item, i) => {
+                    const isOpen = expanded === i;
+                    const filled = hasContent(item);
 
-                        <AnimatePresence initial={false}>
-                            {expanded === i && (
-                                <motion.div
-                                    initial={{ height: 0 }}
-                                    animate={{ height: "auto" }}
-                                    exit={{ height: 0 }}
-                                    className="overflow-hidden"
+                    return (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.96, y: -5 }}
+                            transition={{ duration: 0.2 }}
+                            className="rounded-xl border border-white/8 overflow-hidden bg-white/3"
+                        >
+                            {/* Header row */}
+                            <div
+                                className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-white/6" : "hover:bg-white/5"}`}
+                                onClick={() => setExpanded(isOpen ? null : i)}
+                            >
+                                <GripVertical size={13} className="text-white/20 flex-shrink-0" />
+
+                                {/* Status dot */}
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${filled ? "bg-[#208DCA]/20 border-[#208DCA]/40" : "border-white/15"}`}>
+                                    {filled && <Check size={8} className="text-[#208DCA]" strokeWidth={3} />}
+                                </div>
+
+                                <span className="flex-1 text-xs font-medium text-white/70 truncate">
+                                    {itemLabel ? itemLabel(item, i) : `Ítem ${i + 1}`}
+                                </span>
+
+                                <motion.button
+                                    type="button"
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => { e.stopPropagation(); removeItem(i); }}
+                                    className="p-1 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-colors flex-shrink-0"
                                 >
-                                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t">
-                                        {fields.map((f) => (
-                                            <div key={f.key} className={f.wide ? "md:col-span-2" : ""}>
-                                                <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                                    {f.label}{f.required && " *"}
-                                                </label>
-                                                {f.type === "textarea" ? (
-                                                    <Textarea
-                                                        value={item[f.key] ?? ""}
-                                                        onChange={(e) => updateItem(i, f.key, e.target.value)}
-                                                        placeholder={f.placeholder}
-                                                        rows={3}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={f.type ?? "text"}
-                                                        value={item[f.key] ?? ""}
-                                                        onChange={(e) => updateItem(i, f.key, e.target.value)}
-                                                        placeholder={f.placeholder}
-                                                    />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <Trash2 size={12} />
+                                </motion.button>
+
+                                <motion.div
+                                    animate={{ rotate: isOpen ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="text-white/25 flex-shrink-0"
+                                >
+                                    <ChevronDown size={13} />
                                 </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </motion.div>
-                ))}
+                            </div>
+
+                            {/* Expanded fields */}
+                            <AnimatePresence initial={false}>
+                                {isOpen && (
+                                    <motion.div
+                                        initial={{ height: 0 }}
+                                        animate={{ height: "auto" }}
+                                        exit={{ height: 0 }}
+                                        transition={{ duration: 0.22, ease: "easeInOut" }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-white/6">
+                                            {fields.map((f) => (
+                                                <div key={f.key} className={f.wide ? "md:col-span-2" : ""}>
+                                                    <label className="text-[10px] font-semibold text-white/35 mb-1.5 block uppercase tracking-wide">
+                                                        {f.label}{f.required && <span className="text-[#208DCA] ml-0.5">*</span>}
+                                                    </label>
+                                                    {f.type === "textarea" ? (
+                                                        <Textarea
+                                                            value={item[f.key] ?? ""}
+                                                            onChange={(e) => updateItem(i, f.key, e.target.value)}
+                                                            placeholder={f.placeholder}
+                                                            rows={3}
+                                                        />
+                                                    ) : (
+                                                        <Input
+                                                            type={f.type ?? "text"}
+                                                            value={item[f.key] ?? ""}
+                                                            onChange={(e) => updateItem(i, f.key, e.target.value)}
+                                                            placeholder={f.placeholder}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    );
+                })}
             </AnimatePresence>
 
-            <Button
+            {/* Add button */}
+            <motion.button
                 type="button"
-                variant="outline"
-                size="sm"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={addItem}
-                className="gap-1.5 border-dashed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/15 text-white/40 hover:text-white/70 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
             >
-                <Plus size={14} />
+                <Plus size={13} />
                 {addLabel}
-            </Button>
+            </motion.button>
         </div>
     );
 }

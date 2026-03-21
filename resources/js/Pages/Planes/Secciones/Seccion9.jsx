@@ -1,5 +1,6 @@
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
+import { motion } from "framer-motion";
 import { Table2 } from "lucide-react";
 
 export default function Seccion9({ plan, section, files = [] }) {
@@ -7,16 +8,22 @@ export default function Seccion9({ plan, section, files = [] }) {
 
     return (
         <SectionShell plan={plan} section={section} formData={{}} onFormChange={() => {}}>
-            <div className="flex items-start gap-3 rounded-lg bg-muted/50 border p-4">
-                <Table2 size={16} className="text-[#208DCA] flex-shrink-0 mt-0.5" />
+            <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 rounded-xl bg-green-500/8 border border-green-500/20 p-4"
+            >
+                <div className="w-8 h-8 rounded-lg bg-green-500/15 border border-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <Table2 size={15} className="text-green-400" />
+                </div>
                 <div>
-                    <p className="text-sm font-medium">Planificación del personal de seguridad</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                        Sube el documento Excel con la planificación detallada del personal:
+                    <p className="text-sm font-semibold text-green-400 mb-0.5">Planificación del personal de seguridad</p>
+                    <p className="text-sm text-white/45 leading-relaxed">
+                        Sube el documento Excel con la planificación detallada:
                         turnos, puestos, nombres, categorías profesionales y horarios.
                     </p>
                 </div>
-            </div>
+            </motion.div>
 
             <FileUpload
                 uuid={plan.uuid}

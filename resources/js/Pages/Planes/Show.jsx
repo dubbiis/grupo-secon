@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, router } from "@inertiajs/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Menu, X, FileDown, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import SidebarSecciones from "@/components/planes/SidebarSecciones";
 
 import Seccion1 from "./Secciones/Seccion1";
@@ -23,120 +23,133 @@ import Seccion15 from "./Secciones/Seccion15";
 import SeccionTextoSimple from "./Secciones/SeccionTextoSimple";
 
 const SECTION_COMPONENTS = {
-    1: Seccion1,
-    2: Seccion2,
-    3: Seccion3,
-    4: Seccion4,
-    5: Seccion5,
-    6: Seccion6,
-    7: Seccion7,
-    8: Seccion8,
-    9: Seccion9,
-    10: Seccion10,
-    11: Seccion11,
-    12: Seccion12,
-    13: Seccion13,
-    14: Seccion14,
-    15: Seccion15,
+    1: Seccion1, 2: Seccion2, 3: Seccion3, 4: Seccion4, 5: Seccion5,
+    6: Seccion6, 7: Seccion7, 8: Seccion8, 9: Seccion9, 10: Seccion10,
+    11: Seccion11, 12: Seccion12, 13: Seccion13, 14: Seccion14, 15: Seccion15,
 };
 
-function getSectionComponent(number) {
-    return SECTION_COMPONENTS[number] ?? SeccionTextoSimple;
-}
-
-export default function Show({ plan, sections, currentSection, files, auth }) {
+export default function Show({ plan, sections, currentSection, files }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const doneSections = sections.filter((s) => ["listo", "editado"].includes(s.status)).length;
     const progress = Math.round((doneSections / 15) * 100);
-
-    const SectionComponent = currentSection ? getSectionComponent(currentSection.section_number) : null;
-
-    const logout = () => {
-        router.post("/logout");
-    };
+    const SectionComponent = currentSection ? (SECTION_COMPONENTS[currentSection.section_number] ?? SeccionTextoSimple) : null;
 
     return (
-        <div className="h-screen flex flex-col">
-            {/* Header */}
-            <header className="h-14 flex-shrink-0 border-b bg-card flex items-center px-4 gap-3 z-10">
-                <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-1.5 rounded-md hover:bg-accent transition-colors"
-                >
-                    {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-                </button>
+        <div className="h-screen flex flex-col bg-[#07090f] text-white overflow-hidden">
 
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md bg-[#253C87] flex items-center justify-center">
-                        <Shield size={14} className="text-white" />
+            {/* ── Header ── */}
+            <header className="h-14 flex-shrink-0 border-b border-white/8 bg-black/30 backdrop-blur-md flex items-center px-4 gap-3 z-20">
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors"
+                >
+                    <AnimatePresence mode="wait" initial={false}>
+                        {sidebarOpen
+                            ? <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}><X size={18} /></motion.div>
+                            : <motion.div key="m" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}><Menu size={18} /></motion.div>
+                        }
+                    </AnimatePresence>
+                </motion.button>
+
+                <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center shadow-lg shadow-[#253C87]/30">
+                        <Shield size={15} className="text-white" />
                     </div>
-                    <span className="font-bold text-[#253C87] text-sm hidden sm:block">Grupo Secon</span>
+                    <span className="font-bold text-white hidden sm:block text-sm">Grupo Secon</span>
                 </Link>
 
-                <div className="h-4 w-px bg-border mx-1" />
+                <div className="h-4 w-px bg-white/10 mx-0.5" />
 
                 <div className="flex-1 min-w-0">
-                    <h1 className="text-sm font-semibold truncate">{plan.title}</h1>
-                    <p className="text-xs text-muted-foreground">{plan.uuid}</p>
+                    <h1 className="text-sm font-semibold text-white truncate leading-tight">{plan.title}</h1>
+                    <p className="text-[10px] text-white/25 font-mono leading-tight">{plan.uuid}</p>
+                </div>
+
+                {/* Progress mini bar */}
+                <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
+                    <div className="w-28 h-1 rounded-full bg-white/8 overflow-hidden">
+                        <motion.div
+                            className="h-full rounded-full bg-gradient-to-r from-[#253C87] to-[#208DCA]"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                        />
+                    </div>
+                    <span className="text-xs text-white/35 w-8 text-right">{progress}%</span>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                     {progress >= 67 && (
-                        <Link href={`/planes/${plan.uuid}/pdf/descargar`}>
-                            <Button variant="secon" size="sm" className="gap-1.5">
-                                <FileDown size={14} />
+                        <a href={`/planes/${plan.uuid}/pdf/descargar`} target="_blank">
+                            <RippleButton
+                                size="sm"
+                                className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs"
+                            >
+                                <FileDown size={13} />
                                 <span className="hidden sm:inline">PDF</span>
-                            </Button>
-                        </Link>
+                            </RippleButton>
+                        </a>
                     )}
-                    <button onClick={logout} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-                        <LogOut size={16} />
-                    </button>
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => router.post("/logout")}
+                        className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                    >
+                        <LogOut size={15} />
+                    </motion.button>
                 </div>
             </header>
 
-            {/* Body */}
+            {/* ── Body ── */}
             <div className="flex-1 flex overflow-hidden">
+
                 {/* Sidebar */}
                 <motion.div
                     initial={false}
-                    animate={{ width: sidebarOpen ? 256 : 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden flex-shrink-0"
+                    animate={{ width: sidebarOpen ? 260 : 0 }}
+                    transition={{ duration: 0.22, ease: "easeInOut" }}
+                    className="overflow-hidden flex-shrink-0 h-full"
                 >
-                    {sidebarOpen && (
-                        <SidebarSecciones
-                            uuid={plan.uuid}
-                            sections={sections}
-                            currentSection={currentSection?.section_number}
-                            progress={progress}
-                        />
-                    )}
+                    <SidebarSecciones
+                        uuid={plan.uuid}
+                        sections={sections}
+                        currentSection={currentSection?.section_number}
+                        progress={progress}
+                    />
                 </motion.div>
 
-                {/* Main content */}
-                <main className="flex-1 overflow-y-auto bg-background">
-                    {currentSection && SectionComponent ? (
-                        <motion.div
-                            key={currentSection.section_number}
-                            initial={{ opacity: 0, x: 8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="max-w-3xl mx-auto px-6 py-8"
-                        >
-                            <SectionComponent
-                                plan={plan}
-                                section={currentSection}
-                                sections={sections}
-                                files={files}
-                            />
-                        </motion.div>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                            Selecciona una sección
-                        </div>
-                    )}
+                {/* Main */}
+                <main className="flex-1 overflow-y-auto">
+                    <AnimatePresence mode="wait">
+                        {currentSection && SectionComponent ? (
+                            <motion.div
+                                key={currentSection.section_number}
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                className="max-w-3xl mx-auto px-6 py-10"
+                            >
+                                <SectionComponent
+                                    plan={plan}
+                                    section={currentSection}
+                                    sections={sections}
+                                    files={files}
+                                />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex flex-col items-center justify-center h-full gap-3 text-white/20"
+                            >
+                                <Shield size={32} className="opacity-30" />
+                                <p className="text-sm">Selecciona una sección</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </main>
             </div>
         </div>

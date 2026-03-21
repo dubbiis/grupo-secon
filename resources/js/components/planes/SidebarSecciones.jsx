@@ -1,71 +1,104 @@
 import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
-import { Check, Clock, Pencil, Circle, Loader2, FileText } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, Pencil, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const STATUS_ICON = {
-    pendiente: <Circle size={14} className="text-muted-foreground" />,
-    generando: <Loader2 size={14} className="text-[#208DCA] animate-spin" />,
-    listo: <Check size={14} className="text-green-600" />,
-    editado: <Pencil size={14} className="text-[#208DCA]" />,
-};
-
-const STATUS_BG = {
-    pendiente: "",
-    generando: "bg-[#208DCA]/5",
-    listo: "bg-green-50",
-    editado: "bg-[#208DCA]/5",
-};
+function StatusDot({ status }) {
+    if (status === "listo") return (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-4 h-4 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center flex-shrink-0">
+            <Check size={8} className="text-green-400" strokeWidth={3} />
+        </motion.div>
+    );
+    if (status === "editado") return (
+        <div className="w-4 h-4 rounded-full bg-[#208DCA]/15 border border-[#208DCA]/30 flex items-center justify-center flex-shrink-0">
+            <Pencil size={8} className="text-[#208DCA]" />
+        </div>
+    );
+    if (status === "generando") return (
+        <Loader2 size={12} className="text-[#208DCA] animate-spin flex-shrink-0" />
+    );
+    return null;
+}
 
 export default function SidebarSecciones({ uuid, sections, currentSection, progress }) {
+    const doneSections = sections.filter((s) => s.status === "listo" || s.status === "editado").length;
+
     return (
-        <aside className="w-64 flex-shrink-0 flex flex-col border-r bg-card h-full">
-            {/* Header sidebar */}
-            <div className="p-4 border-b">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Secciones</span>
-                    <span className="text-xs font-medium text-[#253C87]">{progress}%</span>
+        <aside className="w-[260px] flex flex-col border-r border-white/6 bg-[#050709] h-full">
+
+            {/* Progress header */}
+            <div className="px-4 py-4 border-b border-white/6">
+                <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[10px] font-bold text-white/25 uppercase tracking-widest">Progreso del plan</span>
+                    <span className="text-xs font-bold text-[#208DCA]">{progress}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-1 rounded-full bg-white/6 overflow-hidden">
                     <motion.div
-                        className="h-full rounded-full bg-gradient-to-r from-[#253C87] to-[#208DCA]"
+                        className="h-full rounded-full bg-gradient-to-r from-[#253C87] to-[#208DCA] shadow-sm shadow-[#208DCA]/30"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.7, ease: "easeOut" }}
                     />
                 </div>
+                <p className="text-[10px] text-white/20 mt-2">
+                    {doneSections} de 15 secciones completadas
+                </p>
             </div>
 
-            {/* Sections list */}
-            <nav className="flex-1 overflow-y-auto py-2">
-                {sections.map((section) => {
+            {/* Sections nav */}
+            <nav className="flex-1 overflow-y-auto py-2 px-2">
+                {sections.map((section, i) => {
                     const isActive = section.section_number === currentSection;
+                    const isDone = section.status === "listo" || section.status === "editado";
+
                     return (
-                        <Link
+                        <motion.div
                             key={section.section_number}
-                            href={`/planes/${uuid}/seccion/${section.section_number}`}
-                            className={cn(
-                                "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-accent group",
-                                isActive && "bg-[#253C87]/8 border-r-2 border-[#253C87]",
-                                STATUS_BG[section.status]
-                            )}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.025, duration: 0.2 }}
                         >
-                            <span className={cn(
-                                "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold border",
-                                isActive
-                                    ? "bg-[#253C87] text-white border-[#253C87]"
-                                    : "border-border text-muted-foreground group-hover:border-[#253C87]/40"
-                            )}>
-                                {section.section_number}
-                            </span>
-                            <span className={cn(
-                                "flex-1 leading-snug line-clamp-2",
-                                isActive ? "font-medium text-[#253C87]" : "text-muted-foreground"
-                            )}>
-                                {section.section_name}
-                            </span>
-                            {STATUS_ICON[section.status]}
-                        </Link>
+                            <Link
+                                href={`/planes/${uuid}/seccion/${section.section_number}`}
+                                className={cn(
+                                    "relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all group mb-0.5",
+                                    isActive
+                                        ? "bg-white/8 shadow-inner shadow-black/20"
+                                        : "hover:bg-white/4"
+                                )}
+                            >
+                                {/* Active left glow bar */}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeBar"
+                                        className="absolute left-0 inset-y-1 w-0.5 rounded-full bg-gradient-to-b from-[#253C87] to-[#208DCA]"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                                    />
+                                )}
+
+                                {/* Number badge */}
+                                <span className={cn(
+                                    "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all",
+                                    isActive
+                                        ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/20"
+                                        : isDone
+                                            ? "bg-green-500/15 text-green-400 border border-green-500/20"
+                                            : "bg-white/6 text-white/30 border border-white/8 group-hover:border-white/15 group-hover:text-white/50"
+                                )}>
+                                    {isDone && !isActive ? <Check size={9} strokeWidth={3} /> : section.section_number}
+                                </span>
+
+                                {/* Section name */}
+                                <span className={cn(
+                                    "flex-1 leading-snug line-clamp-2 transition-colors",
+                                    isActive ? "text-white font-medium" : "text-white/40 group-hover:text-white/65"
+                                )}>
+                                    {section.section_name}
+                                </span>
+
+                                <StatusDot status={section.status} />
+                            </Link>
+                        </motion.div>
                     );
                 })}
             </nav>

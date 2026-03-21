@@ -1,41 +1,52 @@
 import { Link } from "@inertiajs/react";
-import { motion } from "framer-motion";
-import { Pencil, Shield } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Pencil, Shield, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
-export default function Prompts({ prompts, auth, flash }) {
+export default function Prompts({ prompts, flash }) {
     return (
-        <div className="min-h-screen bg-background">
-            <header className="border-b bg-card sticky top-0 z-10">
+        <div className="min-h-screen bg-[#07090f] text-white">
+            <header className="border-b border-white/8 bg-black/30 backdrop-blur-sm sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-md bg-[#253C87] flex items-center justify-center">
-                        <Shield size={14} className="text-white" />
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center shadow-md shadow-[#253C87]/25">
+                        <Shield size={13} className="text-white" />
                     </div>
-                    <span className="font-bold text-[#253C87]">Grupo Secon</span>
-                    <span className="text-muted-foreground text-sm">/ Admin / Prompts</span>
+                    <span className="font-bold text-white">Grupo Secon</span>
+                    <span className="text-white/25 text-sm">/ Admin / Prompts</span>
                     <div className="ml-auto">
                         <Link href="/">
-                            <Button variant="ghost" size="sm">← Volver</Button>
+                            <Button variant="ghost" size="sm" className="text-white/40 hover:text-white">
+                                ← Volver
+                            </Button>
                         </Link>
                     </div>
                 </div>
             </header>
 
             <main className="max-w-4xl mx-auto px-6 py-8">
-                <div className="mb-6">
-                    <h1 className="text-xl font-bold">Gestión de Prompts</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Configura los prompts de IA para cada sección del plan
-                    </p>
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Sparkles size={16} className="text-[#208DCA]" />
+                        <span className="text-xs font-semibold text-white/30 uppercase tracking-wider">Panel de administración</span>
+                    </div>
+                    <h1 className="text-2xl font-bold text-white">Gestión de Prompts IA</h1>
+                    <p className="text-sm text-white/40 mt-1">Configura las instrucciones de IA para cada sección del plan de seguridad</p>
                 </div>
 
-                {flash?.success && (
-                    <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3">
-                        {flash.success}
-                    </div>
-                )}
+                <AnimatePresence>
+                    {flash?.success && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="mb-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm px-4 py-3 flex items-center gap-2"
+                        >
+                            <Check size={14} />
+                            {flash.success}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <div className="space-y-2">
                     {prompts.map((prompt, i) => (
@@ -44,29 +55,24 @@ export default function Prompts({ prompts, auth, flash }) {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
+                            className="flex items-center gap-4 p-4 rounded-xl bg-white/3 border border-white/8 hover:bg-white/5 hover:border-white/12 transition-all group"
                         >
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center gap-4">
-                                        <span className="w-8 h-8 rounded-full bg-[#253C87]/10 flex items-center justify-center text-sm font-bold text-[#253C87] flex-shrink-0">
-                                            {prompt.section_number}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-sm">{prompt.section_name}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {prompt.model} · max {prompt.max_tokens} tokens
-                                                {prompt.updated_at && ` · Editado ${prompt.updated_at}`}
-                                            </p>
-                                        </div>
-                                        <Link href={`/admin/prompts/${prompt.section_number}`}>
-                                            <Button variant="outline" size="sm" className="gap-1.5">
-                                                <Pencil size={12} />
-                                                Editar
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#253C87]/30 to-[#208DCA]/30 border border-[#208DCA]/20 flex items-center justify-center text-sm font-bold text-[#208DCA] flex-shrink-0">
+                                {prompt.section_number}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-white">{prompt.section_name}</p>
+                                <p className="text-xs text-white/30 mt-0.5">
+                                    {prompt.model} · max {prompt.max_tokens} tokens
+                                    {prompt.updated_at && ` · Editado ${prompt.updated_at}`}
+                                </p>
+                            </div>
+                            <Link href={`/admin/prompts/${prompt.section_number}`}>
+                                <Button variant="outline" size="sm" className="gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Pencil size={12} />
+                                    Editar
+                                </Button>
+                            </Link>
                         </motion.div>
                     ))}
                 </div>
