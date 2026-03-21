@@ -108,25 +108,70 @@ export default function PromptEdit({ prompt, flash }) {
 
                 <form onSubmit={submit} className="space-y-6">
                     {/* Model + tokens */}
-                    <div className="grid grid-cols-2 gap-4 p-5 rounded-2xl bg-white/3 border border-white/8">
-                        <div>
-                            <label className="text-xs font-semibold text-white/35 mb-1.5 block uppercase tracking-wide">Modelo</label>
-                            <select
-                                value={data.model}
-                                onChange={(e) => setData("model", e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-white/10 bg-white/6 px-3 py-1 text-sm text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
-                            >
-                                {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
-                            </select>
+                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-5">
+                        <div className="flex items-center gap-2 pb-4 border-b border-white/6">
+                            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#253C87]/60 to-[#208DCA]/60 flex items-center justify-center flex-shrink-0">
+                                <Code2 size={11} className="text-white" />
+                            </div>
+                            <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Configuración del modelo IA</p>
                         </div>
-                        <div>
-                            <label className="text-xs font-semibold text-white/35 mb-1.5 block uppercase tracking-wide">Max tokens</label>
-                            <Input
-                                type="number"
-                                value={data.max_tokens}
-                                onChange={(e) => setData("max_tokens", parseInt(e.target.value))}
-                                min={512} max={16000}
-                            />
+
+                        <div className="grid grid-cols-2 gap-5">
+                            {/* Modelo */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">Modelo GPT</label>
+                                <select
+                                    value={data.model}
+                                    onChange={(e) => setData("model", e.target.value)}
+                                    className="flex h-9 w-full rounded-lg border border-white/10 bg-white/6 px-3 py-1 text-sm text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
+                                >
+                                    {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
+                                </select>
+                                <div className="space-y-1.5 pt-1">
+                                    {[
+                                        { name: "gpt-4o-mini", desc: "Rápido y económico. Recomendado para la mayoría de secciones. Buena calidad con menor coste." },
+                                        { name: "gpt-4o",      desc: "Máxima calidad. Usa para secciones críticas (análisis de riesgos, dispositivo de seguridad). Más lento y caro." },
+                                        { name: "gpt-4-turbo", desc: "Equilibrio entre calidad y velocidad. Alternativa a gpt-4o con contexto muy largo." },
+                                    ].map(({ name, desc }) => (
+                                        <div key={name} className={`flex gap-2 p-2 rounded-lg transition-colors ${data.model === name ? "bg-[#208DCA]/8 border border-[#208DCA]/15" : "opacity-40"}`}>
+                                            <span className="font-mono text-[10px] text-[#208DCA] flex-shrink-0 mt-0.5">{name}</span>
+                                            <span className="text-[10px] text-white/50 leading-snug">{desc}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Max tokens */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">Máximo de tokens</label>
+                                <Input
+                                    type="number"
+                                    value={data.max_tokens}
+                                    onChange={(e) => setData("max_tokens", parseInt(e.target.value))}
+                                    min={512} max={16000}
+                                />
+                                <div className="space-y-2 pt-1">
+                                    <p className="text-[10px] text-white/40 leading-relaxed">
+                                        Un <span className="text-white/60 font-medium">token</span> equivale aproximadamente a ¾ de una palabra en español. El modelo detiene la generación al alcanzar este límite.
+                                    </p>
+                                    <div className="space-y-1">
+                                        {[
+                                            { range: "512 – 1.024",  label: "Respuesta corta",   hint: "Secciones de contactos o anexos" },
+                                            { range: "2.048 – 4.096", label: "Respuesta media",  hint: "Mayoría de secciones (recomendado)" },
+                                            { range: "6.000 – 8.000", label: "Respuesta larga",  hint: "Análisis de riesgos, dispositivo" },
+                                            { range: "16.000",        label: "Máximo absoluto",  hint: "Solo si la sección es muy extensa" },
+                                        ].map(({ range, label, hint }) => (
+                                            <div key={range} className="flex items-start gap-2">
+                                                <span className="font-mono text-[10px] text-white/30 w-24 flex-shrink-0 pt-px">{range}</span>
+                                                <div>
+                                                    <span className="text-[10px] text-white/55 font-medium">{label}</span>
+                                                    <span className="text-[10px] text-white/30"> — {hint}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -154,9 +199,17 @@ export default function PromptEdit({ prompt, flash }) {
 
                     {/* System prompt */}
                     <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
-                        <div>
-                            <label className="text-xs font-semibold text-white/50 mb-1 block uppercase tracking-wide">System Prompt</label>
-                            <p className="text-xs text-white/25">Instrucción de sistema. Define el rol y el tono del modelo.</p>
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">System Prompt</label>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                Es la <span className="text-white/60 font-medium">instrucción invisible</span> que recibe el modelo antes de leer el mensaje del usuario. Define su rol, tono y restricciones. El usuario final nunca lo ve.
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-[10px]">
+                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Define el rol ("Eres un experto en...")</span>
+                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Idioma y formato de salida</span>
+                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Tono (formal, técnico, conciso)</span>
+                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✗ No pongas datos del evento aquí</span>
+                            </div>
                         </div>
                         <Textarea value={data.system_prompt} onChange={(e) => setData("system_prompt", e.target.value)} rows={6} className="font-mono text-xs" />
                         {errors.system_prompt && <p className="text-red-400 text-xs">{errors.system_prompt}</p>}
@@ -166,10 +219,10 @@ export default function PromptEdit({ prompt, flash }) {
                     <div className="rounded-2xl bg-white/3 border border-white/8 overflow-hidden">
                         {/* Tab bar */}
                         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/6">
-                            <div>
+                            <div className="space-y-2">
                                 <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">User Prompt Template</label>
-                                <p className="text-xs text-white/25 mt-0.5">
-                                    Usa <code className="bg-white/8 px-1.5 py-0.5 rounded text-[#208DCA]">{"{{variable}}"}</code> para insertar datos del formulario.
+                                <p className="text-xs text-white/40 leading-relaxed max-w-lg">
+                                    El mensaje que recibe el modelo <span className="text-white/60 font-medium">con los datos reales del evento</span> ya insertados. Escribe el texto del prompt y usa <code className="bg-white/8 px-1.5 py-0.5 rounded text-[#208DCA] font-mono">{"{{variable}}"}</code> donde quieras que aparezca un dato del formulario.
                                 </p>
                             </div>
                             <button
