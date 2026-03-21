@@ -1,0 +1,14 @@
+DATOS-CONEXION.md
+instrucciones.md
+shadcn_animate\ ui.md
+.env
+.env.*
+!.env.example
+node_modules/
+vendor/
+storage/logs/
+storage/framework/
+bootstrap/cache/
+public/build/
+.DS_Store
+Thumbs.db
