@@ -41,6 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/planes/{uuid}/pdf/previsualizar', [PlanPdfController::class, 'preview'])->name('planes.pdf.preview');
     Route::get('/planes/{uuid}/pdf/descargar', [PlanPdfController::class, 'download'])->name('planes.pdf.download');
 
+    // VIP AI description
+    Route::post('/planes/{uuid}/vip-describir', [PlanSectionController::class, 'vipDescribir'])->name('planes.vip.describir');
+
     // Maps (Nominatim + Overpass + Valhalla)
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');

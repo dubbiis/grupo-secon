@@ -9,6 +9,7 @@ use App\Models\PromptTemplate;
 use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use OpenAI;
 
 class PlanSectionController extends Controller
 {
@@ -136,6 +137,52 @@ class PlanSectionController extends Controller
             'Cache-Control' => 'no-cache',
             'X-Accel-Buffering' => 'no',
             'Connection' => 'keep-alive',
+        ]);
+    }
+
+    public function vipDescribir(Request $request, string $uuid)
+    {
+        $request->validate(['nombre' => 'required|string|max:200']);
+
+        $plan      = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $sec1      = $plan->getSectionByNumber(1);
+        $eventName = $sec1?->form_data['nombre_evento'] ?? $plan->title;
+        $nombre    = $request->input('nombre');
+
+        $client = OpenAI::client(config('openai.api_key'));
+
+        return response()->stream(function () use ($client, $nombre, $eventName) {
+            $stream = $client->chat()->createStreamed([
+                'model'      => config('openai.model', 'gpt-4o-mini'),
+                'max_tokens' => 350,
+                'messages'   => [
+                    [
+                        'role'    => 'system',
+                        'content' => 'Eres un experto en seguridad privada de eventos. Redacta perfiles de seguridad para VIPs de forma concisa y profesional en español. No uses markdown, solo texto plano.',
+                    ],
+                    [
+                        'role'    => 'user',
+                        'content' => "Escribe el perfil de seguridad para el siguiente VIP/artista que asiste al evento \"{$eventName}\":\n\nNombre: {$nombre}\n\nRedacta en 4-5 líneas concisas e incluye: perfil público y nivel de exposición mediática, atención de fans o paparazzi esperada, protocolo de llegada y salida recomendado, zonas de acceso restringido necesarias y cualquier consideración especial de seguridad.",
+                    ],
+                ],
+            ]);
+
+            foreach ($stream as $chunk) {
+                $text = $chunk->choices[0]->delta->content ?? '';
+                if ($text !== '') {
+                    echo "data: " . json_encode(['text' => $text]) . "\n\n";
+                    if (ob_get_level() > 0) ob_flush();
+                    flush();
+                }
+            }
+            echo "data: " . json_encode(['done' => true]) . "\n\n";
+            if (ob_get_level() > 0) ob_flush();
+            flush();
+        }, 200, [
+            'Content-Type'     => 'text/event-stream',
+            'Cache-Control'    => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+            'Connection'       => 'keep-alive',
         ]);
     }
 

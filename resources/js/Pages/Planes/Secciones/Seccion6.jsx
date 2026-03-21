@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
-import { Plus, Trash2, ChevronDown, User, ImagePlus, X } from "lucide-react";
+import { Plus, Trash2, ChevronDown, User, ImagePlus, Sparkles, Loader2 } from "lucide-react";
 
 const TIPOS_PUBLICO = [
     "Público general mixto",
@@ -76,6 +76,50 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
 
 // ── VIP item card ──────────────────────────────────────────
 function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
+    const [generating, setGenerating] = useState(false);
+
+    const generateDescription = async () => {
+        if (!vip.nombre?.trim() || generating) return;
+        setGenerating(true);
+        onUpdate(idx, { ...vip, descripcion: "" });
+
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+            const res  = await fetch(`/planes/${uuid}/vip-describir`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrf, "Accept": "text/event-stream" },
+                body:    JSON.stringify({ nombre: vip.nombre }),
+            });
+            if (!res.ok) { setGenerating(false); return; }
+
+            const reader  = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            let fullText = "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() ?? "";
+                for (const line of lines) {
+                    if (!line.startsWith("data: ")) continue;
+                    try {
+                        const parsed = JSON.parse(line.slice(6));
+                        if (parsed.done) break;
+                        if (parsed.text) {
+                            fullText += parsed.text;
+                            onUpdate(idx, { ...vip, descripcion: fullText });
+                        }
+                    } catch { /* ignore */ }
+                }
+            }
+        } finally {
+            setGenerating(false);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -142,9 +186,23 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-semibold text-white/35 mb-1 block uppercase tracking-wide">
-                                        Perfil y consideraciones de seguridad
-                                    </label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-[10px] font-semibold text-white/35 uppercase tracking-wide">
+                                            Perfil y consideraciones de seguridad
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={generateDescription}
+                                            disabled={generating || !vip.nombre?.trim()}
+                                            className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-lg bg-[#208DCA]/12 border border-[#208DCA]/25 text-[#208DCA] hover:bg-[#208DCA]/22 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                            title={!vip.nombre?.trim() ? "Escribe el nombre primero" : "Generar perfil con IA"}
+                                        >
+                                            {generating
+                                                ? <><Loader2 size={9} className="animate-spin" /> Generando…</>
+                                                : <><Sparkles size={9} /> Generar con IA</>
+                                            }
+                                        </button>
+                                    </div>
                                     <Textarea
                                         value={vip.descripcion ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...vip, descripcion: e.target.value })}
