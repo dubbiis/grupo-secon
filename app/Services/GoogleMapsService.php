@@ -20,10 +20,9 @@ class GoogleMapsService
                     'User-Agent'      => $this->userAgent,
                     'Accept-Language' => 'es',
                 ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
-                    'q'            => $address,
-                    'format'       => 'json',
-                    'limit'        => 1,
-                    'countrycodes' => 'es',
+                    'q'      => $address,
+                    'format' => 'json',
+                    'limit'  => 1,
                 ]);
 
                 $data = $response->json();
