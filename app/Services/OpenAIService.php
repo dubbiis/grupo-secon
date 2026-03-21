@@ -107,12 +107,22 @@ class OpenAIService
             }
         }
 
-        // Aforo y accesos (sección 4)
+        // Aforo, accesos y transporte (sección 4)
         $sec4 = $plan->getSectionByNumber(4);
         if ($sec4 && $sec4->form_data) {
-            foreach (['aforo_total', 'num_accesos'] as $key) {
+            foreach (['aforo_total', 'num_accesos', 'datos_transporte_googlemaps', 'datos_parkings_googlemaps'] as $key) {
                 if (!empty($sec4->form_data[$key])) {
                     $context[$key] = $sec4->form_data[$key];
+                }
+            }
+        }
+
+        // Recursos de emergencia (sección 5) — usados en sec 7 (análisis de riesgos)
+        $sec5 = $plan->getSectionByNumber(5);
+        if ($sec5 && $sec5->form_data) {
+            foreach (['hospitales_reales', 'comisarias_reales'] as $key) {
+                if (!empty($sec5->form_data[$key])) {
+                    $context[$key] = $sec5->form_data[$key];
                 }
             }
         }

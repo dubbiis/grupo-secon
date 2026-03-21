@@ -3,7 +3,8 @@ import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
 import MapEditor from "@/components/planes/MapEditor";
-import { Info, Map } from "lucide-react";
+import PlacesPanel from "@/components/planes/PlacesPanel";
+import { Map } from "lucide-react";
 
 export default function Seccion5({ plan, section, files = [] }) {
     const [form, setForm] = useState({
@@ -22,12 +23,15 @@ export default function Seccion5({ plan, section, files = [] }) {
 
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
-            <div className="flex items-start gap-3 rounded-xl bg-[#208DCA]/8 border border-[#208DCA]/20 p-4">
-                <Info size={16} className="text-[#208DCA] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-white/60">
-                    Busca en Google Maps los hospitales, comisarías y recursos de emergencia cercanos al lugar del evento
-                    e introduce la información en los campos siguientes. La IA utilizará estos datos reales para redactar la sección.
-                </p>
+
+            {/* ── Búsqueda automática de emergencias ── */}
+            <div className="space-y-3">
+                <label className="text-sm font-medium block">Recursos de emergencia cercanos</label>
+                <PlacesPanel
+                    uuid={plan.uuid}
+                    type="emergencia"
+                    onResult={(fields) => setForm((prev) => ({ ...prev, ...fields }))}
+                />
             </div>
 
             <div>
@@ -38,7 +42,7 @@ export default function Seccion5({ plan, section, files = [] }) {
                     rows={5}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                    Nombre, distancia, dirección y teléfono de hospitales/urgencias en un radio de 5km.
+                    Rellenado automáticamente o escribe manualmente. Nombre, distancia, dirección y teléfono.
                 </p>
             </div>
 
@@ -50,11 +54,11 @@ export default function Seccion5({ plan, section, files = [] }) {
                     rows={4}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                    Policía Nacional, Policía Local y Guardia Civil más cercanas con distancia y teléfono.
+                    Rellenado automáticamente o escribe manualmente. Policía Nacional, Local y Guardia Civil.
                 </p>
             </div>
 
-            {/* Map editor */}
+            {/* ── Map editor ── */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <label className="text-sm font-medium">Mapa de rutas de emergencia</label>

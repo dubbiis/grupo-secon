@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
+import PlacesPanel from "@/components/planes/PlacesPanel";
 
 export default function Seccion4({ plan, section }) {
     const [form, setForm] = useState({
-        aforo_total: "",
-        num_accesos: "",
-        descripcion_accesos: "",
+        aforo_total:               "",
+        num_accesos:               "",
+        descripcion_accesos:       "",
         datos_transporte_googlemaps: "",
         datos_parkings_googlemaps: "",
         ...section.form_data,
@@ -40,6 +41,16 @@ export default function Seccion4({ plan, section }) {
                 />
             </div>
 
+            {/* ── Búsqueda automática de transporte ── */}
+            <div className="space-y-3">
+                <label className="text-sm font-medium block">Transporte público y parkings</label>
+                <PlacesPanel
+                    uuid={plan.uuid}
+                    type="transporte"
+                    onResult={(fields) => setForm((prev) => ({ ...prev, ...fields }))}
+                />
+            </div>
+
             <div>
                 <label className="text-sm font-medium mb-1.5 block">Transporte público cercano</label>
                 <Textarea
@@ -48,7 +59,7 @@ export default function Seccion4({ plan, section }) {
                     rows={4}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                    Indica las opciones de transporte público más cercanas con distancia aproximada.
+                    Rellenado automáticamente o escribe manualmente.
                 </p>
             </div>
 

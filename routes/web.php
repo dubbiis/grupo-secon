@@ -6,6 +6,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanSectionController;
 use App\Http\Controllers\PlanFileController;
 use App\Http\Controllers\PlanPdfController;
+use App\Http\Controllers\GoogleMapsController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\StatsController;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,10 @@ Route::middleware('auth')->group(function () {
     // PDF
     Route::get('/planes/{uuid}/pdf/previsualizar', [PlanPdfController::class, 'preview'])->name('planes.pdf.preview');
     Route::get('/planes/{uuid}/pdf/descargar', [PlanPdfController::class, 'download'])->name('planes.pdf.download');
+
+    // Maps (Nominatim + Overpass + Valhalla)
+    Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
+    Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
 
     // Herramientas standalone
     Route::get('/editor-mapas', fn() => inertia('EditorMapas'))->name('editor-mapas');
