@@ -204,7 +204,10 @@ export default function MapEditor({
     const [hasBg, setHasBg] = useState(false);
     const [showMap, setShowMap] = useState(true);
     const [mapQuery, setMapQuery] = useState("");
-    const [mapUrl, setMapUrl] = useState("https://maps.google.com/maps?q=Madrid+España&output=embed&hl=es");
+    const [mapUrl, setMapUrl] = useState(
+        "https://www.openstreetmap.org/export/embed.html?bbox=-3.7238,40.4068,-3.6838,40.4268&layer=mapnik&marker=40.4168,-3.7038"
+    );
+    const [mapSearching, setMapSearching] = useState(false);
     const [openIconCat, setOpenIconCat] = useState(null);
     const [showIconLabels, setShowIconLabels] = useState(false);
     const [textPrompt, setTextPrompt] = useState(null);
@@ -538,10 +541,26 @@ export default function MapEditor({
         setOpenIconCat(null);
     };
 
-    // ── Map search ───────────────────────────────────────────────
-    const searchMap = () => {
+    // ── Map search (Nominatim → OSM embed) ───────────────────────
+    const searchMap = async () => {
         if (!mapQuery.trim()) return;
-        setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed&hl=es`);
+        setMapSearching(true);
+        try {
+            const res  = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapQuery)}&format=json&limit=1`,
+                { headers: { "User-Agent": "GrupoSecon/1.0", "Accept-Language": "es" } }
+            );
+            const data = await res.json();
+            if (data.length > 0) {
+                const lat  = parseFloat(data[0].lat);
+                const lng  = parseFloat(data[0].lon);
+                const d    = 0.008; // ~900m radius at street level
+                setMapUrl(
+                    `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&layer=mapnik&marker=${lat},${lng}`
+                );
+            }
+        } catch { /* mantiene el mapa actual */ }
+        finally { setMapSearching(false); }
     };
 
     // ── Context menu ─────────────────────────────────────────────
@@ -851,19 +870,18 @@ export default function MapEditor({
                                         className="flex-1 bg-transparent text-xs text-white placeholder-white/25 focus:outline-none"
                                     />
                                 </div>
-                                <button onClick={searchMap}
-                                    className="px-3 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors">
-                                    Buscar
+                                <button onClick={searchMap} disabled={mapSearching}
+                                    className="px-3 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors disabled:opacity-50">
+                                    {mapSearching ? "…" : "Buscar"}
                                 </button>
                             </div>
                             <p className="text-[10px] text-white/20 px-1">
-                                Busca el recinto · captura pantalla · pega con Ctrl+V en el canvas
+                                Busca el recinto y dibuja encima en el canvas
                             </p>
                             <div className="flex-1 rounded-xl overflow-hidden border border-white/10">
                                 <iframe src={mapUrl} width="100%" height="100%"
                                     className="border-0 min-h-[480px]"
-                                    allowFullScreen loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
+                                    loading="lazy"
                                     title="Mapa de referencia"
                                 />
                             </div>
