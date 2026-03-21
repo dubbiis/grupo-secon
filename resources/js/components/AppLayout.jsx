@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Shield, LogOut, ChevronRight, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, ChevronRight, BarChart2, Map } from "lucide-react";
 
 export default function AppLayout({ children, title, subtitle }) {
     const { auth } = usePage().props;
@@ -12,6 +12,12 @@ export default function AppLayout({ children, title, subtitle }) {
             label: "Mis Planes",
             icon: LayoutDashboard,
             active: currentUrl === "/",
+        },
+        {
+            href: "/editor-mapas",
+            label: "Editor de Mapas",
+            icon: Map,
+            active: currentUrl === "/editor-mapas",
         },
         ...(auth?.user?.role === "admin" ? [
             {

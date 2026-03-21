@@ -24,8 +24,7 @@ export default function FileUpload({
         for (const file of fileList) {
             const fd = new FormData();
             fd.append("file", file);
-            fd.append("category", category);
-            fd.append("section_number", sectionNumber);
+            fd.append("file_category", category);
             try {
                 const res = await fetch(`/planes/${uuid}/seccion/${sectionNumber}/archivo`, {
                     method: "POST",

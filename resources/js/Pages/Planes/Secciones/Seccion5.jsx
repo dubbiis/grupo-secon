@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
-import { Info } from "lucide-react";
+import MapEditor from "@/components/planes/MapEditor";
+import { Info, Map } from "lucide-react";
 
 export default function Seccion5({ plan, section, files = [] }) {
     const [form, setForm] = useState({
@@ -10,6 +11,7 @@ export default function Seccion5({ plan, section, files = [] }) {
         comisarias_reales: "",
         ...section.form_data,
     });
+    const [showMapEditor, setShowMapEditor] = useState(false);
 
     const field = (key) => ({
         value: form[key],
@@ -52,8 +54,34 @@ export default function Seccion5({ plan, section, files = [] }) {
                 </p>
             </div>
 
-            <div>
-                <label className="text-sm font-medium mb-1.5 block">Mapa de rutas de emergencia</label>
+            {/* Map editor */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Mapa de rutas de emergencia</label>
+                    <button
+                        onClick={() => setShowMapEditor((v) => !v)}
+                        className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${
+                            showMapEditor
+                                ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
+                                : "bg-white/5 border-white/10 text-white/50 hover:text-white"
+                        }`}
+                    >
+                        <Map size={12} />
+                        {showMapEditor ? "Cerrar editor" : "Abrir editor de mapas"}
+                    </button>
+                </div>
+
+                {showMapEditor && (
+                    <MapEditor
+                        mode="section"
+                        uuid={plan.uuid}
+                        sectionNumber={5}
+                        category="imagen_ruta"
+                        existingFiles={mapFiles}
+                        onSaved={() => {}}
+                    />
+                )}
+
                 <FileUpload
                     uuid={plan.uuid}
                     sectionNumber={5}
@@ -61,7 +89,7 @@ export default function Seccion5({ plan, section, files = [] }) {
                     accept="image/*"
                     multiple
                     existingFiles={mapFiles}
-                    label="Subir mapa / imagen de rutas"
+                    label="O sube una imagen de rutas"
                     description="PNG, JPG o PDF con la ubicación de recursos de emergencia"
                 />
             </div>
