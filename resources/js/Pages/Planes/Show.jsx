@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Menu, X, FileDown, LogOut } from "lucide-react";
+import { Menu, X, FileDown, LogOut, LayoutDashboard } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import SidebarSecciones from "@/components/planes/SidebarSecciones";
 
@@ -53,11 +53,11 @@ export default function Show({ plan, sections, currentSection, files }) {
                     </AnimatePresence>
                 </motion.button>
 
-                <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center shadow-lg shadow-[#253C87]/30">
-                        <Shield size={15} className="text-white" />
-                    </div>
-                    <span className="font-bold text-white hidden sm:block text-sm">Grupo Secon</span>
+                <Link href="/" className="flex items-center gap-2 flex-shrink-0" title="Volver al dashboard">
+                    <img src="/images/logo.png" alt="Grupo Secon" className="h-7 w-auto object-contain" />
+                    <span className="hidden lg:flex items-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors ml-1">
+                        <LayoutDashboard size={11} /> Dashboard
+                    </span>
                 </Link>
 
                 <div className="h-4 w-px bg-white/10 mx-0.5" />

@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Save, Check, Code2, Eye, EyeOff, BookOpen } from "lucide-react";
+import { Save, Check, Code2, Eye, EyeOff, BookOpen } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -75,26 +76,15 @@ export default function PromptEdit({ prompt, flash }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#07090f] text-white">
-            <header className="border-b border-white/8 bg-black/30 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center">
-                        <Shield size={13} className="text-white" />
-                    </div>
-                    <span className="font-bold text-white">Admin</span>
-                    <span className="text-white/25 text-sm">
-                        / <Link href="/admin/prompts" className="hover:text-white transition-colors">Prompts</Link>
-                        {" "}/ Sección {prompt.section_number}
-                    </span>
-                </div>
-            </header>
-
-            <main className="max-w-4xl mx-auto px-6 py-8">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-white">
-                        §{prompt.section_number} — {prompt.section_name}
-                    </h1>
-                    <p className="text-sm text-white/35 mt-1">Edita el prompt que se envía a OpenAI para esta sección</p>
+        <AppLayout
+            title={`§${prompt.section_number} — ${prompt.section_name}`}
+            subtitle="Edita el prompt que se envía a OpenAI para esta sección"
+        >
+            <div className="px-8 py-6 max-w-4xl mx-auto">
+                <div className="mb-2">
+                    <Link href="/admin/prompts" className="text-xs text-white/30 hover:text-white/60 transition-colors">
+                        ← Volver a Prompts
+                    </Link>
                 </div>
 
                 <AnimatePresence>
@@ -318,7 +308,7 @@ export default function PromptEdit({ prompt, flash }) {
                         </Link>
                     </div>
                 </form>
-            </main>
-        </div>
+            </div>
+        </AppLayout>
     );
 }

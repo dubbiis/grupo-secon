@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { router, useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FileText, Trash2, ChevronRight, Shield, LogOut, Sparkles, AlertTriangle } from "lucide-react";
+import { Plus, FileText, Trash2, ChevronRight, Sparkles, AlertTriangle } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { GradientBackground } from "@/components/animate-ui/components/backgrounds/gradient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import AppLayout from "@/components/AppLayout";
 
 const STATUS_CONFIG = {
     borrador:    { label: "Borrador",    color: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20" },
@@ -36,34 +36,8 @@ export default function Dashboard({ plans, auth }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#07090f] text-white">
-            {/* Header */}
-            <header className="border-b border-white/8 bg-white/3 backdrop-blur-sm sticky top-0 z-20">
-                <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center shadow-md shadow-[#253C87]/30">
-                            <Shield size={15} className="text-white" />
-                        </div>
-                        <span className="font-bold text-white">Grupo Secon</span>
-                        <span className="text-white/30 text-sm hidden sm:block">· Planes de Seguridad</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {auth?.user?.role === 'admin' && (
-                            <Link href="/admin/prompts">
-                                <Button variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/8">Admin</Button>
-                            </Link>
-                        )}
-                        <span className="text-sm text-white/40">{auth?.user?.name}</span>
-                        <Link href="/logout" method="post" as="button">
-                            <Button variant="ghost" size="icon" className="text-white/40 hover:text-white hover:bg-white/8">
-                                <LogOut size={16} />
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto px-6 py-10">
+        <AppLayout>
+            <div className="px-8 py-8 max-w-6xl mx-auto">
                 {/* Hero */}
                 <motion.div
                     className="flex items-end justify-between mb-8"
@@ -188,7 +162,7 @@ export default function Dashboard({ plans, auth }) {
                         </AnimatePresence>
                     </div>
                 )}
-            </main>
+            </div>
 
             {/* Modal */}
             <Dialog open={showModal} onClose={() => { setShowModal(false); reset(); }}>
@@ -258,6 +232,6 @@ export default function Dashboard({ plans, auth }) {
                     </RippleButton>
                 </DialogFooter>
             </Dialog>
-        </div>
+        </AppLayout>
     );
 }
