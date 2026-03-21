@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { router, useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FileText, Trash2, ChevronRight, Shield, LogOut, Sparkles } from "lucide-react";
+import { Plus, FileText, Trash2, ChevronRight, Shield, LogOut, Sparkles, AlertTriangle } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { GradientBackground } from "@/components/animate-ui/components/backgrounds/gradient";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ const STATUS_CONFIG = {
 
 export default function Dashboard({ plans, auth }) {
     const [showModal, setShowModal] = useState(false);
+    const [planToDelete, setPlanToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({ title: "" });
 
     const createPlan = (e) => {
@@ -25,10 +27,12 @@ export default function Dashboard({ plans, auth }) {
         post("/planes", { onSuccess: () => { reset(); setShowModal(false); } });
     };
 
-    const deletePlan = (plan) => {
-        if (confirm(`¿Eliminar "${plan.title}"?`)) {
-            router.delete(`/planes/${plan.id}`);
-        }
+    const confirmDelete = () => {
+        if (!planToDelete) return;
+        setDeleting(true);
+        router.delete(`/planes/${planToDelete.id}`, {
+            onFinish: () => { setDeleting(false); setPlanToDelete(null); },
+        });
     };
 
     return (
@@ -133,7 +137,7 @@ export default function Dashboard({ plans, auth }) {
                                                     </div>
                                                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
-                                                            onClick={() => deletePlan(plan)}
+                                                            onClick={() => setPlanToDelete(plan)}
                                                             className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                                                         >
                                                             <Trash2 size={14} />
@@ -217,6 +221,42 @@ export default function Dashboard({ plans, auth }) {
                         </RippleButton>
                     </DialogFooter>
                 </form>
+            </Dialog>
+
+            {/* Modal confirmar eliminación */}
+            <Dialog open={!!planToDelete} onClose={() => !deleting && setPlanToDelete(null)}>
+                <DialogHeader>
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <AlertTriangle size={16} className="text-red-400" />
+                        </div>
+                        <DialogTitle className="text-red-400">Eliminar plan</DialogTitle>
+                    </div>
+                    <p className="text-sm text-white/50 mt-2 leading-relaxed">
+                        ¿Seguro que quieres eliminar <span className="text-white font-medium">"{planToDelete?.title}"</span>?
+                        <br />
+                        <span className="text-white/35 text-xs">Esta acción no se puede deshacer.</span>
+                    </p>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setPlanToDelete(null)}
+                        disabled={deleting}
+                    >
+                        Cancelar
+                    </Button>
+                    <RippleButton
+                        onClick={confirmDelete}
+                        disabled={deleting}
+                        className="bg-red-500/90 hover:bg-red-500 text-white border-0 gap-2"
+                        rippleColor="rgba(255,255,255,0.2)"
+                    >
+                        <Trash2 size={14} />
+                        {deleting ? "Eliminando..." : "Sí, eliminar"}
+                    </RippleButton>
+                </DialogFooter>
             </Dialog>
         </div>
     );
