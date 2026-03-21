@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 
 export default function Seccion2({ plan, section }) {
     const [form, setForm] = useState({
-        descripcion: "",
+        descripcion_general: "",
         objetivo_evento: "",
         fecha_inicio: "",
         fecha_fin: "",
@@ -15,7 +15,7 @@ export default function Seccion2({ plan, section }) {
         fecha_desmontaje: "",
         num_asistentes: "",
         tiene_vip: "no",
-        descripcion_vip: "",
+        asistentes_vip: "",
         ...section.form_data,
     });
 
@@ -24,12 +24,26 @@ export default function Seccion2({ plan, section }) {
         onChange: (e) => setForm((prev) => ({ ...prev, [key]: e.target.value })),
     });
 
+    // Campos derivados que el prompt espera
+    const formConDerivados = useMemo(() => ({
+        ...form,
+        fecha_evento: form.fecha_inicio && form.fecha_fin
+            ? `${form.fecha_inicio} al ${form.fecha_fin}`
+            : form.fecha_inicio || "",
+        horario_evento: form.horario_apertura && form.horario_cierre
+            ? `${form.horario_apertura} a ${form.horario_cierre}`
+            : form.horario_apertura || "",
+        montaje_desmontaje: form.fecha_montaje && form.fecha_desmontaje
+            ? `Montaje: ${form.fecha_montaje} / Desmontaje: ${form.fecha_desmontaje}`
+            : "",
+    }), [form]);
+
     return (
-        <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
+        <SectionShell plan={plan} section={section} formData={formConDerivados} onFormChange={setForm}>
             <div>
                 <label className="text-sm font-medium mb-1.5 block">Descripción del evento *</label>
                 <Textarea
-                    {...field("descripcion")}
+                    {...field("descripcion_general")}
                     placeholder="Describe brevemente el evento, artistas, actividades..."
                     rows={4}
                 />
@@ -98,7 +112,7 @@ export default function Seccion2({ plan, section }) {
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">Descripción zona VIP</label>
                     <Textarea
-                        {...field("descripcion_vip")}
+                        {...field("asistentes_vip")}
                         placeholder="Accesos, capacidad y características de la zona VIP"
                         rows={3}
                     />

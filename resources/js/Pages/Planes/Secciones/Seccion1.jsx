@@ -6,11 +6,11 @@ export default function Seccion1({ plan, section }) {
     const [form, setForm] = useState({
         nombre_evento: "",
         organizador: "",
-        direccion: "",
+        direccion_evento: "",
         tipo_evento: "",
-        tipo_espacio: "",
+        nombre_espacio: "",
         productora: "",
-        redactor: "",
+        nombre_redactor: "",
         num_habilitacion: "",
         ...section.form_data,
     });
@@ -43,7 +43,7 @@ export default function Seccion1({ plan, section }) {
 
                 <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-1.5 block">Dirección del evento *</label>
-                    <Input {...field("direccion")} placeholder="Dirección completa del recinto" />
+                    <Input {...field("direccion_evento")} placeholder="Dirección completa del recinto" />
                 </div>
 
                 <div>
@@ -59,9 +59,14 @@ export default function Seccion1({ plan, section }) {
                 </div>
 
                 <div>
+                    <label className="text-sm font-medium mb-1.5 block">Nombre del espacio/recinto</label>
+                    <Input {...field("nombre_espacio")} placeholder="Ej: WiZink Center, Palacio de Deportes..." />
+                </div>
+
+                <div>
                     <label className="text-sm font-medium mb-1.5 block">Tipo de espacio</label>
                     <select
-                        value={form.tipo_espacio}
+                        value={form.tipo_espacio ?? ""}
                         onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio: e.target.value }))}
                         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
@@ -72,7 +77,7 @@ export default function Seccion1({ plan, section }) {
 
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">Redactor del plan</label>
-                    <Input {...field("redactor")} placeholder="Nombre del redactor" />
+                    <Input {...field("nombre_redactor")} placeholder="Nombre del redactor" />
                 </div>
 
                 <div>
