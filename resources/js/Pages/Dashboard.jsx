@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import AppLayout from "@/components/AppLayout";
+import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing";
+import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
+import { TypingText, TypingTextCursor } from "@/components/animate-ui/primitives/texts/typing";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 
 const STATUS_CONFIG = {
     borrador:    { label: "Borrador",    color: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20" },
@@ -47,9 +51,14 @@ export default function Dashboard({ plans, auth }) {
                 >
                     <div>
                         <p className="text-white/30 text-sm mb-1">Bienvenido, {auth?.user?.name}</p>
-                        <h1 className="text-3xl font-bold tracking-tight">Mis Planes</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            <MorphingText text="Mis Planes" />
+                        </h1>
                         <p className="text-white/40 text-sm mt-1">
-                            {plans.length === 0 ? "Crea tu primer plan" : `${plans.length} plan${plans.length !== 1 ? 'es' : ''} activo${plans.length !== 1 ? 's' : ''}`}
+                            {plans.length === 0
+                                ? "Crea tu primer plan"
+                                : <><SlidingNumber number={plans.length} inView={true} initiallyStable={true} />{` plan${plans.length !== 1 ? 'es' : ''} activo${plans.length !== 1 ? 's' : ''}`}</>
+                            }
                         </p>
                     </div>
                     <RippleButton
@@ -73,7 +82,11 @@ export default function Dashboard({ plans, auth }) {
                         <div className="relative z-10">
                             <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain mx-auto mb-5 opacity-60" />
                             <h3 className="font-semibold text-lg mb-2">Sin planes todavía</h3>
-                            <p className="text-white/40 text-sm mb-6">Crea tu primer plan de seguridad para comenzar</p>
+                            <div className="text-white/40 text-sm mb-6">
+                                <TypingText text="Crea tu primer plan de seguridad para comenzar" duration={35} inView={true}>
+                                    <TypingTextCursor className="text-[#208DCA]/60" />
+                                </TypingText>
+                            </div>
                             <RippleButton
                                 onClick={() => setShowModal(true)}
                                 className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2"
@@ -97,7 +110,14 @@ export default function Dashboard({ plans, auth }) {
                                         transition={{ delay: i * 0.06, duration: 0.35 }}
                                         className="group relative"
                                     >
-                                        <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/4 hover:bg-white/6 hover:border-white/15 transition-all duration-300 p-5">
+                                        <Shine
+                                            className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/4 hover:bg-white/6 hover:border-white/15 transition-all duration-300 p-5"
+                                            color="rgba(32,141,202,0.8)"
+                                            opacity={0.1}
+                                            duration={900}
+                                            enableOnHover
+                                            loop
+                                        >
                                             {/* Subtle gradient on hover */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-[#253C87]/0 to-[#208DCA]/0 group-hover:from-[#253C87]/5 group-hover:to-[#208DCA]/5 transition-all duration-300 rounded-2xl" />
 
@@ -131,7 +151,7 @@ export default function Dashboard({ plans, auth }) {
                                                 <div className="space-y-1.5 mb-4">
                                                     <div className="flex justify-between text-xs text-white/30">
                                                         <span>Progreso</span>
-                                                        <span>{plan.progress}%</span>
+                                                        <span><SlidingNumber number={plan.progress} inView={true} />%</span>
                                                     </div>
                                                     <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
                                                         <motion.div
@@ -153,7 +173,7 @@ export default function Dashboard({ plans, auth }) {
                                                     </RippleButton>
                                                 </Link>
                                             </div>
-                                        </div>
+                                        </Shine>
                                     </motion.div>
                                 );
                             })}

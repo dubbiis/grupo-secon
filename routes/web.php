@@ -7,6 +7,7 @@ use App\Http\Controllers\PlanSectionController;
 use App\Http\Controllers\PlanFileController;
 use App\Http\Controllers\PlanPdfController;
 use App\Http\Controllers\Admin\PromptController;
+use App\Http\Controllers\Admin\StatsController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -44,5 +45,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/prompts', [PromptController::class, 'index'])->name('prompts.index');
         Route::get('/prompts/{section}', [PromptController::class, 'edit'])->name('prompts.edit');
         Route::put('/prompts/{section}', [PromptController::class, 'update'])->name('prompts.update');
+        Route::get('/stats', [StatsController::class, 'index'])->name('stats');
     });
 });

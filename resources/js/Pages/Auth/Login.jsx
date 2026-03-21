@@ -2,7 +2,8 @@ import { useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { Shield, ArrowRight } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
-import { StarsBackground } from "@/components/animate-ui/components/backgrounds/stars";
+import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
 
 export default function Login() {
@@ -19,7 +20,14 @@ export default function Login() {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0f1e]">
-            <StarsBackground className="absolute inset-0" quantity={120} />
+            <GravityStarsBackground
+                className="absolute inset-0 text-[#208DCA]/60"
+                starsCount={100}
+                mouseGravity="attract"
+                gravityStrength={60}
+                glowIntensity={12}
+                movementSpeed={0.25}
+            />
 
             {/* Glow orbs */}
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#253C87]/20 rounded-full blur-3xl pointer-events-none" />
@@ -41,7 +49,13 @@ export default function Login() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] shadow-lg shadow-[#253C87]/40 mb-4">
                         <Shield size={28} className="text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Grupo Secon</h1>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">
+                        <GradientText
+                            text="Grupo Secon"
+                            gradient="linear-gradient(90deg, #ffffff 0%, #208DCA 30%, #253C87 60%, #208DCA 80%, #ffffff 100%)"
+                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                        />
+                    </h1>
                     <p className="text-sm text-white/50 mt-1">Planes de Seguridad Privada</p>
                 </motion.div>
 

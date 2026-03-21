@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, FileDown, LogOut, LayoutDashboard } from "lucide-react";
+import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import SidebarSecciones from "@/components/planes/SidebarSecciones";
 
@@ -77,7 +78,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                             transition={{ duration: 0.6, ease: "easeOut" }}
                         />
                     </div>
-                    <span className="text-xs text-white/35 w-8 text-right">{progress}%</span>
+                    <span className="text-xs text-white/35 w-8 text-right"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">

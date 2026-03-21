@@ -2,6 +2,7 @@ import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
 import { Check, Pencil, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 
 function StatusDot({ status }) {
     if (status === "listo") return (
@@ -30,7 +31,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
             <div className="px-4 py-4 border-b border-white/6">
                 <div className="flex items-center justify-between mb-2.5">
                     <span className="text-[10px] font-bold text-white/25 uppercase tracking-widest">Progreso del plan</span>
-                    <span className="text-xs font-bold text-[#208DCA]">{progress}%</span>
+                    <span className="text-xs font-bold text-[#208DCA]"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
                 <div className="h-1 rounded-full bg-white/6 overflow-hidden">
                     <motion.div

@@ -33,6 +33,7 @@ class PromptController extends Controller
                 'system_prompt' => $prompt->system_prompt,
                 'user_prompt_template' => $prompt->user_prompt_template,
                 'example_output' => $prompt->example_output,
+                'use_example_output' => (bool) $prompt->use_example_output,
                 'model' => $prompt->model,
                 'max_tokens' => $prompt->max_tokens,
             ],
@@ -45,6 +46,7 @@ class PromptController extends Controller
             'system_prompt' => 'required|string',
             'user_prompt_template' => 'required|string',
             'example_output' => 'nullable|string',
+            'use_example_output' => 'boolean',
             'model' => 'required|string|in:gpt-4o-mini,gpt-4o,gpt-4-turbo',
             'max_tokens' => 'required|integer|min:512|max:16000',
         ]);

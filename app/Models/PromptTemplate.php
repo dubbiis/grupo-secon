@@ -8,8 +8,12 @@ class PromptTemplate extends Model
 {
     protected $fillable = [
         'section_number', 'section_name',
-        'system_prompt', 'user_prompt_template', 'example_output',
+        'system_prompt', 'user_prompt_template', 'example_output', 'use_example_output',
         'model', 'max_tokens', 'updated_by',
+    ];
+
+    protected $casts = [
+        'use_example_output' => 'boolean',
     ];
 
     public function updatedBy()

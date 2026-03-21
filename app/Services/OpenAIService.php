@@ -15,32 +15,48 @@ class OpenAIService
         $this->client = OpenAI::client(config('openai.api_key'));
     }
 
-    public function streamGenerate(PromptTemplate $template, array $variables, callable $onChunk): void
+    public function streamGenerate(PromptTemplate $template, array $variables, callable $onChunk): ?array
     {
         $userPrompt = $template->buildUserPrompt($variables);
+
+        if ($template->use_example_output && $template->example_output) {
+            $userPrompt .= "\n\n---\n**Texto de ejemplo como referencia de estilo y formato** (no lo copies literalmente, úsalo solo como guía de estructura, extensión y tono):\n\n" . $template->example_output;
+        }
 
         $stream = $this->client->chat()->createStreamed([
             'model' => $template->model,
             'max_tokens' => $template->max_tokens,
+            'stream_options' => ['include_usage' => true],
             'messages' => [
                 ['role' => 'system', 'content' => $template->system_prompt],
                 ['role' => 'user', 'content' => $userPrompt],
             ],
         ]);
 
+        $usage = null;
         foreach ($stream as $response) {
             $text = $response->choices[0]->delta->content ?? '';
             if ($text !== '') {
                 $onChunk($text);
             }
+            if (!empty($response->usage)) {
+                $usage = [
+                    'prompt_tokens'     => $response->usage->promptTokens ?? 0,
+                    'completion_tokens' => $response->usage->completionTokens ?? 0,
+                    'total_tokens'      => $response->usage->totalTokens ?? 0,
+                ];
+            }
         }
+
+        return $usage;
     }
 
-    public function streamCambios(string $textoAnterior, string $instrucciones, callable $onChunk): void
+    public function streamCambios(string $textoAnterior, string $instrucciones, callable $onChunk): ?array
     {
         $stream = $this->client->chat()->createStreamed([
             'model' => config('openai.model', 'gpt-4o-mini'),
             'max_tokens' => 6000,
+            'stream_options' => ['include_usage' => true],
             'messages' => [
                 [
                     'role' => 'system',
@@ -53,12 +69,22 @@ class OpenAIService
             ],
         ]);
 
+        $usage = null;
         foreach ($stream as $response) {
             $text = $response->choices[0]->delta->content ?? '';
             if ($text !== '') {
                 $onChunk($text);
             }
+            if (!empty($response->usage)) {
+                $usage = [
+                    'prompt_tokens'     => $response->usage->promptTokens ?? 0,
+                    'completion_tokens' => $response->usage->completionTokens ?? 0,
+                    'total_tokens'      => $response->usage->totalTokens ?? 0,
+                ];
+            }
         }
+
+        return $usage;
     }
 
     public function buildContext(Plan $plan, int $currentSection): array

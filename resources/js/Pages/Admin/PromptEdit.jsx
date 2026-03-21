@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Save, Check, Code2, Eye, EyeOff, BookOpen } from "lucide-react";
+import { Save, Check, Code2, Eye, EyeOff, BookOpen, Zap, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,6 +63,7 @@ export default function PromptEdit({ prompt, flash }) {
         system_prompt: prompt.system_prompt,
         user_prompt_template: prompt.user_prompt_template,
         example_output: prompt.example_output ?? "",
+        use_example_output: prompt.use_example_output ?? false,
         model: prompt.model,
         max_tokens: prompt.max_tokens,
     });
@@ -266,36 +267,87 @@ export default function PromptEdit({ prompt, flash }) {
                         </div>
                     </div>
 
-                    {/* Ejemplo de salida esperada */}
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
-                        <div className="space-y-2">
+                    {/* Ejemplo de salida + toggle few-shot */}
+                    <div className="rounded-2xl bg-white/3 border border-white/8 overflow-hidden">
+                        {/* Header */}
+                        <div className="px-5 pt-5 pb-4 border-b border-white/6 space-y-2">
                             <div className="flex items-center gap-2">
                                 <BookOpen size={13} className="text-amber-400" />
                                 <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Ejemplo de texto de salida</label>
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">Opcional</span>
                             </div>
-                            <p className="text-xs text-white/40 leading-relaxed">
-                                Pega aquí un ejemplo real de cómo debería quedar el texto generado por la IA para esta sección.
-                                Sirve como <span className="text-white/60 font-medium">referencia de calidad y formato</span> para el equipo.
-                                También puede incluirse en el prompt como guía de estilo para el modelo.
+                            <p className="text-xs text-white/40 leading-relaxed max-w-2xl">
+                                Referencia del formato y estilo esperados para esta sección. Sirve como guía visual para el equipo y,
+                                si se activa la opción de abajo, se envía a la IA junto con el prompt para mejorar la consistencia del resultado.
                             </p>
                         </div>
-                        <Textarea
-                            value={data.example_output}
-                            onChange={(e) => setData("example_output", e.target.value)}
-                            rows={12}
-                            className="text-xs leading-relaxed"
-                            placeholder={"Pega aquí un ejemplo de texto bien redactado para esta sección...\n\nEj: El presente Plan de Seguridad tiene por objetivo establecer un marco normativo y operacional que garantice la seguridad integral durante el desarrollo del evento..."}
-                        />
-                        {data.example_output && (
-                            <div className="rounded-xl border border-amber-500/15 bg-amber-500/4 px-4 py-3">
-                                <p className="text-[10px] text-amber-400/70 leading-relaxed">
-                                    <span className="font-semibold text-amber-400">Cómo usarlo en el prompt:</span> Añade al final del System Prompt algo como{" "}
-                                    <code className="bg-white/6 px-1.5 py-0.5 rounded font-mono">El texto debe tener un estilo y extensión similar al siguiente ejemplo: [EJEMPLO]</code>{" "}
-                                    y sustituye [EJEMPLO] por el texto de arriba.
-                                </p>
+
+                        <div className="p-5 space-y-4">
+                            <Textarea
+                                value={data.example_output}
+                                onChange={(e) => setData("example_output", e.target.value)}
+                                rows={12}
+                                className="text-xs leading-relaxed"
+                                placeholder={"Pega aquí un ejemplo de texto bien redactado para esta sección...\n\nEj: El presente Plan de Seguridad tiene por objetivo..."}
+                            />
+
+                            {/* Toggle few-shot */}
+                            <div className={`rounded-xl border p-4 transition-colors ${
+                                data.use_example_output
+                                    ? "border-amber-500/30 bg-amber-500/6"
+                                    : "border-white/8 bg-white/2"
+                            }`}>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="space-y-1.5 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <Zap size={12} className={data.use_example_output ? "text-amber-400" : "text-white/30"} />
+                                            <span className={`text-xs font-semibold ${data.use_example_output ? "text-amber-300" : "text-white/50"}`}>
+                                                Enviar ejemplo a la IA como guía de estilo
+                                            </span>
+                                            {data.use_example_output && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400 font-semibold">
+                                                    ACTIVO
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-[11px] text-white/35 leading-relaxed">
+                                            Cuando está activo, el ejemplo se añade al final del mensaje del usuario con la instrucción{" "}
+                                            <em>"úsalo solo como guía de estructura y tono, no lo copies"</em>.
+                                            La IA tendrá una referencia explícita del formato esperado.
+                                        </p>
+                                        {data.use_example_output && data.example_output && (
+                                            <div className="flex items-start gap-1.5 mt-2">
+                                                <AlertTriangle size={11} className="text-amber-400/60 mt-px flex-shrink-0" />
+                                                <p className="text-[10px] text-amber-400/60 leading-relaxed">
+                                                    El ejemplo añade aproximadamente{" "}
+                                                    <span className="font-semibold text-amber-400/80">
+                                                        ~{Math.round(data.example_output.length / 3)} tokens extra
+                                                    </span>{" "}
+                                                    por cada generación (≈ ${(Math.round(data.example_output.length / 3) * 0.00000015).toFixed(6)} con gpt-4o-mini).
+                                                    Para secciones con muchas generaciones, valorar si el beneficio compensa el coste.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Switch */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setData("use_example_output", !data.use_example_output)}
+                                        disabled={!data.example_output?.trim()}
+                                        className={`relative flex-shrink-0 w-10 h-5 rounded-full transition-all duration-200 focus:outline-none ${
+                                            data.use_example_output
+                                                ? "bg-amber-500"
+                                                : "bg-white/15"
+                                        } ${!data.example_output?.trim() ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                                    >
+                                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                            data.use_example_output ? "left-5" : "left-0.5"
+                                        }`} />
+                                    </button>
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     <div className="flex gap-3 pt-2">

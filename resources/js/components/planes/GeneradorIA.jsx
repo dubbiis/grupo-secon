@@ -1,9 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil } from "lucide-react";
+import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
+
+function renderMarkdown(raw) {
+    const escaped = raw
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    return escaped
+        .replace(/\*\*(.+?)\*\*/gs, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/gs, "<em>$1</em>")
+        .replace(/\n/g, "<br>");
+}
 
 export default function GeneradorIA({ uuid, section, formData, initialText, onTextChange, onStatusChange }) {
     const [text, setText] = useState(initialText ?? "");
@@ -11,6 +22,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
     const [showCambios, setShowCambios] = useState(false);
     const [instrucciones, setInstrucciones] = useState("");
     const [applyingCambios, setApplyingCambios] = useState(false);
+    const [editMode, setEditMode] = useState(false);
     const textRef = useRef(null);
 
     useEffect(() => { setText(initialText ?? ""); }, [initialText]);
@@ -126,40 +138,66 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                     </>
                                 ) : (
                                     <>
-                                        <Pencil size={12} className="text-white/30" />
-                                        <span className="text-xs text-white/50">Texto generado — editable</span>
+                                        {editMode
+                                            ? <Pencil size={12} className="text-[#208DCA]" />
+                                            : <Eye size={12} className="text-white/30" />
+                                        }
+                                        <span className="text-xs text-white/50">
+                                            {editMode ? "Editando texto" : "Vista formateada"}
+                                        </span>
                                     </>
                                 )}
                             </div>
-                            {!generating && text && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleGenerar}
-                                    className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
-                                >
-                                    <RefreshCw size={11} />
-                                    Regenerar
-                                </Button>
-                            )}
+                            <div className="flex items-center gap-1">
+                                {!generating && text && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setEditMode((m) => !m)}
+                                        className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
+                                    >
+                                        {editMode ? <><EyeOff size={11} /> Vista</> : <><Pencil size={11} /> Editar</>}
+                                    </Button>
+                                )}
+                                {!generating && text && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleGenerar}
+                                        className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
+                                    >
+                                        <RefreshCw size={11} />
+                                        Regenerar
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Editable text area */}
+                        {/* Text: formatted view or editable textarea */}
                         <div className="relative">
-                            <textarea
-                                ref={textRef}
-                                value={text}
-                                onChange={(e) => {
-                                    setText(e.target.value);
-                                    onTextChange?.(e.target.value);
-                                }}
-                                readOnly={generating}
-                                rows={16}
-                                className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
-                                placeholder="El texto generado aparecerá aquí. Puedes editarlo directamente."
-                            />
-                            {generating && (
-                                <span className="absolute bottom-6 right-5 inline-block w-0.5 h-4 bg-[#208DCA] rounded-full animate-pulse" />
+                            {generating || editMode ? (
+                                <>
+                                    <textarea
+                                        ref={textRef}
+                                        value={text}
+                                        onChange={(e) => {
+                                            setText(e.target.value);
+                                            onTextChange?.(e.target.value);
+                                        }}
+                                        readOnly={generating}
+                                        rows={16}
+                                        className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                        placeholder="El texto generado aparecerá aquí."
+                                    />
+                                    {generating && (
+                                        <span className="absolute bottom-6 right-5 inline-block w-0.5 h-4 bg-[#208DCA] rounded-full animate-pulse" />
+                                    )}
+                                </>
+                            ) : (
+                                <div
+                                    className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner min-h-[200px]"
+                                    dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
+                                />
                             )}
                         </div>
 

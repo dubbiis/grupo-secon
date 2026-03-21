@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\PlanSection;
+use App\Models\PlanUsageLog;
 use App\Models\PromptTemplate;
 use App\Services\OpenAIService;
 use Illuminate\Http\Request;
@@ -93,10 +94,10 @@ class PlanSectionController extends Controller
             $context
         );
 
-        return response()->stream(function () use ($openAI, $template, $variables, $planSection) {
+        return response()->stream(function () use ($openAI, $template, $variables, $planSection, $plan) {
             $fullText = '';
 
-            $openAI->streamGenerate(
+            $usage = $openAI->streamGenerate(
                 $template,
                 $variables,
                 function (string $chunk) use (&$fullText) {
@@ -112,6 +113,20 @@ class PlanSectionController extends Controller
                 'generated_text' => $fullText,
                 'status' => 'listo',
             ]);
+
+            // Registrar uso
+            if ($usage) {
+                PlanUsageLog::create([
+                    'plan_id'           => $plan->id,
+                    'section_number'    => $planSection->section_number,
+                    'model'             => $template->model,
+                    'type'              => 'generate',
+                    'prompt_tokens'     => $usage['prompt_tokens'],
+                    'completion_tokens' => $usage['completion_tokens'],
+                    'total_tokens'      => $usage['total_tokens'],
+                    'cost_usd'          => PlanUsageLog::calculateCost($template->model, $usage['prompt_tokens'], $usage['completion_tokens']),
+                ]);
+            }
 
             echo "data: " . json_encode(['done' => true]) . "\n\n";
             if (ob_get_level() > 0) ob_flush();
@@ -132,10 +147,12 @@ class PlanSectionController extends Controller
         $planSection = $plan->getSectionByNumber($section);
         $openAI = new OpenAIService();
 
-        return response()->stream(function () use ($openAI, $planSection, $request) {
+        $model = config('openai.model', 'gpt-4o-mini');
+
+        return response()->stream(function () use ($openAI, $planSection, $plan, $section, $request, $model) {
             $fullText = '';
 
-            $openAI->streamCambios(
+            $usage = $openAI->streamCambios(
                 $planSection->generated_text,
                 $request->input('instrucciones'),
                 function (string $chunk) use (&$fullText) {
@@ -150,6 +167,19 @@ class PlanSectionController extends Controller
                 'generated_text' => $fullText,
                 'status' => 'editado',
             ]);
+
+            if ($usage) {
+                PlanUsageLog::create([
+                    'plan_id'           => $plan->id,
+                    'section_number'    => $section,
+                    'model'             => $model,
+                    'type'              => 'cambios',
+                    'prompt_tokens'     => $usage['prompt_tokens'],
+                    'completion_tokens' => $usage['completion_tokens'],
+                    'total_tokens'      => $usage['total_tokens'],
+                    'cost_usd'          => PlanUsageLog::calculateCost($model, $usage['prompt_tokens'], $usage['completion_tokens']),
+                ]);
+            }
 
             echo "data: " . json_encode(['done' => true]) . "\n\n";
             if (ob_get_level() > 0) ob_flush();

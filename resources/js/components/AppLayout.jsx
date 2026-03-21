@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Shield, LogOut, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, ChevronRight, BarChart2 } from "lucide-react";
 
 export default function AppLayout({ children, title, subtitle }) {
     const { auth } = usePage().props;
@@ -13,12 +13,20 @@ export default function AppLayout({ children, title, subtitle }) {
             icon: LayoutDashboard,
             active: currentUrl === "/",
         },
-        ...(auth?.user?.role === "admin" ? [{
-            href: "/admin/prompts",
-            label: "Panel Admin",
-            icon: Shield,
-            active: currentUrl.startsWith("/admin"),
-        }] : []),
+        ...(auth?.user?.role === "admin" ? [
+            {
+                href: "/admin/prompts",
+                label: "Panel Admin",
+                icon: Shield,
+                active: currentUrl.startsWith("/admin/prompts"),
+            },
+            {
+                href: "/admin/stats",
+                label: "Estadísticas IA",
+                icon: BarChart2,
+                active: currentUrl === "/admin/stats",
+            },
+        ] : []),
     ];
 
     return (
