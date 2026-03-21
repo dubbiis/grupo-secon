@@ -1,101 +1,74 @@
 import { useForm, Link } from "@inertiajs/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { Shield, ArrowRight } from "lucide-react";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
+import { StarsBackground } from "@/components/animate-ui/components/backgrounds/stars";
+import { Input } from "@/components/ui/input";
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
-        name: "",
-        email: "",
-        password: "",
-        password_confirmation: "",
+        name: "", email: "", password: "", password_confirmation: "",
     });
 
-    const submit = (e) => {
-        e.preventDefault();
-        post("/register");
-    };
+    const submit = (e) => { e.preventDefault(); post("/register"); };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#253C87]/5 via-background to-[#208DCA]/5 p-4">
+        <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0f1e]">
+            <StarsBackground className="absolute inset-0" quantity={120} />
+            <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-[#253C87]/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-[#208DCA]/15 rounded-full blur-3xl pointer-events-none" />
+
             <motion.div
-                className="w-full max-w-sm"
-                initial={{ opacity: 0, y: 16 }}
+                className="relative z-10 w-full max-w-sm px-4"
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.5 }}
             >
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 mb-2">
-                        <div className="w-10 h-10 rounded-lg bg-[#253C87] flex items-center justify-center">
-                            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                            </svg>
-                        </div>
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] shadow-lg shadow-[#253C87]/40 mb-4">
+                        <Shield size={28} className="text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-[#253C87]">Grupo Secon</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Planes de Seguridad Privada</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">Grupo Secon</h1>
+                    <p className="text-sm text-white/50 mt-1">Planes de Seguridad Privada</p>
                 </div>
 
-                <div className="bg-card border rounded-xl shadow-sm p-6">
-                    <h2 className="text-lg font-semibold mb-1">Crear cuenta</h2>
-                    <p className="text-sm text-muted-foreground mb-5">Regístrate para acceder</p>
+                <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+                    <h2 className="text-lg font-semibold text-white mb-1">Crear cuenta</h2>
+                    <p className="text-sm text-white/40 mb-6">Regístrate para acceder</p>
 
                     <form onSubmit={submit} className="space-y-4">
-                        <div>
-                            <label className="text-sm font-medium mb-1.5 block">Nombre completo</label>
-                            <Input
-                                value={data.name}
-                                onChange={(e) => setData("name", e.target.value)}
-                                placeholder="Tu nombre"
-                                autoComplete="name"
-                            />
-                            {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
-                        </div>
+                        {[
+                            { key: "name", label: "Nombre completo", type: "text", placeholder: "Tu nombre" },
+                            { key: "email", label: "Email", type: "email", placeholder: "tu@email.com" },
+                            { key: "password", label: "Contraseña", type: "password", placeholder: "Mínimo 8 caracteres" },
+                            { key: "password_confirmation", label: "Confirmar contraseña", type: "password", placeholder: "Repite la contraseña" },
+                        ].map(({ key, label, type, placeholder }) => (
+                            <div key={key}>
+                                <label className="text-xs font-medium text-white/60 mb-1.5 block uppercase tracking-wide">{label}</label>
+                                <Input
+                                    type={type}
+                                    value={data[key]}
+                                    onChange={(e) => setData(key, e.target.value)}
+                                    placeholder={placeholder}
+                                    className="bg-white/8 border-white/15 text-white placeholder:text-white/25 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                />
+                                {errors[key] && <p className="text-red-400 text-xs mt-1">{errors[key]}</p>}
+                            </div>
+                        ))}
 
-                        <div>
-                            <label className="text-sm font-medium mb-1.5 block">Email</label>
-                            <Input
-                                type="email"
-                                value={data.email}
-                                onChange={(e) => setData("email", e.target.value)}
-                                placeholder="tu@email.com"
-                                autoComplete="email"
-                            />
-                            {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium mb-1.5 block">Contraseña</label>
-                            <Input
-                                type="password"
-                                value={data.password}
-                                onChange={(e) => setData("password", e.target.value)}
-                                placeholder="Mínimo 8 caracteres"
-                                autoComplete="new-password"
-                            />
-                            {errors.password && <p className="text-destructive text-xs mt-1">{errors.password}</p>}
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium mb-1.5 block">Confirmar contraseña</label>
-                            <Input
-                                type="password"
-                                value={data.password_confirmation}
-                                onChange={(e) => setData("password_confirmation", e.target.value)}
-                                placeholder="Repite la contraseña"
-                                autoComplete="new-password"
-                            />
-                        </div>
-
-                        <Button type="submit" variant="secon" className="w-full" disabled={processing}>
-                            {processing ? "Creando cuenta..." : "Crear cuenta"}
-                        </Button>
+                        <RippleButton
+                            type="submit"
+                            disabled={processing}
+                            className="w-full bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 h-10 font-medium shadow-lg shadow-[#253C87]/30 mt-2"
+                        >
+                            {processing ? "Creando cuenta..." : <span className="flex items-center gap-2">Crear cuenta <ArrowRight size={16} /></span>}
+                        </RippleButton>
                     </form>
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground mt-4">
+                <p className="text-center text-sm text-white/30 mt-5">
                     ¿Ya tienes cuenta?{" "}
-                    <Link href="/login" className="text-[#253C87] font-medium hover:underline">
+                    <Link href="/login" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
                         Iniciar sesión
                     </Link>
                 </p>
