@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Plan;
 use App\Models\PlanFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class PlanFileController extends Controller
@@ -48,7 +49,7 @@ class PlanFileController extends Controller
 
     public function destroy(PlanFile $file)
     {
-        $this->authorize('delete', $file->plan);
+        Gate::authorize('delete', $file->plan);
         $file->delete();
         return response()->json(['ok' => true]);
     }

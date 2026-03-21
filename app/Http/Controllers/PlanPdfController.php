@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Services\PdfService;
+use Illuminate\Support\Facades\Gate;
 
 class PlanPdfController extends Controller
 {
@@ -13,7 +14,7 @@ class PlanPdfController extends Controller
             ->with(['sections', 'files'])
             ->firstOrFail();
 
-        $this->authorize('view', $plan);
+        Gate::authorize('view', $plan);
 
         $pdf = (new PdfService())->generate($plan);
         return $pdf->stream("plan-{$uuid}.pdf");
@@ -25,7 +26,7 @@ class PlanPdfController extends Controller
             ->with(['sections', 'files'])
             ->firstOrFail();
 
-        $this->authorize('view', $plan);
+        Gate::authorize('view', $plan);
 
         $pdf = (new PdfService())->generate($plan);
         return $pdf->download("plan-{$uuid}.pdf");

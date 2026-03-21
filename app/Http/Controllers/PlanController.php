@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class PlanController extends Controller
@@ -47,8 +48,8 @@ class PlanController extends Controller
 
     public function destroy(Plan $plan)
     {
-        $this->authorize('delete', $plan);
+        Gate::authorize('delete', $plan);
         $plan->delete();
-        return back();
+        return redirect()->route('dashboard');
     }
 }
