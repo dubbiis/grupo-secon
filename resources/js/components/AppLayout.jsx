@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Shield, LogOut, ChevronRight, BarChart2, Map } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, ChevronRight, BarChart2, Map, CreditCard } from "lucide-react";
 
 export default function AppLayout({ children, title, subtitle }) {
     const { auth } = usePage().props;
@@ -18,6 +18,12 @@ export default function AppLayout({ children, title, subtitle }) {
             label: "Editor de Mapas",
             icon: Map,
             active: currentUrl === "/editor-mapas",
+        },
+        {
+            href: "/editor-acreditaciones",
+            label: "Acreditaciones",
+            icon: CreditCard,
+            active: currentUrl === "/editor-acreditaciones",
         },
         ...(auth?.user?.role === "admin" ? [
             {

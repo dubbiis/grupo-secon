@@ -40,8 +40,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/planes/{uuid}/pdf/previsualizar', [PlanPdfController::class, 'preview'])->name('planes.pdf.preview');
     Route::get('/planes/{uuid}/pdf/descargar', [PlanPdfController::class, 'download'])->name('planes.pdf.download');
 
-    // Editor de mapas
+    // Herramientas standalone
     Route::get('/editor-mapas', fn() => inertia('EditorMapas'))->name('editor-mapas');
+    Route::get('/editor-acreditaciones', fn() => inertia('EditorAcreditaciones'))->name('editor-acreditaciones');
 
     // Admin
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
