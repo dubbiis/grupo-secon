@@ -158,7 +158,7 @@ class PlanSectionController extends Controller
                 'messages'   => [
                     [
                         'role'    => 'system',
-                        'content' => 'Eres un experto en seguridad privada de eventos. Redacta perfiles de seguridad para VIPs de forma concisa y profesional en español. No uses markdown, solo texto plano.',
+                        'content' => 'Eres un experto en seguridad privada de eventos. Redacta perfiles de seguridad para VIPs de forma concisa y profesional en español. No uses markdown, solo texto plano. No incluyas título, encabezado ni frase introductoria. Empieza directamente con el contenido del perfil.',
                     ],
                     [
                         'role'    => 'user',

@@ -18,10 +18,17 @@ const TIPOS_PUBLICO = [
 // ── Inline VIP photo uploader ──────────────────────────────
 function VipPhotoUpload({ vip, uuid, onUploaded }) {
     const inputRef = useRef(null);
-    const [uploading, setUploading] = useState(false);
+    const [uploading,     setUploading]     = useState(false);
+    const [localPreview,  setLocalPreview]  = useState(null); // base64 inmediato
 
     const upload = async (file) => {
         if (!file) return;
+
+        // Mostrar preview local de inmediato (sin esperar al servidor)
+        const reader = new FileReader();
+        reader.onload = (e) => setLocalPreview(e.target.result);
+        reader.readAsDataURL(file);
+
         setUploading(true);
         try {
             const fd = new FormData();
@@ -36,11 +43,14 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
             if (res.ok) {
                 const data = await res.json();
                 onUploaded({ foto_id: data.id, foto_url: data.url });
+                setLocalPreview(null); // usar URL del servidor a partir de ahora
             }
         } finally {
             setUploading(false);
         }
     };
+
+    const displayUrl = localPreview || vip.foto_url;
 
     return (
         <div
@@ -48,8 +58,8 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
             onClick={() => inputRef.current?.click()}
             title="Foto del VIP (opcional)"
         >
-            {vip.foto_url ? (
-                <img src={vip.foto_url} alt="foto" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+            {displayUrl ? (
+                <img src={displayUrl} alt="foto" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
             ) : uploading ? (
                 <div className="text-[9px] text-[#208DCA] animate-pulse">Subiendo...</div>
             ) : (
@@ -58,7 +68,7 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
                     <span className="text-[9px] text-white/25 text-center leading-tight">Añadir foto</span>
                 </>
             )}
-            {vip.foto_url && (
+            {displayUrl && (
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <ImagePlus size={16} className="text-white" />
                 </div>
