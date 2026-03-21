@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, File, ImageIcon, FileText, CheckCircle2, CloudUpload } from "lucide-react";
+import { X, File, ImageIcon, FileText, CheckCircle2, CloudUpload } from "lucide-react";
 
 export default function FileUpload({
     uuid, sectionNumber, category,
@@ -92,35 +92,34 @@ export default function FileUpload({
             </AnimatePresence>
 
             {/* Drop zone */}
-            <motion.div
-                animate={{
-                    borderColor: dragOver ? "rgba(32,141,202,0.5)" : "rgba(255,255,255,0.1)",
-                    backgroundColor: dragOver ? "rgba(32,141,202,0.06)" : "transparent",
-                }}
-                transition={{ duration: 0.15 }}
+            <div
                 onClick={() => inputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
-                className="flex flex-col items-center justify-center gap-2.5 border-2 border-dashed rounded-2xl px-6 py-8 cursor-pointer transition-colors group hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4"
+                className={`flex flex-col items-center justify-center gap-2.5 border-2 border-dashed rounded-2xl px-6 py-8 cursor-pointer transition-all group ${
+                    dragOver
+                        ? "border-[#208DCA]/50 bg-[#208DCA]/6"
+                        : "border-white/10 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4"
+                }`}
             >
-                <motion.div
-                    animate={{ scale: dragOver ? 1.15 : 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#208DCA]/10 group-hover:border-[#208DCA]/20 transition-colors"
-                >
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${
+                    dragOver
+                        ? "bg-[#208DCA]/15 border-[#208DCA]/30 scale-110"
+                        : "bg-white/5 border-white/10 group-hover:bg-[#208DCA]/10 group-hover:border-[#208DCA]/20"
+                }`}>
                     {uploading
-                        ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Upload size={16} className="text-[#208DCA]" /></motion.div>
+                        ? <CloudUpload size={16} className="text-[#208DCA] animate-bounce" />
                         : <CloudUpload size={16} className="text-white/40 group-hover:text-[#208DCA] transition-colors" />
                     }
-                </motion.div>
+                </div>
                 <div className="text-center">
                     <p className="text-sm font-medium text-white/60 group-hover:text-white/80 transition-colors">{label}</p>
                     {description && <p className="text-xs text-white/25 mt-0.5">{description}</p>}
                     {uploading && <p className="text-xs text-[#208DCA] mt-1">Subiendo...</p>}
                     {!uploading && <p className="text-xs text-white/20 mt-0.5">Haz clic o arrastra un archivo</p>}
                 </div>
-            </motion.div>
+            </div>
 
             <input
                 ref={inputRef}

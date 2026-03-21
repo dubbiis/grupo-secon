@@ -120,12 +120,9 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
                                         <span className="text-xs text-white/40">Generando texto...</span>
                                         {/* Pulsing dots */}
                                         <div className="flex gap-0.5">
-                                            {[0,1,2].map((i) => (
-                                                <motion.div key={i} className="w-1 h-1 rounded-full bg-[#208DCA]/60"
-                                                    animate={{ opacity: [0.3, 1, 0.3] }}
-                                                    transition={{ duration: 1, delay: i * 0.15, repeat: Infinity }}
-                                                />
-                                            ))}
+                                            <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-0" />
+                                            <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-1" />
+                                            <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-2" />
                                         </div>
                                     </>
                                 ) : (
@@ -155,11 +152,7 @@ export default function GeneradorIA({ uuid, section, initialText, onTextChange, 
                         >
                             {text}
                             {generating && (
-                                <motion.span
-                                    animate={{ opacity: [1, 0, 1] }}
-                                    transition={{ duration: 0.7, repeat: Infinity }}
-                                    className="inline-block w-0.5 h-4 bg-[#208DCA] ml-0.5 align-middle rounded-full"
-                                />
+                                <span className="inline-block w-0.5 h-4 bg-[#208DCA] ml-0.5 align-middle rounded-full animate-pulse" />
                             )}
                         </div>
 
