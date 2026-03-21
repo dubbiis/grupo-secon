@@ -29,17 +29,16 @@ COPY . .
 # Build assets
 RUN npm run build
 
-# Configurar Laravel
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-
 # Permisos
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD echo "Iniciando Grupo Secon..." \
+CMD php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
     && php artisan migrate --force \
+    && php artisan db:seed --class=PromptTemplateSeeder --force \
+    && php artisan storage:link \
     && php artisan serve --host=0.0.0.0 --port=8000
