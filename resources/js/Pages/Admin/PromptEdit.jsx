@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Save, Check, Code2, Eye, EyeOff } from "lucide-react";
+import { Shield, Save, Check, Code2, Eye, EyeOff, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,7 @@ export default function PromptEdit({ prompt, flash }) {
     const { data, setData, put, processing, errors } = useForm({
         system_prompt: prompt.system_prompt,
         user_prompt_template: prompt.user_prompt_template,
+        example_output: prompt.example_output ?? "",
         model: prompt.model,
         max_tokens: prompt.max_tokens,
     });
@@ -273,6 +274,38 @@ export default function PromptEdit({ prompt, flash }) {
                                 )}
                             </AnimatePresence>
                         </div>
+                    </div>
+
+                    {/* Ejemplo de salida esperada */}
+                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <BookOpen size={13} className="text-amber-400" />
+                                <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Ejemplo de texto de salida</label>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">Opcional</span>
+                            </div>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                Pega aquí un ejemplo real de cómo debería quedar el texto generado por la IA para esta sección.
+                                Sirve como <span className="text-white/60 font-medium">referencia de calidad y formato</span> para el equipo.
+                                También puede incluirse en el prompt como guía de estilo para el modelo.
+                            </p>
+                        </div>
+                        <Textarea
+                            value={data.example_output}
+                            onChange={(e) => setData("example_output", e.target.value)}
+                            rows={12}
+                            className="text-xs leading-relaxed"
+                            placeholder={"Pega aquí un ejemplo de texto bien redactado para esta sección...\n\nEj: El presente Plan de Seguridad tiene por objetivo establecer un marco normativo y operacional que garantice la seguridad integral durante el desarrollo del evento..."}
+                        />
+                        {data.example_output && (
+                            <div className="rounded-xl border border-amber-500/15 bg-amber-500/4 px-4 py-3">
+                                <p className="text-[10px] text-amber-400/70 leading-relaxed">
+                                    <span className="font-semibold text-amber-400">Cómo usarlo en el prompt:</span> Añade al final del System Prompt algo como{" "}
+                                    <code className="bg-white/6 px-1.5 py-0.5 rounded font-mono">El texto debe tener un estilo y extensión similar al siguiente ejemplo: [EJEMPLO]</code>{" "}
+                                    y sustituye [EJEMPLO] por el texto de arriba.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-3 pt-2">

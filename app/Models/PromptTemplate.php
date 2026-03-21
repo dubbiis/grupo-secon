@@ -8,7 +8,7 @@ class PromptTemplate extends Model
 {
     protected $fillable = [
         'section_number', 'section_name',
-        'system_prompt', 'user_prompt_template',
+        'system_prompt', 'user_prompt_template', 'example_output',
         'model', 'max_tokens', 'updated_by',
     ];
 
