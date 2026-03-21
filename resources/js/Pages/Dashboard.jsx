@@ -71,9 +71,7 @@ export default function Dashboard({ plans, auth }) {
                     >
                         <GradientBackground className="absolute inset-0 opacity-30" />
                         <div className="relative z-10">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#253C87]/30">
-                                <Shield size={28} className="text-white" />
-                            </div>
+                            <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain mx-auto mb-5 opacity-60" />
                             <h3 className="font-semibold text-lg mb-2">Sin planes todavía</h3>
                             <p className="text-white/40 text-sm mb-6">Crea tu primer plan de seguridad para comenzar</p>
                             <RippleButton
