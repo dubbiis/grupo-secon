@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Download, Save, X, User, Image, Palette, Type, Check, RotateCcw } from "lucide-react";
 
@@ -136,14 +136,12 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
     const [saved, setSaved] = useState(false);
     const [activeTab, setActiveTab] = useState("datos");
 
-    // ── Draw on config change ──────────────────────────────────
-    const render = useCallback(() => {
+    // ── Draw whenever anything changes ────────────────────────
+    useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         drawCredential(canvas, { ...config, photoImg, logoImg });
     }, [config, photoImg, logoImg]);
-
-    useEffect(() => { render(); }, [render]);
 
     // ── Load image util ──────────────────────────────────────
     const loadImage = (file, onLoad, onPreview) => {
