@@ -5,16 +5,39 @@ import { Shield, Menu, X, FileDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SidebarSecciones from "@/components/planes/SidebarSecciones";
 
-// Section forms (lazy import pattern — each loaded if needed)
 import Seccion1 from "./Secciones/Seccion1";
 import Seccion2 from "./Secciones/Seccion2";
+import Seccion3 from "./Secciones/Seccion3";
+import Seccion4 from "./Secciones/Seccion4";
+import Seccion5 from "./Secciones/Seccion5";
+import Seccion6 from "./Secciones/Seccion6";
 import Seccion7 from "./Secciones/Seccion7";
+import Seccion8 from "./Secciones/Seccion8";
+import Seccion9 from "./Secciones/Seccion9";
+import Seccion10 from "./Secciones/Seccion10";
+import Seccion11 from "./Secciones/Seccion11";
+import Seccion12 from "./Secciones/Seccion12";
+import Seccion13 from "./Secciones/Seccion13";
+import Seccion14 from "./Secciones/Seccion14";
+import Seccion15 from "./Secciones/Seccion15";
 import SeccionTextoSimple from "./Secciones/SeccionTextoSimple";
 
 const SECTION_COMPONENTS = {
     1: Seccion1,
     2: Seccion2,
+    3: Seccion3,
+    4: Seccion4,
+    5: Seccion5,
+    6: Seccion6,
     7: Seccion7,
+    8: Seccion8,
+    9: Seccion9,
+    10: Seccion10,
+    11: Seccion11,
+    12: Seccion12,
+    13: Seccion13,
+    14: Seccion14,
+    15: Seccion15,
 };
 
 function getSectionComponent(number) {

@@ -64,9 +64,6 @@ class OpenAIService
     public function buildContext(Plan $plan, int $currentSection): array
     {
         $context = [];
-        $sections = $plan->sections()->where('section_number', '<', $currentSection)
-            ->whereIn('status', ['listo', 'editado'])
-            ->get();
 
         // Variables globales del plan (de sección 1)
         $sec1 = $plan->getSectionByNumber(1);
@@ -74,15 +71,53 @@ class OpenAIService
             $context = array_merge($context, $sec1->form_data);
         }
 
-        // Contexto acumulado de secciones anteriores (para sección 7)
-        if ($currentSection === 7 && $sections->count() > 0) {
-            $resumen = [];
-            foreach ($sections as $s) {
-                if ($s->generated_text) {
-                    $resumen[] = "### {$s->section_name}\n" . substr($s->generated_text, 0, 500) . '...';
+        // Fechas y horarios (sección 2)
+        $sec2 = $plan->getSectionByNumber(2);
+        if ($sec2 && $sec2->form_data) {
+            foreach (['fecha_evento', 'horario_evento', 'num_asistentes', 'montaje_desmontaje'] as $key) {
+                if (!empty($sec2->form_data[$key])) {
+                    $context[$key] = $sec2->form_data[$key];
                 }
             }
-            $context['contexto_secciones_anteriores'] = implode("\n\n", $resumen);
+        }
+
+        // Aforo y accesos (sección 4)
+        $sec4 = $plan->getSectionByNumber(4);
+        if ($sec4 && $sec4->form_data) {
+            foreach (['aforo_total', 'num_accesos'] as $key) {
+                if (!empty($sec4->form_data[$key])) {
+                    $context[$key] = $sec4->form_data[$key];
+                }
+            }
+        }
+
+        // Perfil del público (sección 6)
+        $sec6 = $plan->getSectionByNumber(6);
+        if ($sec6 && $sec6->form_data) {
+            foreach (['perfil_publico', 'rango_edad', 'ambito_geografico'] as $key) {
+                if (!empty($sec6->form_data[$key])) {
+                    $context[$key] = $sec6->form_data[$key];
+                }
+            }
+            $vips = json_decode($sec6->form_data['vips_json'] ?? '[]', true);
+            $context['hay_vips'] = (!empty($vips) && count($vips) > 0) ? 'Sí' : 'No';
+        }
+
+        // Contexto acumulado de secciones anteriores (para sección 7)
+        if ($currentSection === 7) {
+            $sections = $plan->sections()
+                ->where('section_number', '<', 7)
+                ->whereIn('status', ['listo', 'editado'])
+                ->get();
+            if ($sections->count() > 0) {
+                $resumen = [];
+                foreach ($sections as $s) {
+                    if ($s->generated_text) {
+                        $resumen[] = "### {$s->section_name}\n" . substr($s->generated_text, 0, 500) . '...';
+                    }
+                }
+                $context['contexto_secciones_anteriores'] = implode("\n\n", $resumen);
+            }
         }
 
         return $context;
