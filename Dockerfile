@@ -35,10 +35,17 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 
 EXPOSE 8000
 
-CMD php artisan config:cache \
+CMD echo "=== [1/7] config:cache ===" \
+    && php artisan config:cache \
+    && echo "=== [2/7] route:cache ===" \
     && php artisan route:cache \
+    && echo "=== [3/7] view:cache ===" \
     && php artisan view:cache \
+    && echo "=== [4/7] migrate ===" \
     && php artisan migrate --force \
+    && echo "=== [5/7] seed prompts ===" \
     && php artisan db:seed --class=PromptTemplateSeeder --force \
-    && php artisan storage:link \
+    && echo "=== [6/7] storage:link ===" \
+    && php artisan storage:link --force \
+    && echo "=== [7/7] servidor en :8000 ===" \
     && php artisan serve --host=0.0.0.0 --port=8000
