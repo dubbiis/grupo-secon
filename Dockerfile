@@ -33,7 +33,7 @@ RUN npm run build
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD php artisan config:clear ; \
     php artisan config:cache ; \
@@ -42,4 +42,4 @@ CMD php artisan config:clear ; \
     php artisan migrate --force ; \
     php artisan db:seed --class=PromptTemplateSeeder --force ; \
     php artisan storage:link --force ; \
-    php artisan serve --host=0.0.0.0 --port=80
+    php artisan serve --host=0.0.0.0 --port=8080
