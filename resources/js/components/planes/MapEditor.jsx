@@ -4,8 +4,9 @@ import {
     Pen, Minus, ArrowRight, Circle, Square, Type, Undo2, Redo2,
     Trash2, Download, Map, Search, Save, X, ImagePlus, Layers,
     ChevronDown, Check, MousePointer, Grid, ZoomIn, ZoomOut,
-    Copy, Maximize2, Minimize2, Crosshair, FileImage,
+    Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
 } from "lucide-react";
+import LeafletMap from "@/components/planes/LeafletMap";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
@@ -202,12 +203,13 @@ export default function MapEditor({
     const [history, setHistory] = useState([[]]);
     const [historyStep, setHistoryStep] = useState(0);
     const [hasBg, setHasBg] = useState(false);
-    const [showMap, setShowMap] = useState(true);
-    const [mapQuery, setMapQuery] = useState("");
-    const [mapUrl, setMapUrl] = useState(
-        "https://www.openstreetmap.org/export/embed.html?bbox=-3.7238,40.4068,-3.6838,40.4268&layer=mapnik&marker=40.4168,-3.7038"
-    );
-    const [mapSearching, setMapSearching] = useState(false);
+    const [showMap,   setShowMap]   = useState(true);
+    const [mapMode,   setMapMode]   = useState("search"); // "search" | "route"
+    const [mapQuery,  setMapQuery]  = useState("");
+    const [routeA,    setRouteA]    = useState("");
+    const [routeB,    setRouteB]    = useState("");
+    const [mapCommand, setMapCommand] = useState(null);
+    const [mapStatus,  setMapStatus]  = useState(null); // null | "loading" | "error" | "1.2 km · 4 min"
     const [openIconCat, setOpenIconCat] = useState(null);
     const [showIconLabels, setShowIconLabels] = useState(false);
     const [textPrompt, setTextPrompt] = useState(null);
@@ -541,26 +543,13 @@ export default function MapEditor({
         setOpenIconCat(null);
     };
 
-    // ── Map search (Nominatim → OSM embed) ───────────────────────
-    const searchMap = async () => {
-        if (!mapQuery.trim()) return;
-        setMapSearching(true);
-        try {
-            const res  = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapQuery)}&format=json&limit=1`,
-                { headers: { "User-Agent": "GrupoSecon/1.0", "Accept-Language": "es" } }
-            );
-            const data = await res.json();
-            if (data.length > 0) {
-                const lat  = parseFloat(data[0].lat);
-                const lng  = parseFloat(data[0].lon);
-                const d    = 0.008; // ~900m radius at street level
-                setMapUrl(
-                    `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&layer=mapnik&marker=${lat},${lng}`
-                );
-            }
-        } catch { /* mantiene el mapa actual */ }
-        finally { setMapSearching(false); }
+    // ── Map search / route ────────────────────────────────────────
+    const searchMap = () => {
+        if (mapMode === "search" && mapQuery.trim()) {
+            setMapCommand({ type: "search", query: mapQuery });
+        } else if (mapMode === "route" && routeA.trim() && routeB.trim()) {
+            setMapCommand({ type: "route", a: routeA, b: routeB });
+        }
     };
 
     // ── Context menu ─────────────────────────────────────────────
@@ -851,7 +840,7 @@ export default function MapEditor({
             {/* ── Canvas + Map ── */}
             <div className="flex gap-3 min-h-[560px]">
 
-                {/* Google Maps panel */}
+                {/* Map panel */}
                 <AnimatePresence>
                     {showMap && (
                         <motion.div
@@ -861,29 +850,78 @@ export default function MapEditor({
                             transition={{ duration: 0.25 }}
                             className="flex-shrink-0 flex flex-col gap-2 overflow-hidden w-[360px]"
                         >
-                            <div className="flex gap-1.5">
-                                <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
-                                    <Search size={13} className="text-white/30 flex-shrink-0" />
-                                    <input type="text" value={mapQuery} onChange={(e) => setMapQuery(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && searchMap()}
-                                        placeholder="Buscar dirección, hospital..."
-                                        className="flex-1 bg-transparent text-xs text-white placeholder-white/25 focus:outline-none"
-                                    />
-                                </div>
-                                <button onClick={searchMap} disabled={mapSearching}
-                                    className="px-3 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors disabled:opacity-50">
-                                    {mapSearching ? "…" : "Buscar"}
+                            {/* Mode toggle */}
+                            <div className="flex gap-1 bg-white/4 rounded-xl p-1">
+                                <button
+                                    onClick={() => setMapMode("search")}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"}`}
+                                >
+                                    <Search size={11} /> Buscar lugar
+                                </button>
+                                <button
+                                    onClick={() => setMapMode("route")}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"}`}
+                                >
+                                    <Navigation size={11} /> Ruta A → B
                                 </button>
                             </div>
-                            <p className="text-[10px] text-white/20 px-1">
-                                Busca el recinto y dibuja encima en el canvas
-                            </p>
-                            <div className="flex-1 rounded-xl overflow-hidden border border-white/10">
-                                <iframe src={mapUrl} width="100%" height="100%"
-                                    className="border-0 min-h-[480px]"
-                                    loading="lazy"
-                                    title="Mapa de referencia"
-                                />
+
+                            {/* Search mode */}
+                            {mapMode === "search" && (
+                                <div className="flex gap-1.5">
+                                    <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                                        <Search size={13} className="text-white/30 flex-shrink-0" />
+                                        <input type="text" value={mapQuery} onChange={(e) => setMapQuery(e.target.value)}
+                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
+                                            placeholder="Buscar dirección, hospital..."
+                                            className="flex-1 bg-transparent text-xs text-white placeholder-white/25 focus:outline-none"
+                                        />
+                                    </div>
+                                    <button onClick={searchMap}
+                                        className="px-3 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors">
+                                        Ir
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Route mode */}
+                            {mapMode === "route" && (
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-5 h-5 rounded-full bg-[#253C87] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">A</span>
+                                        <input type="text" value={routeA} onChange={(e) => setRouteA(e.target.value)}
+                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
+                                            placeholder="Origen (dirección o lugar)"
+                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-5 h-5 rounded-full bg-[#208DCA] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">B</span>
+                                        <input type="text" value={routeB} onChange={(e) => setRouteB(e.target.value)}
+                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
+                                            placeholder="Destino (dirección o lugar)"
+                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
+                                        />
+                                    </div>
+                                    <button onClick={searchMap} disabled={!routeA.trim() || !routeB.trim()}
+                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors disabled:opacity-40">
+                                        <Navigation size={11} /> Trazar ruta
+                                    </button>
+                                    {mapStatus && mapStatus !== "loading" && mapStatus !== "error" && (
+                                        <p className="text-center text-[11px] text-[#208DCA] font-medium">{mapStatus}</p>
+                                    )}
+                                    {mapStatus === "error" && (
+                                        <p className="text-center text-[11px] text-amber-400">No se encontró una o ambas direcciones</p>
+                                    )}
+                                    {mapStatus === "loading" && (
+                                        <p className="text-center text-[11px] text-white/30">Calculando ruta…</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Leaflet map */}
+                            <div className="flex-1 rounded-xl overflow-hidden border border-white/10" style={{ minHeight: 480 }}>
+                                <LeafletMap command={mapCommand} onStatus={setMapStatus} />
                             </div>
                         </motion.div>
                     )}
