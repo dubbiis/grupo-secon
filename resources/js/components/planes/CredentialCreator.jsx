@@ -220,7 +220,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                             ref={canvasRef}
                             width={CANVAS_W}
                             height={CANVAS_H}
-                            style={{ display: "block", borderRadius: 8 }}
+                            className="block rounded-lg"
                         />
                     </div>
                     {/* Actions */}
@@ -251,8 +251,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                     <div className="flex gap-2 w-full">
                         <button
                             onClick={() => photoInputRef.current?.click()}
-                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden"
-                            style={{ minHeight: 60 }}
+                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]"
                         >
                             {photoPreview
                                 ? <img src={photoPreview} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -264,8 +263,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                         </button>
                         <button
                             onClick={() => logoInputRef.current?.click()}
-                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden"
-                            style={{ minHeight: 60 }}
+                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]"
                         >
                             {logoPreview
                                 ? <img src={logoPreview} alt="" className="absolute inset-0 w-full h-full object-contain p-1" />
@@ -306,7 +304,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                         ))}
                     </div>
 
-                    <div className="flex-1 p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 320 }}>
+                    <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-80">
                         {/* Datos tab */}
                         {activeTab === "datos" && (
                             <>
@@ -354,8 +352,8 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                                                 className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-white/8 transition-colors group"
                                             >
                                                 <div className="w-10 h-6 rounded-md overflow-hidden flex border border-white/10">
-                                                    <div style={{ backgroundColor: p.bg, flex: 1 }} />
-                                                    <div style={{ backgroundColor: p.accent, width: 10 }} />
+                                                    <div className="flex-1" style={{ backgroundColor: p.bg }} />
+                                                    <div className="w-[10px]" style={{ backgroundColor: p.accent }} />
                                                 </div>
                                                 <span className="text-[9px] text-white/35 group-hover:text-white/60">{p.label}</span>
                                             </button>

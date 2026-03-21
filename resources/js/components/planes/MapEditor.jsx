@@ -601,15 +601,15 @@ export default function MapEditor({
     const canUndo = historyStep > 0;
     const canRedo = historyStep < history.length - 1;
 
-    const cursorStyle = {
-        select: selectedIdx !== null ? "move" : "default",
-        pen: "crosshair",
-        line: "crosshair",
-        arrow: "crosshair",
-        rect: "crosshair",
-        circle: "crosshair",
-        text: "text",
-    }[tool] ?? "crosshair";
+    const cursorClass = {
+        select: selectedIdx !== null ? "cursor-move" : "cursor-default",
+        pen: "cursor-crosshair",
+        line: "cursor-crosshair",
+        arrow: "cursor-crosshair",
+        rect: "cursor-crosshair",
+        circle: "cursor-crosshair",
+        text: "cursor-text",
+    }[tool] ?? "cursor-crosshair";
 
     return (
         <div className="flex flex-col gap-3 w-full" onClick={() => setContextMenu(null)}>
@@ -830,7 +830,7 @@ export default function MapEditor({
             </div>
 
             {/* ── Canvas + Map ── */}
-            <div className="flex gap-3" style={{ minHeight: 560 }}>
+            <div className="flex gap-3 min-h-[560px]">
 
                 {/* Google Maps panel */}
                 <AnimatePresence>
@@ -840,8 +840,7 @@ export default function MapEditor({
                             animate={{ opacity: 1, width: 360 }}
                             exit={{ opacity: 0, width: 0 }}
                             transition={{ duration: 0.25 }}
-                            className="flex-shrink-0 flex flex-col gap-2 overflow-hidden"
-                            style={{ width: 360 }}
+                            className="flex-shrink-0 flex flex-col gap-2 overflow-hidden w-[360px]"
                         >
                             <div className="flex gap-1.5">
                                 <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
@@ -862,7 +861,7 @@ export default function MapEditor({
                             </p>
                             <div className="flex-1 rounded-xl overflow-hidden border border-white/10">
                                 <iframe src={mapUrl} width="100%" height="100%"
-                                    style={{ border: 0, minHeight: 480 }}
+                                    className="border-0 min-h-[480px]"
                                     allowFullScreen loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
                                     title="Mapa de referencia"
@@ -906,11 +905,10 @@ export default function MapEditor({
                             </div>
                         </div>
                     ) : (
-                        <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}>
+                        <div className="relative origin-top-left" style={{ transform: `scale(${zoom})` }}>
                             <canvas
                                 ref={canvasRef}
-                                className="rounded-xl shadow-2xl shadow-black/40"
-                                style={{ maxWidth: "100%", cursor: cursorStyle, display: "block" }}
+                                className={`rounded-xl shadow-2xl shadow-black/40 max-w-full block ${cursorClass}`}
                                 onMouseDown={onMouseDown}
                                 onMouseMove={onMouseMove}
                                 onMouseUp={onMouseUp}
@@ -922,7 +920,7 @@ export default function MapEditor({
                             />
                             {/* Text input overlay */}
                             {textPrompt && (
-                                <div className="absolute z-10" style={{ left: textPrompt.x, top: textPrompt.y - 16, transform: "translateY(-100%)" }}>
+                                <div className="absolute z-10 -translate-y-full" style={{ left: textPrompt.x, top: textPrompt.y - 16 }}>
                                     <div className="flex items-center gap-1 bg-[#0f1219] border border-[#208DCA]/40 rounded-lg shadow-xl px-2 py-1">
                                         <input autoFocus value={textValue}
                                             onChange={(e) => setTextValue(e.target.value)}
