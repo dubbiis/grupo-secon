@@ -515,7 +515,14 @@ export default function Seccion9({ plan, section, files = [] }) {
                                                     <div className="bg-[#208DCA]/8 border-y border-[#208DCA]/15 px-3 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide flex items-center justify-between pointer-events-none">
                                                         <span>{row.dia}</span>
                                                         <span className="text-[10px] font-normal text-[#208DCA]/50">
-                                                            {rows.filter((r) => r.dia === row.dia).length} {t("common.rows")}
+                                                            {(() => {
+                                                                let count = 0;
+                                                                for (let j = idx; j < rows.length; j++) {
+                                                                    if (j > idx && rows[j].dia && rows[j].dia !== row.dia) break;
+                                                                    count++;
+                                                                }
+                                                                return count;
+                                                            })()} {t("common.rows")}
                                                         </span>
                                                     </div>
                                                 )}
