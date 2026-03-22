@@ -7,6 +7,7 @@ use App\Http\Controllers\PlanSectionController;
 use App\Http\Controllers\PlanFileController;
 use App\Http\Controllers\PlanPdfController;
 use App\Http\Controllers\GoogleMapsController;
+use App\Http\Controllers\CustomQuestionController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\StatsController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     // Maps (Nominatim + Overpass + Valhalla)
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
+
+    // Custom questions
+    Route::get('/custom-questions/{section}', [CustomQuestionController::class, 'index']);
+    Route::post('/custom-questions', [CustomQuestionController::class, 'store']);
+    Route::put('/custom-questions/{id}/toggle-template', [CustomQuestionController::class, 'toggleTemplate']);
 
     // Herramientas standalone
     Route::get('/editor-mapas', fn() => inertia('EditorMapas'))->name('editor-mapas');

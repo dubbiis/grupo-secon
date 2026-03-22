@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CustomQuestion;
 use App\Models\Plan;
 use App\Models\PromptTemplate;
 use OpenAI;
@@ -18,6 +19,21 @@ class OpenAIService
     public function streamGenerate(PromptTemplate $template, array $variables, callable $onChunk): ?array
     {
         $userPrompt = $template->buildUserPrompt($variables);
+
+        // Inject custom question answers as additional context
+        if (!empty($variables['custom_answers']) && is_array($variables['custom_answers'])) {
+            $ids = array_keys($variables['custom_answers']);
+            $questions = CustomQuestion::whereIn('id', $ids)->get()->keyBy('id');
+            $extra = [];
+            foreach ($variables['custom_answers'] as $qId => $answer) {
+                if ($answer === '' || $answer === null) continue;
+                $q = $questions->get((int) $qId);
+                if ($q) $extra[] = "{$q->question_text}: {$answer}";
+            }
+            if (!empty($extra)) {
+                $userPrompt .= "\n\nInformación adicional proporcionada por el cliente:\n" . implode("\n", $extra);
+            }
+        }
 
         if ($template->use_example_output && $template->example_output) {
             $userPrompt .= "\n\n---\n**Texto de ejemplo como referencia de estilo y formato** (no lo copies literalmente, úsalo solo como guía de estructura, extensión y tono):\n\n" . $template->example_output;

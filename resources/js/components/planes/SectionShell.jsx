@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Save, CheckCircle2, RefreshCw } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import GeneradorIA from "./GeneradorIA";
+import CustomQuestions from "./CustomQuestions";
 
 export default function SectionShell({ plan, section, formData, onFormChange, showIA = true, children }) {
     const [saving, setSaving] = useState(false);
@@ -90,6 +91,15 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             {/* Form card */}
             <div className="rounded-2xl bg-white/3 border border-white/8 p-6 space-y-5 shadow-xl shadow-black/20">
                 {children}
+
+                {/* Custom questions — only for sections with IA */}
+                {showIA && (
+                    <CustomQuestions
+                        sectionNumber={section.section_number}
+                        customAnswers={formData?.custom_answers ?? {}}
+                        onChange={(answers) => onFormChange((prev) => ({ ...prev, custom_answers: answers }))}
+                    />
+                )}
             </div>
 
             {/* AI generator */}
