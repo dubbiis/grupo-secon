@@ -46,12 +46,25 @@ export default function Login() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
                     {/* Logo */}
-                    <img
-                        src="/images/logo-blanco.png"
-                        alt="Grupo Secon"
-                        className="h-20 w-auto object-contain mx-auto mb-5"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                    />
+                    <div className="relative overflow-hidden inline-block mb-5">
+                        <img
+                            src="/images/logo-blanco.png"
+                            alt="Grupo Secon"
+                            className="h-20 w-auto object-contain relative z-10"
+                            onError={(e) => { e.target.style.display = "none"; }}
+                        />
+                        <motion.div
+                            className="absolute inset-0 z-20 pointer-events-none"
+                            style={{
+                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
+                                backgroundSize: "300% 100%",
+                                mixBlendMode: "overlay",
+                            }}
+                            initial={{ backgroundPosition: "-150% 0%" }}
+                            animate={{ backgroundPosition: "350% 0%" }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+                        />
+                    </div>
                     <h1 className="text-3xl font-bold tracking-tight">
                         <GradientText
                             text="Grupo Secon"
