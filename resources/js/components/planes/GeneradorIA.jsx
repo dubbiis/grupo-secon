@@ -187,8 +187,8 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             onTextChange?.(e.target.value);
                                         }}
                                         readOnly={generating}
-                                        rows={16}
-                                        className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                        rows={6}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-none focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans field-sizing-content min-h-[150px]"
                                         placeholder="El texto generado aparecerá aquí."
                                     />
                                     {generating && (
@@ -197,7 +197,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 </>
                             ) : (
                                 <div
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner min-h-[200px] max-h-[500px] overflow-y-auto"
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner min-h-[150px]"
                                     dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
                                 />
                             )}

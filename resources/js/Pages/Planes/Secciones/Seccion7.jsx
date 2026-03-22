@@ -414,8 +414,8 @@ export default function Seccion7({ plan, section }) {
                                                 value={generatedText}
                                                 onChange={(e) => setGeneratedText(e.target.value)}
                                                 readOnly={analyzing}
-                                                rows={20}
-                                                className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                                rows={10}
+                                                className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-none focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans field-sizing-content min-h-[200px] max-h-[600px]"
                                                 placeholder="El análisis aparecerá aquí."
                                             />
                                             {analyzing && (
@@ -424,7 +424,7 @@ export default function Seccion7({ plan, section }) {
                                         </>
                                     ) : (
                                         <div
-                                            className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner min-h-[200px] max-h-[600px] overflow-y-auto"
+                                            className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner min-h-[200px] max-h-[600px] overflow-y-auto"
                                             dangerouslySetInnerHTML={{ __html: renderMarkdown(generatedText) }}
                                         />
                                     )}

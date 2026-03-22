@@ -85,6 +85,11 @@
     ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
 }
 
+/* ── Auto-sizing textarea ── */
+.field-sizing-content {
+    field-sizing: content;
+}
+
 /* ── CSS-only animations ── */
 @keyframes dot-blink {
     0%, 100% { opacity: 0.25; }
