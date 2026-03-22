@@ -5,7 +5,6 @@ import {
     AlertTriangle, Search, Zap, X, Plus, Loader2, RefreshCw,
     Send, ChevronDown, ChevronRight, Save, CheckCircle2, Pencil, Eye, Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
@@ -212,15 +211,14 @@ export default function Seccion7({ plan, section }) {
                     <h2 className="text-2xl font-bold text-white leading-tight">{section.section_name}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
-                    <Button
-                        variant="ghost" size="sm"
+                    <button
                         onClick={() => save(section.status)}
                         disabled={saving}
-                        className="text-white/35 hover:text-white hover:bg-white/8 gap-1.5"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/6 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50"
                     >
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-                        <span className="hidden sm:inline text-xs">{saving ? "..." : "Guardar"}</span>
-                    </Button>
+                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                    </button>
                     <RippleButton
                         size="sm" onClick={confirm}
                         className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs"

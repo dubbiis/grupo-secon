@@ -5,7 +5,6 @@ import {
     Table2, Upload, Plus, X, ChevronRight, Save, CheckCircle2,
     RefreshCw, CloudUpload, Users,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import * as XLSX from "xlsx";
@@ -265,11 +264,22 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <h2 className="text-2xl font-bold text-white leading-tight">{section.section_name}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
-                    <Button variant="ghost" size="sm" onClick={() => save(section.status)} disabled={saving}
-                        className="text-white/35 hover:text-white hover:bg-white/8 gap-1.5">
+                    {(rows.length > 0 || staff.length > 0) && (
+                        <button
+                            onClick={() => { setRows([]); setStaff([]); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-red-500/10 text-red-400/70 border border-red-500/20 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30"
+                        >
+                            <X size={12} /> Limpiar
+                        </button>
+                    )}
+                    <button
+                        onClick={() => save(section.status)}
+                        disabled={saving}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/6 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50"
+                    >
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-                        <span className="hidden sm:inline text-xs">{saving ? "..." : "Guardar"}</span>
-                    </Button>
+                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                    </button>
                     <RippleButton size="sm" onClick={confirm}
                         className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs">
                         Confirmar <ChevronRight size={13} />

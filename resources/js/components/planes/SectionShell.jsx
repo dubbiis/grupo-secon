@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Save, CheckCircle2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import GeneradorIA from "./GeneradorIA";
 
@@ -66,19 +65,17 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
-                    <Button
-                        variant="ghost"
-                        size="sm"
+                    <button
                         onClick={() => save(formData, generatedText, section.status)}
                         disabled={saving}
-                        className="text-white/35 hover:text-white hover:bg-white/8 gap-1.5"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/6 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50"
                     >
                         {saving
                             ? <RefreshCw size={13} className="animate-spin" />
                             : <Save size={13} />
                         }
-                        <span className="hidden sm:inline text-xs">{saving ? "..." : "Guardar"}</span>
-                    </Button>
+                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                    </button>
                     <RippleButton
                         size="sm"
                         onClick={confirm}
