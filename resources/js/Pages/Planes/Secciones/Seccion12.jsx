@@ -4,6 +4,7 @@ import SectionShell from "@/components/planes/SectionShell";
 import LoopItems from "@/components/planes/LoopItems";
 import CredentialCreator from "@/components/planes/CredentialCreator";
 import { CreditCard, List, ChevronDown } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 const FIELDS = [
     { key: "nombre_acreditacion", label: "Nombre de la acreditación", placeholder: "Ej: Staff, Prensa, VIP, Artista, Seguridad...", required: true, wide: true },
@@ -14,6 +15,7 @@ const FIELDS = [
 ];
 
 export default function Seccion12({ plan, section }) {
+    const { t } = useTranslation();
     const [items, setItems] = useState(() => {
         try { return JSON.parse(section.form_data?.acreditaciones_json ?? "[]"); }
         catch { return []; }

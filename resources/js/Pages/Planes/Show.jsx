@@ -5,6 +5,7 @@ import { Menu, X, FileDown, LogOut, LayoutDashboard } from "lucide-react";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import SidebarSecciones from "@/components/planes/SidebarSecciones";
+import { useTranslation } from "@/i18n";
 
 import Seccion1 from "./Secciones/Seccion1";
 import Seccion2 from "./Secciones/Seccion2";
@@ -30,6 +31,7 @@ const SECTION_COMPONENTS = {
 };
 
 export default function Show({ plan, sections, currentSection, files }) {
+    const { t } = useTranslation();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const doneSections = sections.filter((s) => ["listo", "editado"].includes(s.status)).length;

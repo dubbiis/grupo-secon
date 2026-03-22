@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Star, Search, MessageSquarePlus } from "lucide-react";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 export default function CustomQuestions({ sectionNumber, customAnswers = {}, onChange }) {
+    const { t } = useTranslation();
     const [questions, setQuestions] = useState([]); // added to this plan
     const [catalog, setCatalog] = useState([]); // all available questions
     const [showPicker, setShowPicker] = useState(false);
@@ -132,7 +134,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-200 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 hover:border-slate-200"
                     >
                         <MessageSquarePlus size={13} />
-                        Añadir pregunta personalizada
+                        {t("questions.add_custom")}
                     </button>
                 </Shine>
             </div>
@@ -185,7 +187,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-200 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 hover:border-slate-200"
                     >
                         <Plus size={12} />
-                        Añadir pregunta
+                        {t("questions.add_question")}
                     </button>
                 </Shine>
 
@@ -206,7 +208,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && canCreate && createQuestion(search.trim())}
-                                    placeholder="Buscar o escribir pregunta..."
+                                    placeholder={t("questions.search_placeholder")}
                                     className="flex-1 bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
                                 />
                             </div>

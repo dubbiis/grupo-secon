@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
+import { useTranslation } from "@/i18n";
 
 const TIPOS_ASISTENTES = ["Público general", "Artistas / VIPs", "Personal de seguridad", "Proveedores / Técnicos", "Prensa / Acreditados"];
 
 export default function Seccion10({ plan, section }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         tipos_asistentes: "",
         vehiculos: "",

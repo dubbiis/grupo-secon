@@ -5,8 +5,10 @@ import FileUpload from "@/components/planes/FileUpload";
 import MapEditor from "@/components/planes/MapEditor";
 import PlacesPanel from "@/components/planes/PlacesPanel";
 import { Map } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 export default function Seccion5({ plan, section, files = [] }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         hospitales_reales: "",
         comisarias_reales: "",

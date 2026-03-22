@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, ChevronDown, GripVertical, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "@/i18n";
 
 export default function LoopItems({ items = [], onChange, fields, addLabel = "Añadir ítem", itemLabel }) {
+    const { t } = useTranslation();
     const [expanded, setExpanded] = useState(null);
 
     const addItem = () => {

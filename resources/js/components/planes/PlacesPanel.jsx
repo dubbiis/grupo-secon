@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Loader2, AlertCircle, CheckSquare, Square, CheckCheck, MapPin, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/i18n";
 
 const GROUPS = {
     transporte: [
@@ -58,6 +59,7 @@ function buildOutputFields(type, data, checked) {
 }
 
 export default function PlacesPanel({ uuid, type, onResult }) {
+    const { t } = useTranslation();
     const [status,      setStatus]      = useState("idle"); // idle | loading | results | error
     const [data,        setData]        = useState(null);
     const [checked,     setChecked]     = useState({});

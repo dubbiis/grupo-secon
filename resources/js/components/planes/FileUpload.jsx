@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, File, ImageIcon, FileText, CheckCircle2, CloudUpload } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 export default function FileUpload({
     uuid, sectionNumber, category,
@@ -10,6 +11,7 @@ export default function FileUpload({
     label = "Subir archivo",
     description,
 }) {
+    const { t } = useTranslation();
     const [uploading, setUploading] = useState(false);
     const [optimistic, setOptimistic] = useState([]);
     const [deletedIds, setDeletedIds] = useState([]);
@@ -144,8 +146,8 @@ export default function FileUpload({
                 <div className="text-center">
                     <p className="text-sm font-medium text-slate-900 group-hover:text-slate-900 transition-colors">{label}</p>
                     {description && <p className="text-xs text-slate-900 mt-0.5">{description}</p>}
-                    {uploading && <p className="text-xs text-[#208DCA] mt-1">Subiendo...</p>}
-                    {!uploading && <p className="text-xs text-slate-900 mt-0.5">Haz clic o arrastra un archivo</p>}
+                    {uploading && <p className="text-xs text-[#208DCA] mt-1">{t("files.uploading")}</p>}
+                    {!uploading && <p className="text-xs text-slate-900 mt-0.5">{t("files.click_or_drag")}</p>}
                 </div>
             </div>
 

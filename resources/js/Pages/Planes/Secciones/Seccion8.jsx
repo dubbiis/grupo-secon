@@ -4,8 +4,10 @@ import FileUpload from "@/components/planes/FileUpload";
 import MapEditor from "@/components/planes/MapEditor";
 import { motion } from "framer-motion";
 import { Map, Upload } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 export default function Seccion8({ plan, section, files = [] }) {
+    const { t } = useTranslation();
     const [showMapEditor, setShowMapEditor] = useState(false);
     const planoFiles = files.filter((f) => f.file_category === "plano");
 

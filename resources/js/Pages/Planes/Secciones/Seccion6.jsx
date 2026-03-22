@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import { Plus, Trash2, ChevronDown, User, ImagePlus, Sparkles, Loader2 } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 const TIPOS_PUBLICO = [
     "Público general mixto",
@@ -18,6 +19,7 @@ const TIPOS_PUBLICO = [
 // ── Inline VIP photo uploader ──────────────────────────────
 function VipPhotoUpload({ vip, uuid, onUploaded }) {
     const inputRef = useRef(null);
+    const { t } = useTranslation();
     const [uploading,     setUploading]     = useState(false);
     const [localPreview,  setLocalPreview]  = useState(null); // base64 inmediato
 
@@ -61,7 +63,7 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
             {displayUrl ? (
                 <img src={displayUrl} alt="foto" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
             ) : uploading ? (
-                <div className="text-[9px] text-[#208DCA] animate-pulse">Subiendo...</div>
+                <div className="text-[9px] text-[#208DCA] animate-pulse">{t("files.uploading")}</div>
             ) : (
                 <>
                     <User size={18} className="text-slate-900 group-hover:text-[#208DCA]/50 transition-colors" />
@@ -295,12 +297,12 @@ export default function Seccion6({ plan, section }) {
                 </div>
 
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Rango de edad estimado</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("forms.age_range")}</label>
                     <Input {...field("rango_edad")} placeholder="Ej: 18-45 años, mayoritariamente 25-35" />
                 </div>
 
                 <div className="md:col-span-2">
-                    <label className="text-sm font-medium mb-1.5 block">Ámbito geográfico</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("forms.geo_scope")}</label>
                     <Input {...field("ambito_geografico")} placeholder="Ej: Local (ciudad), Regional (Cataluña), Nacional, Internacional" />
                 </div>
             </div>

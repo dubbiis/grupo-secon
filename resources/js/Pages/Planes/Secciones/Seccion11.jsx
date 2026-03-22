@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
+import { useTranslation } from "@/i18n";
 
 export default function Seccion11({ plan, section, files = [] }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         tipo_run_of_show: "imagen",
         run_of_show_texto: "",

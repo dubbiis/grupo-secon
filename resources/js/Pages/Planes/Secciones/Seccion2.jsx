@@ -2,8 +2,10 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
+import { useTranslation } from "@/i18n";
 
 export default function Seccion2({ plan, section }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         descripcion_general: "",
         objetivo_evento: "",
@@ -50,7 +52,7 @@ export default function Seccion2({ plan, section }) {
             </div>
 
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Objetivo del evento</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("forms.event_objective")}</label>
                 <Textarea
                     {...field("objetivo_evento")}
                     placeholder="Propósito y objetivos del evento"
@@ -68,11 +70,11 @@ export default function Seccion2({ plan, section }) {
                     <Input type="date" {...field("fecha_fin")} />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Hora apertura</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("forms.opening_time")}</label>
                     <Input type="time" {...field("horario_apertura")} />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Hora cierre</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("forms.closing_time")}</label>
                     <Input type="time" {...field("horario_cierre")} />
                 </div>
                 <div>
