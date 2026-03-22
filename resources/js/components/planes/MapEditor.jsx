@@ -223,6 +223,7 @@ export default function MapEditor({
     const [copiedMsg, setCopiedMsg] = useState(false);
     const [showShortcuts, setShowShortcuts] = useState(false);
     const [showPresets, setShowPresets] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
 
     // ── Redraw ──────────────────────────────────────────────────
     const redraw = useCallback((els = elements, selIdx = selectedIdx) => {
@@ -315,7 +316,7 @@ export default function MapEditor({
             if ((e.key === "Delete" || e.key === "Backspace") && selectedIdx !== null) {
                 e.preventDefault(); deleteSelected();
             }
-            if (e.key === "Escape") { setSelectedIdx(null); setTextPrompt(null); setContextMenu(null); }
+            if (e.key === "Escape") { setSelectedIdx(null); setTextPrompt(null); setContextMenu(null); setFullscreen(false); }
         };
         window.addEventListener("keydown", handleKey);
         return () => window.removeEventListener("keydown", handleKey);
@@ -620,10 +621,10 @@ export default function MapEditor({
     }[tool] ?? "cursor-crosshair";
 
     return (
-        <div className="flex flex-col gap-3 w-full" onClick={() => setContextMenu(null)}>
+        <div className={`flex flex-col gap-3 w-full ${fullscreen ? "fixed inset-0 z-[9999] bg-[#0a0f1e] p-4 overflow-y-auto" : ""}`} onClick={() => setContextMenu(null)}>
 
             {/* ── Toolbar row 1: tools + colors + stroke ── */}
-            <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white/3 border border-white/8">
+            <div className={`flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white/3 border border-white/8 ${fullscreen ? "" : "sticky top-0 z-40 backdrop-blur-xl bg-[#0a0f1e]/90"}`}>
 
                 {/* Tools */}
                 <div className="flex items-center gap-0.5 pr-3 border-r border-white/10">
@@ -808,6 +809,16 @@ export default function MapEditor({
                     Mapa
                 </button>
 
+                {/* Fullscreen toggle */}
+                <button onClick={() => setFullscreen((v) => !v)}
+                    title={fullscreen ? "Salir de pantalla completa (Esc)" : "Pantalla completa"}
+                    className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
+                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                    }`}
+                >
+                    {fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+                </button>
+
                 {/* Save / Export */}
                 <div className="ml-auto flex items-center gap-2">
                     {hasBg && (
@@ -841,7 +852,7 @@ export default function MapEditor({
             </div>
 
             {/* ── Canvas + Map ── */}
-            <div className="min-h-[560px]">
+            <div className={fullscreen ? "flex-1 min-h-0" : "min-h-[560px]"}>
 
                 {/* Map panel — full width, replaces canvas when active */}
                 <AnimatePresence>
@@ -923,7 +934,7 @@ export default function MapEditor({
                             )}
 
                             {/* Leaflet map */}
-                            <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: 520 }}>
+                            <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: fullscreen ? "calc(100vh - 280px)" : 520 }}>
                                 <LeafletMap command={mapCommand} onStatus={setMapStatus} />
                             </div>
                         </motion.div>
@@ -931,7 +942,7 @@ export default function MapEditor({
                 </AnimatePresence>
 
                 {/* Canvas area — hidden when map is active */}
-                <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto min-h-[560px] ${showMap ? "hidden" : ""}`}>
+                <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto ${fullscreen ? "min-h-[calc(100vh-180px)]" : "min-h-[560px]"} ${showMap ? "hidden" : ""}`}>
 
                     {/* Upload dropzone — visible only when no image loaded */}
                     {!hasBg && (
