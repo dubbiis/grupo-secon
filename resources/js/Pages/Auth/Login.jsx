@@ -47,7 +47,7 @@ export default function Login() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
                     <div className="relative inline-block mb-4 overflow-hidden">
-                        <img src="/images/logo.png" alt="Grupo Secon" className="h-20 w-auto object-contain" />
+                        <img src="/images/logo.png" alt="Grupo Secon" className="h-20 w-auto object-contain" style={{ mixBlendMode: "screen" }} />
                         <motion.div
                             className="absolute inset-0 pointer-events-none"
                             style={{
