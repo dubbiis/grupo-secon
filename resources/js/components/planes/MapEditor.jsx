@@ -722,29 +722,29 @@ export default function MapEditor({
                                 initial={{ opacity: 0, y: 4, scale: 0.97 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                                className="absolute top-full left-0 mt-2 z-40 bg-[#0f1219] border border-white/12 rounded-2xl shadow-2xl p-3 w-80"
+                                className="absolute top-full left-0 mt-2 z-50 bg-[#0f1219] border border-white/12 rounded-2xl shadow-2xl p-3 w-96"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex gap-1">
-                                        {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
-                                            <button key={key} onClick={() => setOpenIconCat(key)}
-                                                className={`text-[10px] px-2 py-1 rounded-lg transition-colors ${openIconCat === key ? "text-white bg-white/15" : "text-white/40 hover:text-white hover:bg-white/8"}`}
-                                            >{cat.label}</button>
-                                        ))}
-                                    </div>
+                                {/* Tabs */}
+                                <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-white/8">
+                                    {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
+                                        <button key={key} onClick={() => setOpenIconCat(key)}
+                                            className={`text-[10px] px-2.5 py-1 rounded-lg transition-colors ${openIconCat === key ? "text-white bg-white/15 font-medium" : "text-white/40 hover:text-white hover:bg-white/8"}`}
+                                        >{cat.label}</button>
+                                    ))}
                                     <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`text-[10px] px-2 py-1 rounded-lg transition-colors ${showIconLabels ? "text-[#208DCA]" : "text-white/30 hover:text-white"}`}
+                                        className={`ml-auto text-[10px] px-2.5 py-1 rounded-lg transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-white/30 hover:text-white hover:bg-white/8"}`}
                                         title="Mostrar etiqueta bajo el icono"
-                                    >Etiqueta</button>
+                                    >Etiquetas</button>
                                 </div>
-                                <div className="grid grid-cols-4 gap-1.5">
+                                {/* Icons grid */}
+                                <div className="grid grid-cols-5 gap-1">
                                     {ICON_CATEGORIES[openIconCat]?.icons.map((ic) => (
                                         <button key={ic.emoji} onClick={() => addEmoji(ic.emoji, ic.label)}
                                             className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/8 transition-colors group"
                                         >
                                             <span className="text-2xl">{ic.emoji}</span>
-                                            <span className="text-[9px] text-white/35 group-hover:text-white/70">{ic.label}</span>
+                                            <span className="text-[9px] text-white/35 group-hover:text-white/70 truncate w-full text-center">{ic.label}</span>
                                         </button>
                                     ))}
                                 </div>
