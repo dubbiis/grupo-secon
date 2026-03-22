@@ -80,11 +80,17 @@ function parseExcel(file) {
                 let staffRows = [];
 
                 // Find sheets by name (always "Overview Event" and "Staff")
+                // Explicitly skip auxiliary sheets like "Data"
                 let bestPlanning = null;
                 let bestStaff = null;
+                const SKIP_SHEETS = new Set(["data", "datos", "config", "configuración", "settings", "listas"]);
 
-                // Planning sheet: "Overview Event"
-                const planSheet = wb.Sheets["Overview Event"] ?? wb.Sheets[wb.SheetNames[0]];
+                // Planning sheet: "Overview Event" or first non-skipped sheet
+                let planSheet = wb.Sheets["Overview Event"];
+                if (!planSheet) {
+                    const fallbackName = wb.SheetNames.find((n) => !SKIP_SHEETS.has(n.toLowerCase()) && n.toLowerCase() !== "staff");
+                    if (fallbackName) planSheet = wb.Sheets[fallbackName];
+                }
                 if (planSheet) {
                     const result = detectHeaders(planSheet, PLANNING_PATTERNS, 3);
                     if (result) bestPlanning = result;
