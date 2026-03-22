@@ -3,7 +3,7 @@ import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Table2, Upload, Plus, X, ChevronRight, Save, CheckCircle2,
-    RefreshCw, CloudUpload, Users,
+    RefreshCw, CloudUpload, Users, ChevronUp, ChevronDown,
 } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
@@ -220,6 +220,18 @@ export default function Seccion9({ plan, section, files = [] }) {
     };
     const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
     const addRow = () => setRows((prev) => [...prev, emptyRow()]);
+    const insertRowAfter = (idx) => {
+        setRows((prev) => [...prev.slice(0, idx + 1), emptyRow(), ...prev.slice(idx + 1)]);
+    };
+    const moveRow = (idx, dir) => {
+        setRows((prev) => {
+            const next = [...prev];
+            const target = idx + dir;
+            if (target < 0 || target >= next.length) return prev;
+            [next[idx], next[target]] = [next[target], next[idx]];
+            return next;
+        });
+    };
 
     const updateStaffCell = (idx, field, value) => {
         setStaff((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
@@ -366,16 +378,18 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-[11px] table-fixed min-w-[700px]">
                             <colgroup>
-                                <col className="w-[28%]" />
+                                <col className="w-[50px]" />
+                                <col className="w-[26%]" />
                                 <col className="w-[10%]" />
                                 <col className="w-[10%]" />
-                                <col className="w-[7%]" />
-                                <col className="w-[22%]" />
-                                <col className="w-[10%]" />
+                                <col className="w-[6%]" />
+                                <col className="w-[20%]" />
+                                <col className="w-[9%]" />
                                 <col className="w-[30px]" />
                             </colgroup>
                             <thead>
                                 <tr className="border-b border-white/8">
+                                    <th className="w-[50px]" />
                                     {FIELDS.filter((f) => f !== "dia").map((f) => (
                                         <th key={f} className="px-2 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">
                                             {LABELS[f]}
@@ -389,7 +403,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                                     if (item.type === "header") {
                                         return (
                                             <tr key={`day-${gIdx}`} className="bg-[#208DCA]/10 border-b border-[#208DCA]/20">
-                                                <td colSpan={7} className="px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
+                                                <td colSpan={8} className="px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
                                                     {item.day}
                                                 </td>
                                             </tr>
@@ -397,6 +411,16 @@ export default function Seccion9({ plan, section, files = [] }) {
                                     }
                                     return (
                                         <tr key={item.idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
+                                            <td className="px-0 py-0 w-[50px]">
+                                                <div className="flex items-center justify-center gap-0 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                                    <button onClick={() => moveRow(item.idx, -1)} title="Subir"
+                                                        className="text-white/25 hover:text-white p-0.5"><ChevronUp size={12} /></button>
+                                                    <button onClick={() => moveRow(item.idx, 1)} title="Bajar"
+                                                        className="text-white/25 hover:text-white p-0.5"><ChevronDown size={12} /></button>
+                                                    <button onClick={() => insertRowAfter(item.idx)} title="Insertar fila debajo"
+                                                        className="text-white/25 hover:text-[#208DCA] p-0.5"><Plus size={12} /></button>
+                                                </div>
+                                            </td>
                                             {FIELDS.filter((f) => f !== "dia").map((f) => (
                                                 <td key={f} className="px-1 py-0">
                                                     <input
