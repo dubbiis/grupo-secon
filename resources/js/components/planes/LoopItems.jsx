@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/i18n";
 
-export default function LoopItems({ items = [], onChange, fields, addLabel = "Añadir ítem", itemLabel }) {
+export default function LoopItems({ items = [], onChange, fields, addLabel, itemLabel }) {
     const { t } = useTranslation();
+    const resolvedAddLabel = addLabel ?? t("loop.add_item");
     const [expanded, setExpanded] = useState(null);
 
     const addItem = () => {
@@ -130,7 +131,7 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A�
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-slate-200 text-slate-900 hover:text-slate-900 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
             >
                 <Plus size={13} />
-                {addLabel}
+                {resolvedAddLabel}
             </motion.button>
         </div>
     );

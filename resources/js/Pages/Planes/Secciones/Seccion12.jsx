@@ -63,7 +63,7 @@ export default function Seccion12({ plan, section }) {
                     items={items}
                     onChange={setItems}
                     fields={FIELDS}
-                    addLabel="Añadir tipo de acreditación"
+                    addLabel={t("s12.add")}
                     itemLabel={(item) => item.nombre_acreditacion || "Acreditación sin nombre"}
                 />
             )}

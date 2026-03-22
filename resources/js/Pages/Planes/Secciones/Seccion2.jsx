@@ -43,10 +43,10 @@ export default function Seccion2({ plan, section }) {
     return (
         <SectionShell plan={plan} section={section} formData={formConDerivados} onFormChange={setForm}>
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Descripción del evento *</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("s2.event_desc")}</label>
                 <Textarea
                     {...field("descripcion_general")}
-                    placeholder="Describe brevemente el evento, artistas, actividades..."
+                    placeholder={t("s2.event_desc_ph")}
                     rows={4}
                 />
             </div>
@@ -55,18 +55,18 @@ export default function Seccion2({ plan, section }) {
                 <label className="text-sm font-medium mb-1.5 block">{t("forms.event_objective")}</label>
                 <Textarea
                     {...field("objetivo_evento")}
-                    placeholder="Propósito y objetivos del evento"
+                    placeholder={t("s2.event_obj_ph")}
                     rows={3}
                 />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Fecha de inicio *</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.date_start")}</label>
                     <Input type="date" {...field("fecha_inicio")} />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Fecha de fin *</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.date_end")}</label>
                     <Input type="date" {...field("fecha_fin")} />
                 </div>
                 <div>
@@ -78,27 +78,27 @@ export default function Seccion2({ plan, section }) {
                     <Input type="time" {...field("horario_cierre")} />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Inicio montaje</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.setup_start")}</label>
                     <Input type="date" {...field("fecha_montaje")} />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Fin desmontaje</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.setup_end")}</label>
                     <Input type="date" {...field("fecha_desmontaje")} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Número de asistentes *</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.attendees")}</label>
                     <Input
                         type="number"
                         {...field("num_asistentes")}
-                        placeholder="Aforo total esperado"
+                        placeholder={t("s2.attendees_ph")}
                         min={1}
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">¿Zona VIP?</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.vip_zone")}</label>
                     <select
                         value={form.tiene_vip}
                         onChange={(e) => setForm((prev) => ({ ...prev, tiene_vip: e.target.value }))}
@@ -112,7 +112,7 @@ export default function Seccion2({ plan, section }) {
 
             {form.tiene_vip === "si" && (
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Descripción zona VIP</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.vip_desc")}</label>
                     <Textarea
                         {...field("asistentes_vip")}
                         placeholder="Accesos, capacidad y características de la zona VIP"

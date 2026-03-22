@@ -54,7 +54,7 @@ export default function Seccion10({ plan, section }) {
             </div>
 
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Vehículos y medios de transporte utilizados</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("s10.vehicles")}</label>
                 <Textarea
                     {...field("vehiculos")}
                     placeholder="Ej: Autobuses lanzadera desde parking exterior, furgonetas de producción, vehículos de seguridad, motocicletas de escolta..."
@@ -64,7 +64,7 @@ export default function Seccion10({ plan, section }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">¿Hay zonas de aparcamiento habilitadas?</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s10.parking_q")}</label>
                     <select
                         value={form.hay_aparcamiento}
                         onChange={(e) => setForm((prev) => ({ ...prev, hay_aparcamiento: e.target.value }))}
@@ -78,7 +78,7 @@ export default function Seccion10({ plan, section }) {
 
             {form.hay_aparcamiento === "si" && (
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Descripción de zonas de aparcamiento</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s10.parking_desc")}</label>
                     <Textarea
                         {...field("zonas_aparcamiento")}
                         placeholder="Ej: Parking Norte (500 plazas, uso exclusivo artistas/VIP), Parking Sur (1200 plazas, público general), zona carga/descarga en Calle Mayor..."

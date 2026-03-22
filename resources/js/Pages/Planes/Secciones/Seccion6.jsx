@@ -67,7 +67,7 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
             ) : (
                 <>
                     <User size={18} className="text-slate-900 group-hover:text-[#208DCA]/50 transition-colors" />
-                    <span className="text-[9px] text-slate-900 text-center leading-tight">Añadir foto</span>
+                    <span className="text-[9px] text-slate-900 text-center leading-tight">{t("s6.add_photo")}</span>
                 </>
             )}
             {displayUrl && (
@@ -277,7 +277,7 @@ export default function Seccion6({ plan, section }) {
         <SectionShell plan={plan} section={section} formData={formData} onFormChange={setForm}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Tipo de público *</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s6.public_type")}</label>
                     <select
                         value={form.perfil_publico}
                         onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico: e.target.value }))}
@@ -290,7 +290,7 @@ export default function Seccion6({ plan, section }) {
                         <Input
                             value={form.perfil_publico_otro ?? ""}
                             onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico_otro: e.target.value }))}
-                            placeholder="Especifica el tipo de público..."
+                            placeholder={t("s6.specify_public")}
                             className="mt-2"
                         />
                     )}
@@ -310,7 +310,7 @@ export default function Seccion6({ plan, section }) {
             {/* VIPs */}
             <div>
                 <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Artistas / VIPs / Personalidades</label>
+                    <label className="text-sm font-medium">{t("s6.vips_title")}</label>
                     {vips.length > 0 && (
                         <span className="text-xs text-slate-900">{vips.length} registrado{vips.length !== 1 ? "s" : ""}</span>
                     )}

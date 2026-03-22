@@ -17,7 +17,7 @@ export default function Seccion11({ plan, section, files = [] }) {
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Formato del run of show</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("s11.format")}</label>
                 <div className="flex gap-3">
                     {[
                         { value: "imagen", label: "Imagen / Documento" },
@@ -52,7 +52,7 @@ export default function Seccion11({ plan, section, files = [] }) {
                 />
             ) : (
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Run of show (texto)</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s11.text_label")}</label>
                     <Textarea
                         value={form.run_of_show_texto}
                         onChange={(e) => setForm((prev) => ({ ...prev, run_of_show_texto: e.target.value }))}

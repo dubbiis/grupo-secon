@@ -172,7 +172,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                             type="text"
                             value={customAnswers[q.id] ?? ""}
                             onChange={(e) => updateAnswer(q.id, e.target.value)}
-                            placeholder="Escribe la respuesta..."
+                            placeholder={t("questions.answer_placeholder")}
                             className="w-full bg-slate-200 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors"
                         />
                     </motion.div>

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { BarChart2, Zap, DollarSign, Hash, TrendingUp, Clock } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
+import { useTranslation } from "@/i18n";
 
 const SECTION_NAMES = {
     1: "Objetivo", 2: "Descripción", 3: "Titulares", 4: "Accesos",
@@ -51,6 +52,7 @@ function formatCost(n) {
 }
 
 export default function Stats({ totals, byModel, bySection, recent, daily }) {
+    const { t } = useTranslation();
     const totalCalls = parseInt(totals?.total_calls ?? 0);
     const totalTokens = parseInt(totals?.total_tokens ?? 0);
     const totalCost = parseFloat(totals?.total_cost ?? 0);
@@ -60,15 +62,15 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
     const maxSectionTokens = Math.max(...(bySection?.map((s) => parseInt(s.total_tokens)) ?? [1]), 1);
 
     return (
-        <AppLayout title="Estadísticas de uso IA" subtitle="Consumo de tokens y coste por modelo y sección">
+        <AppLayout title={t("stats.title")} subtitle="Consumo de tokens y coste por modelo y sección">
             <div className="px-8 py-6 max-w-5xl mx-auto space-y-8">
 
                 {/* KPIs */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard icon={Zap}        label="Generaciones totales" value={<SlidingNumber number={totalCalls} inView={true} />}                                     color="text-[#208DCA]" delay={0} />
-                    <StatCard icon={Hash}        label="Tokens totales"       value={<SlidingNumber number={totalTokens} inView={true} />}                                   color="text-purple-500" delay={0.05} sub={`${formatNumber(totalPrompt)} entrada · ${formatNumber(totalCompletion)} salida`} />
-                    <StatCard icon={DollarSign}  label="Coste total estimado" value={formatCost(totalCost)}                                                                 color="text-amber-500" delay={0.1} sub="Tipo de cambio fijo aprox. 1 $ = 0.92 €" />
-                    <StatCard icon={TrendingUp}  label="Tokens por llamada"   value={totalCalls > 0 ? <SlidingNumber number={Math.round(totalTokens / totalCalls)} inView={true} /> : "—"} color="text-emerald-500" delay={0.15} sub="Promedio" />
+                    <StatCard icon={Zap}        label={t("stats.total_generations")} value={<SlidingNumber number={totalCalls} inView={true} />}                                     color="text-[#208DCA]" delay={0} />
+                    <StatCard icon={Hash}        label={t("stats.total_tokens")}       value={<SlidingNumber number={totalTokens} inView={true} />}                                   color="text-purple-500" delay={0.05} sub={`${formatNumber(totalPrompt)} entrada · ${formatNumber(totalCompletion)} salida`} />
+                    <StatCard icon={DollarSign}  label={t("stats.estimated_cost")} value={formatCost(totalCost)}                                                                 color="text-amber-500" delay={0.1} sub="Tipo de cambio fijo aprox. 1 $ = 0.92 €" />
+                    <StatCard icon={TrendingUp}  label={t("stats.tokens_per_call")}   value={totalCalls > 0 ? <SlidingNumber number={Math.round(totalTokens / totalCalls)} inView={true} /> : "—"} color="text-emerald-500" delay={0.15} sub="Promedio" />
                 </div>
 
                 {/* Por modelo */}
@@ -77,7 +79,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                         className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
                             <BarChart2 size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-slate-800">Consumo por modelo</h3>
+                            <h3 className="text-sm font-semibold text-slate-800">{t("stats.usage_by_model")}</h3>
                         </div>
                         <div className="divide-y divide-slate-100">
                             {byModel.map((m) => (
@@ -112,7 +114,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                         className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
                             <Hash size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-slate-800">Tokens por sección</h3>
+                            <h3 className="text-sm font-semibold text-slate-800">{t("stats.tokens_by_section")}</h3>
                         </div>
                         <div className="p-5 space-y-3">
                             {bySection.map((s) => {
@@ -148,7 +150,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                         className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
                             <Clock size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-slate-800">Últimas generaciones</h3>
+                            <h3 className="text-sm font-semibold text-slate-800">{t("stats.last_generations")}</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">

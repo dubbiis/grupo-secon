@@ -37,7 +37,7 @@ export default function Seccion5({ plan, section, files = [] }) {
             </div>
 
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Recursos sanitarios cercanos *</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("s5.hospitals")}</label>
                 <Textarea
                     {...field("hospitales_reales")}
                     placeholder={"Hospital Clinic (0.8km, 8min): Carrer de Villarroel 170, 93 227 54 00\nCAP Casanova (0.3km, 3min): Carrer de Casanova 143, 93 227 54 00\nHospital de la Santa Creu (1.2km): Carrer del Carme 47, 93 227 54 00"}
@@ -49,7 +49,7 @@ export default function Seccion5({ plan, section, files = [] }) {
             </div>
 
             <div>
-                <label className="text-sm font-medium mb-1.5 block">Fuerzas de seguridad cercanas *</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("s5.police")}</label>
                 <Textarea
                     {...field("comisarias_reales")}
                     placeholder={"Comisaría Policía Nacional (0.5km, 5min): Carrer de Rosselló 65, 091\nComisaría Policía Local (0.8km): Carrer de Nou de la Rambla 76-78\nCuartel Guardia Civil (2.1km): Carrer de Provença 337, 062"}
@@ -63,7 +63,7 @@ export default function Seccion5({ plan, section, files = [] }) {
             {/* ── Map editor ── */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Mapa de rutas de emergencia</label>
+                    <label className="text-sm font-medium">{t("s5.route_map")}</label>
                     <button
                         onClick={() => setShowMapEditor((v) => !v)}
                         className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${

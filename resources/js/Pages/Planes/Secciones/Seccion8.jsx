@@ -22,7 +22,7 @@ export default function Seccion8({ plan, section, files = [] }) {
                     <Map size={15} className="text-[#208DCA]" />
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-[#208DCA] mb-0.5">Planos del dispositivo de seguridad</p>
+                    <p className="text-sm font-semibold text-[#208DCA] mb-0.5">{t("s8.title")}</p>
                     <p className="text-sm text-slate-900 leading-relaxed">
                         Sube los planos del recinto con la distribución del personal de seguridad,
                         accesos controlados, puestos de control y zonas diferenciadas.

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SectionShell from "@/components/planes/SectionShell";
 import LoopItems from "@/components/planes/LoopItems";
+import { useTranslation } from "@/i18n";
 
 const FIELDS = [
     { key: "nombre", label: "Nombre", placeholder: "Nombre completo", required: true },
@@ -18,6 +19,7 @@ export default function Seccion13({ plan, section }) {
 
     const formData = { contactos_json: JSON.stringify(items, null, 2) };
 
+    const { t } = useTranslation();
     return (
         <SectionShell plan={plan} section={section} formData={formData} onFormChange={() => {}}>
             <p className="text-sm text-muted-foreground">
@@ -27,7 +29,7 @@ export default function Seccion13({ plan, section }) {
                 items={items}
                 onChange={setItems}
                 fields={FIELDS}
-                addLabel="Añadir contacto"
+                addLabel={t("s13.add")}
                 itemLabel={(item) => item.nombre ? `${item.nombre}${item.cargo ? ` — ${item.cargo}` : ""}` : "Contacto sin nombre"}
             />
         </SectionShell>

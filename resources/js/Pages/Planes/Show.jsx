@@ -56,7 +56,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                     </AnimatePresence>
                 </motion.button>
 
-                <Link href="/" className="flex items-center gap-2 flex-shrink-0" title="Volver al dashboard">
+                <Link href="/" className="flex items-center gap-2 flex-shrink-0" title={t("plan.back_to_dashboard")}>
                     <img src="/images/logo-secon.svg" alt="Grupo Secon" className="h-7 w-auto object-contain" />
                 </Link>
 
@@ -146,7 +146,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                                 className="flex flex-col items-center justify-center h-full gap-3 text-slate-900"
                             >
                                 <Shield size={32} className="opacity-30" />
-                                <p className="text-sm">Selecciona una sección</p>
+                                <p className="text-sm">{t("plan.select_section")}</p>
                             </motion.div>
                         )}
                     </AnimatePresence>

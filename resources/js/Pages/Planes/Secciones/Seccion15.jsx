@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/planes/FileUpload";
 import SectionShell from "@/components/planes/SectionShell";
 import { FileDown, CheckCircle2, Save } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 const PALETAS = [
     { id: "secon", label: "Secon Oficial", colors: ["#273887", "#208DCA", "#FFFFFF"] },
@@ -24,6 +25,7 @@ const TIPOGRAFIAS = [
 ];
 
 export default function Seccion15({ plan, section, files = [] }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         titulo_pdf: plan.title ?? "",
         paleta: "secon",
@@ -69,7 +71,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
                         <Save size={14} />
-                        {saving ? "Guardando..." : "Guardar"}
+                        {saving ? t("common.saving") : t("common.save")}
                     </Button>
                     <a href={`/planes/${plan.uuid}/pdf/descargar`} target="_blank">
                         <Button variant="secon" size="sm" className="gap-1.5">
@@ -82,16 +84,16 @@ export default function Seccion15({ plan, section, files = [] }) {
 
             <div className="space-y-6">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Título del plan en el PDF</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("section15.pdf_title_label")}</label>
                     <Input
                         value={form.titulo_pdf}
                         onChange={(e) => setForm((prev) => ({ ...prev, titulo_pdf: e.target.value }))}
-                        placeholder="Plan de Seguridad — Evento..."
+                        placeholder={t("section15.pdf_title_placeholder")}
                     />
                 </div>
 
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Paleta de colores</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("section15.color_palette")}</label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                         {PALETAS.map((p) => (
                             <button
@@ -119,7 +121,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                 </div>
 
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">Tipografía</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("section15.typography")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                         {TIPOGRAFIAS.map((tip) => (
                             <button
@@ -140,7 +142,7 @@ export default function Seccion15({ plan, section, files = [] }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="text-sm font-medium mb-1.5 block">Logo del cliente</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t("section15.client_logo")}</label>
                         <FileUpload
                             uuid={plan.uuid}
                             sectionNumber={15}
@@ -153,7 +155,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium mb-1.5 block">Imagen de portada</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t("section15.cover_image")}</label>
                         <FileUpload
                             uuid={plan.uuid}
                             sectionNumber={15}

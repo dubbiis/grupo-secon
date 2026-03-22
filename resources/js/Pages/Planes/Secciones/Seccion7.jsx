@@ -22,6 +22,7 @@ function renderMarkdown(raw) {
 }
 
 export default function Seccion7({ plan, section }) {
+    const { t } = useTranslation();
     const [riesgos, setRiesgos] = useState(section.form_data?.riesgos ?? []);
     const [identifying, setIdentifying] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
@@ -217,7 +218,7 @@ export default function Seccion7({ plan, section }) {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-200 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 hover:border-slate-200 disabled:opacity-50"
                     >
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                        <span className="hidden sm:inline">{saving ? "..." : t("common.save")}</span>
                     </button>
                     <RippleButton
                         size="sm" onClick={confirm}
@@ -238,7 +239,7 @@ export default function Seccion7({ plan, section }) {
                     <AlertTriangle size={15} className="text-amber-400" />
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-amber-400 mb-0.5">Análisis de riesgos en 2 pasos</p>
+                    <p className="text-sm font-semibold text-amber-400 mb-0.5">{t("section7.banner_title")}</p>
                     <p className="text-sm text-slate-900 leading-relaxed">
                         Primero se identifican los riesgos relevantes para el evento, luego se analiza cada uno con evaluación cuantitativa.
                         Asegúrate de completar las secciones 1-6 antes de comenzar.
@@ -251,7 +252,7 @@ export default function Seccion7({ plan, section }) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Search size={14} className="text-[#208DCA]" />
-                        <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Paso 1 — Identificar riesgos</span>
+                        <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{t("section7.step1")}</span>
                     </div>
                     <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                         <button
@@ -284,7 +285,7 @@ export default function Seccion7({ plan, section }) {
                                     type="text"
                                     value={riesgo.nombre}
                                     onChange={(e) => updateRiesgo(index, "nombre", e.target.value)}
-                                    placeholder="Nombre del riesgo"
+                                    placeholder={t("section7.risk_name_placeholder")}
                                     className="flex-1 bg-transparent border-none text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none uppercase"
                                 />
                                 <button
@@ -322,7 +323,7 @@ export default function Seccion7({ plan, section }) {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Sparkles size={14} className="text-[#208DCA]" />
-                                <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Paso 2 — Análisis detallado</span>
+                                <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{t("section7.step2")}</span>
                             </div>
                             {!generatedText && !analyzing && (
                                 <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
@@ -367,7 +368,7 @@ export default function Seccion7({ plan, section }) {
                                         {analyzing ? (
                                             <>
                                                 <Loader2 size={13} className="text-[#208DCA] animate-spin" />
-                                                <span className="text-xs text-slate-900">Generando análisis...</span>
+                                                <span className="text-xs text-slate-900">{t("section7.generating_analysis")}</span>
                                             </>
                                         ) : (
                                             <>
@@ -416,7 +417,7 @@ export default function Seccion7({ plan, section }) {
                                                 readOnly={analyzing}
                                                 rows={10}
                                                 className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-none focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans field-sizing-content min-h-[200px] max-h-[600px]"
-                                                placeholder="El análisis aparecerá aquí."
+                                                placeholder={t("section7.analysis_placeholder")}
                                             />
                                             {analyzing && (
                                                 <span className="absolute bottom-6 right-5 inline-block w-0.5 h-4 bg-[#208DCA] rounded-full animate-pulse" />

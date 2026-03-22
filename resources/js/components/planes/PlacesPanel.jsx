@@ -125,7 +125,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="flex items-center gap-2 min-w-0">
                     <MapPin size={13} className="text-[#208DCA] flex-shrink-0" />
-                    <span className="text-sm font-medium text-slate-900">Búsqueda automática</span>
+                    <span className="text-sm font-medium text-slate-900">{t("places.auto_search")}</span>
                     {addressUsed && (
                         <span className="text-xs text-slate-900 truncate hidden sm:block">· {addressUsed}</span>
                     )}

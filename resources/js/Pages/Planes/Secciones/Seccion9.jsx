@@ -8,6 +8,7 @@ import {
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import * as XLSX from "xlsx";
+import { useTranslation } from "@/i18n";
 
 const FIELDS = ["dia", "nombre", "inicio", "fin", "cantidad", "categoria", "horas"];
 const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fin: "Fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
@@ -221,6 +222,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
 }
 
 export default function Seccion9({ plan, section, files = [] }) {
+    const { t } = useTranslation();
     const [rows, setRows] = useState(() => ensureIds(section.form_data?.filas ?? []));
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -338,7 +340,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <button onClick={() => save(section.status)} disabled={saving}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-200 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 hover:border-slate-200 disabled:opacity-50">
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                        <span className="hidden sm:inline">{saving ? "..." : t("common.save")}</span>
                     </button>
                     <RippleButton size="sm" onClick={confirm}
                         className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#273887]/25 text-xs">
@@ -354,7 +356,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <Table2 size={15} className="text-green-400" />
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-green-400 mb-0.5">Planificación del personal de seguridad</p>
+                    <p className="text-sm font-semibold text-green-400 mb-0.5">{t("section9.title")}</p>
                     <p className="text-sm text-slate-900 leading-relaxed">
                         Importa un Excel o crea la planificación directamente. Arrastra filas para reordenar.
                         Las horas se calculan automáticamente.
@@ -385,7 +387,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-2xl px-4 py-5 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4 transition-all group cursor-pointer">
                     <Plus size={20} className="text-slate-900 group-hover:text-[#208DCA] transition-colors" />
                     <div className="text-center">
-                        <p className="text-xs font-medium text-slate-900 group-hover:text-slate-900">Crear manualmente</p>
+                        <p className="text-xs font-medium text-slate-900 group-hover:text-slate-900">{t("section9.create_manually")}</p>
                         <p className="text-[10px] text-slate-900 mt-0.5">Añadir filas una a una</p>
                     </div>
                 </button>
@@ -436,7 +438,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <div className="grid min-w-[750px] text-[10px] font-medium uppercase tracking-wide text-slate-900 border-b border-slate-200 px-1"
                             style={{ gridTemplateColumns: "32px 1fr 80px 80px 40px 1fr 60px 56px" }}>
                             <div />
-                            <div className="px-1.5 py-2">Nombre / Posición</div>
+                            <div className="px-1.5 py-2">{t("section9.name_position")}</div>
                             <div className="px-1.5 py-2">Inicio</div>
                             <div className="px-1.5 py-2">Fin</div>
                             <div className="px-1.5 py-2 text-center">Nº</div>
@@ -496,7 +498,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <table className="w-full text-[11px]">
                             <thead>
                                 <tr className="border-b border-slate-200">
-                                    <th className="px-3 py-2 text-left text-slate-900 font-medium uppercase tracking-wide text-[10px]">Nombre / Posición</th>
+                                    <th className="px-3 py-2 text-left text-slate-900 font-medium uppercase tracking-wide text-[10px]">{t("section9.name_position")}</th>
                                     <th className="px-3 py-2 text-left text-slate-900 font-medium uppercase tracking-wide text-[10px] w-32">Categoría</th>
                                     <th className="px-3 py-2 text-right text-slate-900 font-medium uppercase tracking-wide text-[10px] w-24">Total horas</th>
                                 </tr>
