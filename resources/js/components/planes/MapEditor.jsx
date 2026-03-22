@@ -722,29 +722,32 @@ export default function MapEditor({
                                 initial={{ opacity: 0, y: 4, scale: 0.97 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                                className="absolute top-full left-0 mt-2 z-50 bg-[#0f1219] border border-white/12 rounded-2xl shadow-2xl p-3 w-96"
+                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-[#0f1219] border border-white/12 rounded-2xl shadow-2xl overflow-hidden"
+                                style={{ width: 340 }}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                {/* Tabs */}
-                                <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-white/8">
-                                    {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
-                                        <button key={key} onClick={() => setOpenIconCat(key)}
-                                            className={`text-[10px] px-2.5 py-1 rounded-lg transition-colors ${openIconCat === key ? "text-white bg-white/15 font-medium" : "text-white/40 hover:text-white hover:bg-white/8"}`}
-                                        >{cat.label}</button>
-                                    ))}
+                                {/* Tabs — single row, no wrap */}
+                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-white/8">
+                                    <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
+                                        {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
+                                            <button key={key} onClick={() => setOpenIconCat(key)}
+                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-white bg-white/15 font-semibold" : "text-white/40 hover:text-white hover:bg-white/8"}`}
+                                            >{cat.label}</button>
+                                        ))}
+                                    </div>
                                     <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`ml-auto text-[10px] px-2.5 py-1 rounded-lg transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-white/30 hover:text-white hover:bg-white/8"}`}
+                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-white/25 hover:text-white hover:bg-white/8"}`}
                                         title="Mostrar etiqueta bajo el icono"
-                                    >Etiquetas</button>
+                                    >Etiq.</button>
                                 </div>
                                 {/* Icons grid */}
-                                <div className="grid grid-cols-5 gap-1">
+                                <div className="grid grid-cols-5 gap-1 p-2">
                                     {ICON_CATEGORIES[openIconCat]?.icons.map((ic) => (
                                         <button key={ic.emoji} onClick={() => addEmoji(ic.emoji, ic.label)}
                                             className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/8 transition-colors group"
                                         >
-                                            <span className="text-2xl">{ic.emoji}</span>
-                                            <span className="text-[9px] text-white/35 group-hover:text-white/70 truncate w-full text-center">{ic.label}</span>
+                                            <span className="text-xl leading-none">{ic.emoji}</span>
+                                            {showIconLabels && <span className="text-[9px] text-white/35 group-hover:text-white/70 truncate w-full text-center mt-0.5">{ic.label}</span>}
                                         </button>
                                     ))}
                                 </div>
