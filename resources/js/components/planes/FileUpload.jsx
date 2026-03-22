@@ -85,7 +85,7 @@ export default function FileUpload({
     const getIcon = (mime) => {
         if (mime?.startsWith("image/")) return <ImageIcon size={13} className="text-[#208DCA]" />;
         if (mime?.includes("pdf")) return <FileText size={13} className="text-orange-400" />;
-        return <File size={13} className="text-white/40" />;
+        return <File size={13} className="text-gray-500" />;
     };
 
     return (
@@ -98,10 +98,10 @@ export default function FileUpload({
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className={`flex items-center gap-2.5 px-3 py-2 bg-white/4 border border-white/8 rounded-xl text-xs ${f._optimistic ? "opacity-60" : ""}`}
+                        className={`flex items-center gap-2.5 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs ${f._optimistic ? "opacity-60" : ""}`}
                     >
                         {getIcon(f.mime_type)}
-                        <span className="flex-1 truncate text-white/70">{f.original_name}</span>
+                        <span className="flex-1 truncate text-gray-700">{f.original_name}</span>
                         {f._optimistic
                             ? <CloudUpload size={12} className="text-[#208DCA] animate-pulse flex-shrink-0" />
                             : <CheckCircle2 size={12} className="text-green-400 flex-shrink-0" />
@@ -110,7 +110,7 @@ export default function FileUpload({
                             <button
                                 type="button"
                                 onClick={() => deleteFile(f.id)}
-                                className="text-white/20 hover:text-red-400 transition-colors ml-1 flex-shrink-0"
+                                className="text-gray-300 hover:text-red-400 transition-colors ml-1 flex-shrink-0"
                             >
                                 <X size={12} />
                             </button>
@@ -128,24 +128,24 @@ export default function FileUpload({
                 className={`flex flex-col items-center justify-center gap-2.5 border-2 border-dashed rounded-2xl px-6 py-8 cursor-pointer transition-all group ${
                     dragOver
                         ? "border-[#208DCA]/50 bg-[#208DCA]/6"
-                        : "border-white/10 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4"
+                        : "border-gray-200 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4"
                 }`}
             >
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${
                     dragOver
                         ? "bg-[#208DCA]/15 border-[#208DCA]/30 scale-110"
-                        : "bg-white/5 border-white/10 group-hover:bg-[#208DCA]/10 group-hover:border-[#208DCA]/20"
+                        : "bg-gray-100 border-gray-200 group-hover:bg-[#208DCA]/10 group-hover:border-[#208DCA]/20"
                 }`}>
                     {uploading
                         ? <CloudUpload size={16} className="text-[#208DCA] animate-bounce" />
-                        : <CloudUpload size={16} className="text-white/40 group-hover:text-[#208DCA] transition-colors" />
+                        : <CloudUpload size={16} className="text-gray-500 group-hover:text-[#208DCA] transition-colors" />
                     }
                 </div>
                 <div className="text-center">
-                    <p className="text-sm font-medium text-white/60 group-hover:text-white/80 transition-colors">{label}</p>
-                    {description && <p className="text-xs text-white/25 mt-0.5">{description}</p>}
+                    <p className="text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">{label}</p>
+                    {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
                     {uploading && <p className="text-xs text-[#208DCA] mt-1">Subiendo...</p>}
-                    {!uploading && <p className="text-xs text-white/20 mt-0.5">Haz clic o arrastra un archivo</p>}
+                    {!uploading && <p className="text-xs text-gray-300 mt-0.5">Haz clic o arrastra un archivo</p>}
                 </div>
             </div>
 

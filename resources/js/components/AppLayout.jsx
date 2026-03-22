@@ -6,27 +6,13 @@ import LanguageSelector from "@/components/LanguageSelector";
 
 function LogoShimmer() {
     return (
-        <div className="relative inline-block">
-            <img src="/images/logo-blanco.png" alt="Grupo Secon" className="h-10 w-auto object-contain" />
-            <motion.div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: "linear-gradient(90deg, transparent 0%, rgba(32,141,202,0.85) 45%, rgba(255,255,255,1) 50%, rgba(32,141,202,0.85) 55%, transparent 100%)",
-                    backgroundSize: "300% 100%",
-                    WebkitMaskImage: "url('/images/logo-blanco.png')",
-                    maskImage: "url('/images/logo-blanco.png')",
-                    WebkitMaskSize: "contain",
-                    maskSize: "contain",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskPosition: "center",
-                    maskPosition: "center",
-                }}
-                initial={{ backgroundPosition: "-150% 0%" }}
-                animate={{ backgroundPosition: "350% 0%" }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
-            />
-        </div>
+        <motion.div
+            className="inline-block"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        >
+            <img src="/images/logo-secon.svg" alt="Grupo Secon" className="h-10 w-auto object-contain" />
+        </motion.div>
     );
 }
 
@@ -70,13 +56,13 @@ export default function AppLayout({ children, title, subtitle }) {
     };
 
     return (
-        <div className="h-screen flex bg-[#07090f] text-white overflow-hidden">
+        <div className="h-screen flex bg-[#F8FAFC] text-gray-900 overflow-hidden">
 
             {/* ── Sidebar ── */}
-            <aside className="w-56 flex-shrink-0 flex flex-col border-r border-white/8 bg-[#050709]">
+            <aside className="w-56 flex-shrink-0 flex flex-col border-r border-gray-200 bg-[#F8FAFC]">
 
                 {/* Logo */}
-                <div className="py-6 border-b border-white/6 flex justify-center">
+                <div className="py-6 border-b border-gray-100 flex justify-center">
                     <Link href="/">
                         <LogoShimmer />
                     </Link>
@@ -90,8 +76,8 @@ export default function AppLayout({ children, title, subtitle }) {
                             href={href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
                                 active
-                                    ? "bg-[#208DCA]/15 text-white"
-                                    : "text-white/40 hover:text-white hover:bg-white/6"
+                                    ? "bg-[#208DCA]/10 text-[#273887] font-semibold"
+                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                             }`}
                         >
                             {active && (
@@ -100,7 +86,7 @@ export default function AppLayout({ children, title, subtitle }) {
                                     className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[#208DCA]"
                                 />
                             )}
-                            <Icon size={16} className={active ? "text-[#208DCA]" : "text-white/30 group-hover:text-white/60 transition-colors"} />
+                            <Icon size={16} className={active ? "text-[#208DCA]" : "text-gray-400 group-hover:text-gray-600 transition-colors"} />
                             {label}
                             {active && <ChevronRight size={12} className="ml-auto text-[#208DCA]/50" />}
                         </Link>
@@ -115,8 +101,8 @@ export default function AppLayout({ children, title, subtitle }) {
                         >
                             <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-default relative ${
                                 isAdminActive
-                                    ? "bg-[#253C87]/20 text-white"
-                                    : "text-white/40 hover:text-white hover:bg-white/6"
+                                    ? "bg-[#273887]/10 text-[#273887] font-semibold"
+                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                             }`}>
                                 {isAdminActive && (
                                     <motion.div
@@ -124,21 +110,21 @@ export default function AppLayout({ children, title, subtitle }) {
                                         className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[#208DCA]"
                                     />
                                 )}
-                                <Shield size={16} className={isAdminActive ? "text-[#208DCA]" : "text-white/30"} />
+                                <Shield size={16} className={isAdminActive ? "text-[#208DCA]" : "text-gray-400"} />
                                 Panel Admin
-                                <ChevronRight size={12} className={`ml-auto transition-transform duration-200 ${adminHover ? "rotate-90" : ""} ${isAdminActive ? "text-[#208DCA]/50" : "text-white/20"}`} />
+                                <ChevronRight size={12} className={`ml-auto transition-transform duration-200 ${adminHover ? "rotate-90" : ""} ${isAdminActive ? "text-[#208DCA]/50" : "text-gray-300"}`} />
                             </div>
                         </div>
                     )}
                 </nav>
 
                 {/* User + logout */}
-                <div className="px-3 py-4 border-t border-white/6 space-y-1">
-                    <div className="px-3 py-2.5 rounded-xl bg-white/3">
-                        <p className="text-xs font-medium text-white truncate">{auth?.user?.name}</p>
-                        <p className="text-[10px] text-white/30 truncate mt-0.5">{auth?.user?.email}</p>
+                <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+                    <div className="px-3 py-2.5 rounded-xl bg-white">
+                        <p className="text-xs font-medium text-gray-900 truncate">{auth?.user?.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate mt-0.5">{auth?.user?.email}</p>
                         {auth?.user?.role === "admin" && (
-                            <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#253C87]/30 border border-[#253C87]/40 text-[#208DCA]">
+                            <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#273887]/30 border border-[#273887]/40 text-[#208DCA]">
                                 <Shield size={8} /> Admin
                             </span>
                         )}
@@ -147,7 +133,7 @@ export default function AppLayout({ children, title, subtitle }) {
                         <LanguageSelector />
                         <button
                             onClick={() => router.post("/logout")}
-                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/30 hover:text-red-400 hover:bg-red-400/8 transition-all"
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-400 hover:text-red-400 hover:bg-red-400/8 transition-all"
                         >
                             <LogOut size={15} />
                         </button>
@@ -164,23 +150,23 @@ export default function AppLayout({ children, title, subtitle }) {
                         exit={{ opacity: 0, x: -6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
                         style={{ position: "fixed", top: submenuPos.top, left: submenuPos.left }}
-                        className="z-[9999] bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden w-48"
+                        className="z-[9999] bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden w-48"
                         onMouseEnter={() => setAdminHover(true)}
                         onMouseLeave={() => setAdminHover(false)}
                     >
-                        <div className="px-3 py-2 border-b border-white/6">
-                            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider">Administración</p>
+                        <div className="px-3 py-2 border-b border-gray-100">
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Administración</p>
                         </div>
                         <Link
                             href="/admin/prompts"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-white/6 ${currentUrl.startsWith("/admin/prompts") ? "text-white" : "text-white/50 hover:text-white"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-100 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             <Settings size={14} className="text-[#208DCA]" />
                             Prompts IA
                         </Link>
                         <Link
                             href="/admin/stats"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-white/6 ${currentUrl === "/admin/stats" ? "text-white" : "text-white/50 hover:text-white"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-100 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             <TrendingUp size={14} className="text-[#208DCA]" />
                             Estadísticas IA
@@ -194,9 +180,9 @@ export default function AppLayout({ children, title, subtitle }) {
 
                 {/* Top bar */}
                 {(title || subtitle) && (
-                    <header className="flex-shrink-0 px-8 py-5 border-b border-white/6 bg-black/20 backdrop-blur-sm">
-                        {title && <h1 className="text-xl font-bold text-white leading-tight">{title}</h1>}
-                        {subtitle && <p className="text-sm text-white/35 mt-0.5">{subtitle}</p>}
+                    <header className="flex-shrink-0 px-8 py-5 border-b border-gray-100 bg-white">
+                        {title && <h1 className="text-xl font-bold text-gray-900 leading-tight">{title}</h1>}
+                        {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
                     </header>
                 )}
 

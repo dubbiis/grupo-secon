@@ -42,7 +42,7 @@ const ICON_CATEGORIES = {
         ],
     },
     ubicaciones: {
-        label: "Ubicaciones", color: "#253C87",
+        label: "Ubicaciones", color: "#273887",
         icons: [
             { emoji: "📍", label: "Punto" },   { emoji: "🏟️", label: "Recinto" },
             { emoji: "🏢", label: "Edificio" }, { emoji: "⭐", label: "VIP" },
@@ -73,7 +73,7 @@ const ICON_CATEGORIES = {
 };
 
 const QUICK_COLORS = [
-    "#EF4444", "#208DCA", "#253C87", "#22C55E",
+    "#EF4444", "#208DCA", "#273887", "#22C55E",
     "#F97316", "#EAB308", "#A855F7", "#EC4899",
     "#000000", "#FFFFFF",
 ];
@@ -621,13 +621,13 @@ export default function MapEditor({
     }[tool] ?? "cursor-crosshair";
 
     return (
-        <div className={`flex flex-col gap-3 w-full ${fullscreen ? "fixed inset-0 z-[9999] bg-[#0a0f1e] p-4 overflow-y-auto" : ""}`} onClick={() => setContextMenu(null)}>
+        <div className={`flex flex-col gap-3 w-full ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4 overflow-y-auto" : ""}`} onClick={() => setContextMenu(null)}>
 
             {/* ── Toolbar row 1: tools + colors + stroke ── */}
-            <div className={`flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white/3 border border-white/8 ${fullscreen ? "" : "sticky top-0 z-40 backdrop-blur-xl bg-[#0a0f1e]/90"}`}>
+            <div className={`flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white border border-gray-200 ${fullscreen ? "" : "sticky top-0 z-40 backdrop-blur-xl bg-[#F8FAFC]/90"}`}>
 
                 {/* Tools */}
-                <div className="flex items-center gap-0.5 pr-3 border-r border-white/10">
+                <div className="flex items-center gap-0.5 pr-3 border-r border-gray-200">
                     {TOOLS.map((t) => (
                         <button
                             key={t.id}
@@ -635,8 +635,8 @@ export default function MapEditor({
                             title={`${t.label} (${t.shortcut})`}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
                                 tool === t.id
-                                    ? "bg-[#208DCA] text-white shadow-md shadow-[#208DCA]/30"
-                                    : "text-white/40 hover:text-white hover:bg-white/8"
+                                    ? "bg-[#208DCA] text-gray-900 shadow-md shadow-[#208DCA]/30"
+                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                             }`}
                         >
                             <t.icon size={14} />
@@ -645,7 +645,7 @@ export default function MapEditor({
                 </div>
 
                 {/* Colors */}
-                <div className="flex items-center gap-1 pr-3 border-r border-white/10 flex-wrap">
+                <div className="flex items-center gap-1 pr-3 border-r border-gray-200 flex-wrap">
                     {QUICK_COLORS.map((c) => (
                         <button
                             key={c}
@@ -661,10 +661,10 @@ export default function MapEditor({
                 </div>
 
                 {/* Stroke widths */}
-                <div className="flex items-center gap-1 pr-3 border-r border-white/10">
+                <div className="flex items-center gap-1 pr-3 border-r border-gray-200">
                     {STROKE_WIDTHS.map((w) => (
                         <button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
-                            className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-white/15" : "hover:bg-white/8"}`}
+                            className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-gray-200" : "hover:bg-gray-100"}`}
                         >
                             <span className="rounded-full bg-white" style={{ width: Math.min(w + 2, 14), height: Math.min(w + 2, 14) }} />
                         </button>
@@ -677,7 +677,7 @@ export default function MapEditor({
                         onClick={() => setUseFill((v) => !v)}
                         title="Relleno"
                         className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                            useFill ? "bg-[#208DCA]/20 border-[#208DCA]/40 text-[#208DCA]" : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                            useFill ? "bg-[#208DCA]/20 border-[#208DCA]/40 text-[#208DCA]" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-900"
                         }`}
                     >
                         <div className="w-3 h-3 rounded-sm border border-current" style={{ background: useFill ? color + "60" : "transparent" }} />
@@ -687,10 +687,10 @@ export default function MapEditor({
 
                 {/* Text size (text tool) */}
                 {tool === "text" && (
-                    <div className="flex items-center gap-1 pr-3 border-r border-white/10">
+                    <div className="flex items-center gap-1 pr-3 border-r border-gray-200">
                         {TEXT_SIZES.map((s) => (
                             <button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
-                                className={`text-xs px-1.5 py-0.5 rounded transition-all ${textSize === s ? "bg-white/15 text-white" : "text-white/35 hover:text-white hover:bg-white/8"}`}
+                                className={`text-xs px-1.5 py-0.5 rounded transition-all ${textSize === s ? "bg-gray-200 text-white" : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"}`}
                                 style={{ fontSize: 10 + (TEXT_SIZES.indexOf(s)) }}
                             >A</button>
                         ))}
@@ -698,20 +698,20 @@ export default function MapEditor({
                 )}
 
                 {/* Opacity */}
-                <div className="flex items-center gap-2 pr-3 border-r border-white/10">
-                    <span className="text-[10px] text-white/30">Opacidad</span>
+                <div className="flex items-center gap-2 pr-3 border-r border-gray-200">
+                    <span className="text-[10px] text-gray-400">Opacidad</span>
                     <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
                         onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
                         className="w-16 h-1 accent-[#208DCA] cursor-pointer"
                     />
-                    <span className="text-[10px] text-white/40 w-6">{Math.round(opacity * 100)}%</span>
+                    <span className="text-[10px] text-gray-500 w-6">{Math.round(opacity * 100)}%</span>
                 </div>
 
                 {/* Icons dropdown */}
-                <div className="relative pr-3 border-r border-white/10">
+                <div className="relative pr-3 border-r border-gray-200">
                     <button
                         onClick={() => setOpenIconCat(openIconCat ? null : "emergencia")}
-                        className="flex items-center gap-1 text-xs text-white/50 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/8 transition-colors"
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                         <Layers size={13} />
                         Iconos
@@ -723,21 +723,21 @@ export default function MapEditor({
                                 initial={{ opacity: 0, y: 4, scale: 0.97 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-[#0f1219] border border-white/12 rounded-2xl shadow-2xl overflow-hidden"
+                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden"
                                 style={{ width: 340 }}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Tabs — single row, no wrap */}
-                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-white/8">
+                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-gray-200">
                                     <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
                                         {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
                                             <button key={key} onClick={() => setOpenIconCat(key)}
-                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-white bg-white/15 font-semibold" : "text-white/40 hover:text-white hover:bg-white/8"}`}
+                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-gray-900 bg-gray-200 font-semibold" : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}
                                             >{cat.label}</button>
                                         ))}
                                     </div>
                                     <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-white/25 hover:text-white hover:bg-white/8"}`}
+                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"}`}
                                         title="Mostrar etiqueta bajo el icono"
                                     >Etiq.</button>
                                 </div>
@@ -745,10 +745,10 @@ export default function MapEditor({
                                 <div className="grid grid-cols-5 gap-1 p-2">
                                     {ICON_CATEGORIES[openIconCat]?.icons.map((ic) => (
                                         <button key={ic.emoji} onClick={() => addEmoji(ic.emoji, ic.label)}
-                                            className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/8 transition-colors group"
+                                            className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-gray-100 transition-colors group"
                                         >
                                             <span className="text-xl leading-none">{ic.emoji}</span>
-                                            {showIconLabels && <span className="text-[9px] text-white/35 group-hover:text-white/70 truncate w-full text-center mt-0.5">{ic.label}</span>}
+                                            {showIconLabels && <span className="text-[9px] text-gray-400 group-hover:text-gray-700 truncate w-full text-center mt-0.5">{ic.label}</span>}
                                         </button>
                                     ))}
                                 </div>
@@ -758,13 +758,13 @@ export default function MapEditor({
                 </div>
 
                 {/* Undo / Redo / Clear */}
-                <div className="flex items-center gap-0.5 pr-3 border-r border-white/10">
+                <div className="flex items-center gap-0.5 pr-3 border-r border-gray-200">
                     <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/8 disabled:opacity-20 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-20 transition-all">
                         <Undo2 size={13} />
                     </button>
                     <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/8 disabled:opacity-20 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-20 transition-all">
                         <Redo2 size={13} />
                     </button>
                     {selectedIdx !== null && (
@@ -774,27 +774,27 @@ export default function MapEditor({
                         </button>
                     )}
                     <button onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 transition-all">
                         <X size={13} />
                     </button>
                 </div>
 
                 {/* View controls */}
-                <div className="flex items-center gap-1 pr-3 border-r border-white/10">
+                <div className="flex items-center gap-1 pr-3 border-r border-gray-200">
                     <button onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-white/30 hover:text-white hover:bg-white/8"}`}>
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"}`}>
                         <Grid size={13} />
                     </button>
                     <button onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/8 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all">
                         <ZoomOut size={13} />
                     </button>
                     <button onClick={() => setZoom(1)} title="Zoom 100%"
-                        className="text-[10px] text-white/30 hover:text-white px-1 transition-colors">
+                        className="text-[10px] text-gray-400 hover:text-gray-900 px-1 transition-colors">
                         {Math.round(zoom * 100)}%
                     </button>
                     <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/8 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all">
                         <ZoomIn size={13} />
                     </button>
                 </div>
@@ -802,7 +802,7 @@ export default function MapEditor({
                 {/* Map toggle */}
                 <button onClick={() => setShowMap((v) => !v)}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        showMap ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]" : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                        showMap ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-900"
                     }`}
                 >
                     <Map size={12} />
@@ -813,7 +813,7 @@ export default function MapEditor({
                 <button onClick={() => setFullscreen((v) => !v)}
                     title={fullscreen ? "Salir de pantalla completa (Esc)" : "Pantalla completa"}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-900"
                     }`}
                 >
                     {fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
@@ -826,21 +826,21 @@ export default function MapEditor({
                             {mode === "standalone" && (
                                 <div className="flex items-center gap-1 text-xs">
                                     <button onClick={() => setExportFormat("png")}
-                                        className={`px-2 py-1 rounded-l-lg border border-white/10 transition-colors ${exportFormat === "png" ? "bg-white/15 text-white" : "text-white/30 hover:text-white"}`}>
+                                        className={`px-2 py-1 rounded-l-lg border border-gray-200 transition-colors ${exportFormat === "png" ? "bg-gray-200 text-white" : "text-gray-400 hover:text-gray-900"}`}>
                                         PNG
                                     </button>
                                     <button onClick={() => setExportFormat("jpeg")}
-                                        className={`px-2 py-1 rounded-r-lg border border-white/10 transition-colors ${exportFormat === "jpeg" ? "bg-white/15 text-white" : "text-white/30 hover:text-white"}`}>
+                                        className={`px-2 py-1 rounded-r-lg border border-gray-200 transition-colors ${exportFormat === "jpeg" ? "bg-gray-200 text-white" : "text-gray-400 hover:text-gray-900"}`}>
                                         JPG
                                     </button>
                                 </div>
                             )}
                             <button onClick={copyToClipboard} title="Copiar al portapapeles"
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${copiedMsg ? "bg-green-600/20 border-green-500/30 text-green-400" : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"}`}>
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${copiedMsg ? "bg-green-600/20 border-green-500/30 text-green-400" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}>
                                 {copiedMsg ? <Check size={13} /> : <Copy size={13} />}
                             </button>
                             <RippleButton size="sm" onClick={handleSave} disabled={saving}
-                                className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#253C87] to-[#208DCA]"} text-white`}>
+                                className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#273887] to-[#208DCA]"} text-white`}>
                                 {saved ? <><Check size={12} /> Guardado</>
                                     : saving ? "Guardando..."
                                     : mode === "standalone" ? <><Download size={12} /> Descargar</>
@@ -865,16 +865,16 @@ export default function MapEditor({
                             className="flex flex-col gap-2 w-full"
                         >
                             {/* Mode toggle */}
-                            <div className="flex gap-1 bg-white/4 rounded-xl p-1">
+                            <div className="flex gap-1 bg-gray-50 rounded-xl p-1">
                                 <button
                                     onClick={() => setMapMode("search")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"}`}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-gray-100 text-white" : "text-gray-400 hover:text-gray-600"}`}
                                 >
                                     <Search size={11} /> Buscar lugar
                                 </button>
                                 <button
                                     onClick={() => setMapMode("route")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-white/10 text-white" : "text-white/35 hover:text-white/60"}`}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-gray-100 text-white" : "text-gray-400 hover:text-gray-600"}`}
                                 >
                                     <Navigation size={11} /> Ruta A → B
                                 </button>
@@ -883,12 +883,12 @@ export default function MapEditor({
                             {/* Search mode */}
                             {mapMode === "search" && (
                                 <div className="flex gap-1.5">
-                                    <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
-                                        <Search size={13} className="text-white/30 flex-shrink-0" />
+                                    <div className="flex-1 flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2">
+                                        <Search size={13} className="text-gray-400 flex-shrink-0" />
                                         <input type="text" value={mapQuery} onChange={(e) => setMapQuery(e.target.value)}
                                             onKeyDown={(e) => e.key === "Enter" && searchMap()}
                                             placeholder="Buscar dirección, hospital..."
-                                            className="flex-1 bg-transparent text-xs text-white placeholder-white/25 focus:outline-none"
+                                            className="flex-1 bg-transparent text-xs text-gray-900 placeholder-gray-400 focus:outline-none"
                                         />
                                     </div>
                                     <button onClick={searchMap}
@@ -902,11 +902,11 @@ export default function MapEditor({
                             {mapMode === "route" && (
                                 <div className="space-y-1.5">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-full bg-[#253C87] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">A</span>
+                                        <span className="w-5 h-5 rounded-full bg-[#273887] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">A</span>
                                         <input type="text" value={routeA} onChange={(e) => setRouteA(e.target.value)}
                                             onKeyDown={(e) => e.key === "Enter" && searchMap()}
                                             placeholder="Origen (dirección o lugar)"
-                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
+                                            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
                                         />
                                     </div>
                                     <div className="flex items-center gap-1.5">
@@ -914,7 +914,7 @@ export default function MapEditor({
                                         <input type="text" value={routeB} onChange={(e) => setRouteB(e.target.value)}
                                             onKeyDown={(e) => e.key === "Enter" && searchMap()}
                                             placeholder="Destino (dirección o lugar)"
-                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
+                                            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
                                         />
                                     </div>
                                     <button onClick={searchMap} disabled={!routeA.trim() || !routeB.trim()}
@@ -928,13 +928,13 @@ export default function MapEditor({
                                         <p className="text-center text-[11px] text-amber-400">No se encontró una o ambas direcciones</p>
                                     )}
                                     {mapStatus === "loading" && (
-                                        <p className="text-center text-[11px] text-white/30">Calculando ruta…</p>
+                                        <p className="text-center text-[11px] text-gray-400">Calculando ruta…</p>
                                     )}
                                 </div>
                             )}
 
                             {/* Leaflet map */}
-                            <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: fullscreen ? "calc(100vh - 280px)" : 520 }}>
+                            <div className="rounded-xl overflow-hidden border border-gray-200" style={{ height: fullscreen ? "calc(100vh - 280px)" : 520 }}>
                                 <LeafletMap command={mapCommand} onStatus={setMapStatus} />
                             </div>
                         </motion.div>
@@ -947,19 +947,19 @@ export default function MapEditor({
                     {/* Upload dropzone — visible only when no image loaded */}
                     {!hasBg && (
                         <div
-                            className="w-full h-full flex flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed border-white/15 bg-white/2 cursor-pointer transition-colors hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3"
+                            className="w-full h-full flex flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 cursor-pointer transition-colors hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3"
                             onDrop={handleDrop}
                             onDragOver={(e) => e.preventDefault()}
                             onClick={() => document.getElementById("map-file-input").click()}
                         >
                             <div className="text-center space-y-2">
-                                <FileImage size={40} className="text-white/20 mx-auto" />
-                                <p className="text-sm font-medium text-white/50">Sube una imagen o captura de pantalla</p>
-                                <p className="text-xs text-white/25">Arrastra aquí · Ctrl+V para pegar · clic para seleccionar</p>
+                                <FileImage size={40} className="text-gray-300 mx-auto" />
+                                <p className="text-sm font-medium text-gray-500">Sube una imagen o captura de pantalla</p>
+                                <p className="text-xs text-gray-400">Arrastra aquí · Ctrl+V para pegar · clic para seleccionar</p>
                             </div>
 
                             <div className="flex items-center gap-2 flex-wrap justify-center px-8">
-                                <span className="text-xs text-white/20">— o empezar con lienzo en blanco —</span>
+                                <span className="text-xs text-gray-300">— o empezar con lienzo en blanco —</span>
                             </div>
 
                             {/* Canvas presets */}
@@ -968,10 +968,10 @@ export default function MapEditor({
                                     <button
                                         key={p.label}
                                         onClick={(e) => { e.stopPropagation(); initBlankCanvas(p.w, p.h); }}
-                                        className="text-xs px-3 py-1.5 rounded-xl bg-white/6 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                                        className="text-xs px-3 py-1.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                                     >
                                         {p.label}
-                                        <span className="text-white/25 ml-1.5 text-[10px]">{p.w}×{p.h}</span>
+                                        <span className="text-gray-400 ml-1.5 text-[10px]">{p.w}×{p.h}</span>
                                     </button>
                                 ))}
                             </div>
@@ -982,7 +982,7 @@ export default function MapEditor({
                     <div className={`relative origin-top-left ${!hasBg ? "hidden" : ""}`} style={{ transform: `scale(${zoom})` }}>
                         <canvas
                             ref={canvasRef}
-                            className={`rounded-xl shadow-2xl shadow-black/40 max-w-full block ${cursorClass}`}
+                            className={`rounded-xl shadow-2xl shadow-gray-300/50 max-w-full block ${cursorClass}`}
                             onMouseDown={onMouseDown}
                             onMouseMove={onMouseMove}
                             onMouseUp={onMouseUp}
@@ -995,30 +995,30 @@ export default function MapEditor({
                         {/* Text input overlay */}
                         {textPrompt && (
                             <div className="absolute z-10 -translate-y-full" style={{ left: textPrompt.x, top: textPrompt.y - 16 }}>
-                                <div className="flex items-center gap-1 bg-[#0f1219] border border-[#208DCA]/40 rounded-lg shadow-xl px-2 py-1">
+                                <div className="flex items-center gap-1 bg-white border border-[#208DCA]/40 rounded-lg shadow-xl px-2 py-1">
                                     <input autoFocus value={textValue}
                                         onChange={(e) => setTextValue(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === "Enter") confirmText(); if (e.key === "Escape") setTextPrompt(null); }}
-                                        className="bg-transparent text-sm text-white outline-none w-44" placeholder="Escribe el texto..."
+                                        className="bg-transparent text-sm text-gray-900 outline-none w-44" placeholder="Escribe el texto..."
                                     />
-                                    <button onClick={confirmText} className="text-[#208DCA] hover:text-white transition-colors"><Check size={14} /></button>
-                                    <button onClick={() => setTextPrompt(null)} className="text-white/30 hover:text-white transition-colors"><X size={13} /></button>
+                                    <button onClick={confirmText} className="text-[#208DCA] hover:text-gray-900 transition-colors"><Check size={14} /></button>
+                                    <button onClick={() => setTextPrompt(null)} className="text-gray-400 hover:text-gray-900 transition-colors"><X size={13} /></button>
                                 </div>
                             </div>
                         )}
                         {/* Reset image button */}
                         <button
                             onClick={() => { setHasBg(false); bgRef.current = null; setElements([]); setSelectedIdx(null); }}
-                            className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 border border-white/15 text-white/40 hover:text-white flex items-center justify-center transition-colors"
+                            className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-white/90 border border-gray-200 text-gray-500 hover:text-gray-900 flex items-center justify-center transition-colors"
                             title="Cambiar imagen"
                         >
                             <X size={12} />
                         </button>
                         {/* Select mode indicator */}
                         {tool === "select" && selectedIdx !== null && (
-                            <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-white text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
+                            <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-gray-900 text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
                                 <Crosshair size={10} />
-                                Elemento seleccionado — <kbd className="bg-white/20 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
+                                Elemento seleccionado — <kbd className="bg-gray-500 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
                             </div>
                         )}
                     </div>
@@ -1036,15 +1036,15 @@ export default function MapEditor({
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed z-50 bg-[#0f1219] border border-white/12 rounded-xl shadow-2xl py-1 min-w-[160px]"
+                        className="fixed z-50 bg-white border border-gray-200 rounded-xl shadow-2xl py-1 min-w-[160px]"
                         style={{ left: contextMenu.x, top: contextMenu.y }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {[
                             { label: "Eliminar",        action: () => { deleteSelected(); setContextMenu(null); }, cls: "text-red-400 hover:bg-red-500/10" },
-                            { label: "Duplicar",         action: () => { duplicateElement(contextMenu.elIdx); setContextMenu(null); }, cls: "text-white/70 hover:bg-white/8" },
-                            { label: "Traer al frente",  action: () => { bringToFront(contextMenu.elIdx); setContextMenu(null); }, cls: "text-white/70 hover:bg-white/8" },
-                            { label: "Enviar al fondo",  action: () => { sendToBack(contextMenu.elIdx); setContextMenu(null); }, cls: "text-white/70 hover:bg-white/8" },
+                            { label: "Duplicar",         action: () => { duplicateElement(contextMenu.elIdx); setContextMenu(null); }, cls: "text-gray-700 hover:bg-gray-100" },
+                            { label: "Traer al frente",  action: () => { bringToFront(contextMenu.elIdx); setContextMenu(null); }, cls: "text-gray-700 hover:bg-gray-100" },
+                            { label: "Enviar al fondo",  action: () => { sendToBack(contextMenu.elIdx); setContextMenu(null); }, cls: "text-gray-700 hover:bg-gray-100" },
                         ].map(({ label, action, cls }) => (
                             <button key={label} onClick={action}
                                 className={`w-full text-left text-xs px-3 py-2 transition-colors ${cls}`}>
@@ -1056,8 +1056,8 @@ export default function MapEditor({
             </AnimatePresence>
 
             {/* ── Tips ── */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-white/20 px-1">
-                <span>Teclas: <kbd className="bg-white/8 px-1 rounded">P</kbd>lápiz <kbd className="bg-white/8 px-1 rounded">L</kbd>ínea <kbd className="bg-white/8 px-1 rounded">A</kbd>flecha <kbd className="bg-white/8 px-1 rounded">R</kbd>ect <kbd className="bg-white/8 px-1 rounded">C</kbd>írculo <kbd className="bg-white/8 px-1 rounded">T</kbd>exto <kbd className="bg-white/8 px-1 rounded">S</kbd>eleccionar</span>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-300 px-1">
+                <span>Teclas: <kbd className="bg-gray-100 px-1 rounded">P</kbd>lápiz <kbd className="bg-gray-100 px-1 rounded">L</kbd>ínea <kbd className="bg-gray-100 px-1 rounded">A</kbd>flecha <kbd className="bg-gray-100 px-1 rounded">R</kbd>ect <kbd className="bg-gray-100 px-1 rounded">C</kbd>írculo <kbd className="bg-gray-100 px-1 rounded">T</kbd>exto <kbd className="bg-gray-100 px-1 rounded">S</kbd>eleccionar</span>
                 <span>·</span>
                 <span>Ctrl+Z/Y · Del=borrar seleccionado · Ctrl+V=pegar imagen · Clic derecho en icono/texto</span>
             </div>

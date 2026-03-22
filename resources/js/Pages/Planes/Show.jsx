@@ -37,14 +37,14 @@ export default function Show({ plan, sections, currentSection, files }) {
     const SectionComponent = currentSection ? (SECTION_COMPONENTS[currentSection.section_number] ?? SeccionTextoSimple) : null;
 
     return (
-        <div className="h-screen flex flex-col bg-[#07090f] text-white overflow-hidden">
+        <div className="h-screen flex flex-col bg-[#F8FAFC] text-gray-900 overflow-hidden">
 
             {/* ── Header ── */}
-            <header className="h-14 flex-shrink-0 border-b border-white/8 bg-black/30 backdrop-blur-md flex items-center px-4 gap-3 z-20">
+            <header className="h-14 flex-shrink-0 border-b border-gray-200 bg-gray-50 backdrop-blur-md flex items-center px-4 gap-3 z-20">
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/8 transition-colors"
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                     <AnimatePresence mode="wait" initial={false}>
                         {sidebarOpen
@@ -55,30 +55,30 @@ export default function Show({ plan, sections, currentSection, files }) {
                 </motion.button>
 
                 <Link href="/" className="flex items-center gap-2 flex-shrink-0" title="Volver al dashboard">
-                    <img src="/images/logo.png" alt="Grupo Secon" className="h-7 w-auto object-contain" />
-                    <span className="hidden lg:flex items-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors ml-1">
+                    <img src="/images/logo-secon.svg" alt="Grupo Secon" className="h-7 w-auto object-contain" />
+                    <span className="hidden lg:flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors ml-1">
                         <LayoutDashboard size={11} /> Dashboard
                     </span>
                 </Link>
 
-                <div className="h-4 w-px bg-white/10 mx-0.5" />
+                <div className="h-4 w-px bg-gray-100 mx-0.5" />
 
                 <div className="flex-1 min-w-0">
-                    <h1 className="text-sm font-semibold text-white truncate leading-tight">{plan.title}</h1>
-                    <p className="text-[10px] text-white/25 font-mono leading-tight">{plan.uuid}</p>
+                    <h1 className="text-sm font-semibold text-gray-900 truncate leading-tight">{plan.title}</h1>
+                    <p className="text-[10px] text-gray-400 font-mono leading-tight">{plan.uuid}</p>
                 </div>
 
                 {/* Progress mini bar */}
                 <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
-                    <div className="w-28 h-1 rounded-full bg-white/8 overflow-hidden">
+                    <div className="w-28 h-1 rounded-full bg-gray-100 overflow-hidden">
                         <motion.div
-                            className="h-full rounded-full bg-gradient-to-r from-[#253C87] to-[#208DCA]"
+                            className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
                         />
                     </div>
-                    <span className="text-xs text-white/35 w-8 text-right"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
+                    <span className="text-xs text-gray-400 w-8 text-right"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -86,7 +86,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                         <a href={`/planes/${plan.uuid}/pdf/descargar`} target="_blank">
                             <RippleButton
                                 size="sm"
-                                className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs"
+                                className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#273887]/25 text-xs"
                             >
                                 <FileDown size={13} />
                                 <span className="hidden sm:inline">PDF</span>
@@ -96,7 +96,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => router.post("/logout")}
-                        className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                     >
                         <LogOut size={15} />
                     </motion.button>
@@ -144,7 +144,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center h-full gap-3 text-white/20"
+                                className="flex flex-col items-center justify-center h-full gap-3 text-gray-300"
                             >
                                 <Shield size={32} className="opacity-30" />
                                 <p className="text-sm">Selecciona una sección</p>

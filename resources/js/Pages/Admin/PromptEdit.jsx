@@ -83,7 +83,7 @@ export default function PromptEdit({ prompt, flash }) {
         >
             <div className="px-8 py-6 max-w-4xl mx-auto">
                 <div className="mb-2">
-                    <Link href="/admin/prompts" className="text-xs text-white/30 hover:text-white/60 transition-colors">
+                    <Link href="/admin/prompts" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
                         ← Volver a Prompts
                     </Link>
                 </div>
@@ -100,22 +100,22 @@ export default function PromptEdit({ prompt, flash }) {
 
                 <form onSubmit={submit} className="space-y-6">
                     {/* Model + tokens */}
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-5">
-                        <div className="flex items-center gap-2 pb-4 border-b border-white/6">
-                            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#253C87]/60 to-[#208DCA]/60 flex items-center justify-center flex-shrink-0">
+                    <div className="p-5 rounded-2xl bg-white border border-gray-200 space-y-5">
+                        <div className="flex items-center gap-2 pb-4 border-b border-gray-100">
+                            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#273887]/60 to-[#208DCA]/60 flex items-center justify-center flex-shrink-0">
                                 <Code2 size={11} className="text-white" />
                             </div>
-                            <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Configuración del modelo IA</p>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Configuración del modelo IA</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-5">
                             {/* Modelo */}
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">Modelo GPT</label>
+                                <label className="text-xs font-semibold text-gray-500 block uppercase tracking-wide">Modelo GPT</label>
                                 <select
                                     value={data.model}
                                     onChange={(e) => setData("model", e.target.value)}
-                                    className="flex h-9 w-full rounded-lg border border-white/10 bg-white/6 px-3 py-1 text-sm text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
+                                    className="flex h-9 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-1 text-sm text-gray-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                                 >
                                     {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                                 </select>
@@ -127,7 +127,7 @@ export default function PromptEdit({ prompt, flash }) {
                                     ].map(({ name, desc }) => (
                                         <div key={name} className={`flex gap-2 p-2 rounded-lg transition-colors ${data.model === name ? "bg-[#208DCA]/8 border border-[#208DCA]/15" : "opacity-40"}`}>
                                             <span className="font-mono text-[10px] text-[#208DCA] flex-shrink-0 mt-0.5">{name}</span>
-                                            <span className="text-[10px] text-white/50 leading-snug">{desc}</span>
+                                            <span className="text-[10px] text-gray-500 leading-snug">{desc}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -135,7 +135,7 @@ export default function PromptEdit({ prompt, flash }) {
 
                             {/* Max tokens */}
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">Máximo de tokens</label>
+                                <label className="text-xs font-semibold text-gray-500 block uppercase tracking-wide">Máximo de tokens</label>
                                 <Input
                                     type="number"
                                     value={data.max_tokens}
@@ -143,8 +143,8 @@ export default function PromptEdit({ prompt, flash }) {
                                     min={512} max={16000}
                                 />
                                 <div className="space-y-2 pt-1">
-                                    <p className="text-[10px] text-white/40 leading-relaxed">
-                                        Un <span className="text-white/60 font-medium">token</span> equivale aproximadamente a ¾ de una palabra en español. El modelo detiene la generación al alcanzar este límite.
+                                    <p className="text-[10px] text-gray-500 leading-relaxed">
+                                        Un <span className="text-gray-600 font-medium">token</span> equivale aproximadamente a ¾ de una palabra en español. El modelo detiene la generación al alcanzar este límite.
                                     </p>
                                     <div className="space-y-1">
                                         {[
@@ -154,10 +154,10 @@ export default function PromptEdit({ prompt, flash }) {
                                             { range: "16.000",        label: "Máximo absoluto",  hint: "Solo si la sección es muy extensa" },
                                         ].map(({ range, label, hint }) => (
                                             <div key={range} className="flex items-start gap-2">
-                                                <span className="font-mono text-[10px] text-white/30 w-24 flex-shrink-0 pt-px">{range}</span>
+                                                <span className="font-mono text-[10px] text-gray-400 w-24 flex-shrink-0 pt-px">{range}</span>
                                                 <div>
                                                     <span className="text-[10px] text-white/55 font-medium">{label}</span>
-                                                    <span className="text-[10px] text-white/30"> — {hint}</span>
+                                                    <span className="text-[10px] text-gray-400"> — {hint}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -168,10 +168,10 @@ export default function PromptEdit({ prompt, flash }) {
                     </div>
 
                     {/* Variables */}
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8">
+                    <div className="p-5 rounded-2xl bg-white border border-gray-200">
                         <div className="flex items-center gap-2 mb-3">
                             <Code2 size={13} className="text-[#208DCA]" />
-                            <p className="text-xs font-semibold text-white/50 uppercase tracking-wide">Variables disponibles — clic para insertar</p>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Variables disponibles — clic para insertar</p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             {COMMON_VARS.map((v) => (
@@ -190,17 +190,17 @@ export default function PromptEdit({ prompt, flash }) {
                     </div>
 
                     {/* System prompt */}
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-3">
+                    <div className="p-5 rounded-2xl bg-white border border-gray-200 space-y-3">
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-white/50 block uppercase tracking-wide">System Prompt</label>
-                            <p className="text-xs text-white/40 leading-relaxed">
-                                Es la <span className="text-white/60 font-medium">instrucción invisible</span> que recibe el modelo antes de leer el mensaje del usuario. Define su rol, tono y restricciones. El usuario final nunca lo ve.
+                            <label className="text-xs font-semibold text-gray-500 block uppercase tracking-wide">System Prompt</label>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                                Es la <span className="text-gray-600 font-medium">instrucción invisible</span> que recibe el modelo antes de leer el mensaje del usuario. Define su rol, tono y restricciones. El usuario final nunca lo ve.
                             </p>
                             <div className="flex flex-wrap gap-2 text-[10px]">
-                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Define el rol ("Eres un experto en...")</span>
-                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Idioma y formato de salida</span>
-                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✓ Tono (formal, técnico, conciso)</span>
-                                <span className="px-2 py-1 rounded-md bg-white/5 border border-white/8 text-white/35">✗ No pongas datos del evento aquí</span>
+                                <span className="px-2 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-400">✓ Define el rol ("Eres un experto en...")</span>
+                                <span className="px-2 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-400">✓ Idioma y formato de salida</span>
+                                <span className="px-2 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-400">✓ Tono (formal, técnico, conciso)</span>
+                                <span className="px-2 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-400">✗ No pongas datos del evento aquí</span>
                             </div>
                         </div>
                         <Textarea value={data.system_prompt} onChange={(e) => setData("system_prompt", e.target.value)} rows={6} className="font-mono text-xs" />
@@ -208,13 +208,13 @@ export default function PromptEdit({ prompt, flash }) {
                     </div>
 
                     {/* User prompt template + preview */}
-                    <div className="rounded-2xl bg-white/3 border border-white/8 overflow-hidden">
+                    <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
                         {/* Tab bar */}
-                        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/6">
+                        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">User Prompt Template</label>
-                                <p className="text-xs text-white/40 leading-relaxed max-w-lg">
-                                    El mensaje que recibe el modelo <span className="text-white/60 font-medium">con los datos reales del evento</span> ya insertados. Escribe el texto del prompt y usa <code className="bg-white/8 px-1.5 py-0.5 rounded text-[#208DCA] font-mono">{"{{variable}}"}</code> donde quieras que aparezca un dato del formulario.
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">User Prompt Template</label>
+                                <p className="text-xs text-gray-500 leading-relaxed max-w-lg">
+                                    El mensaje que recibe el modelo <span className="text-gray-600 font-medium">con los datos reales del evento</span> ya insertados. Escribe el texto del prompt y usa <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[#208DCA] font-mono">{"{{variable}}"}</code> donde quieras que aparezca un dato del formulario.
                                 </p>
                             </div>
                             <button
@@ -223,7 +223,7 @@ export default function PromptEdit({ prompt, flash }) {
                                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all ${
                                     showPreview
                                         ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                                        : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/8"
+                                        : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                                 }`}
                             >
                                 {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -255,9 +255,9 @@ export default function PromptEdit({ prompt, flash }) {
                                             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#208DCA]/15 bg-[#208DCA]/6">
                                                 <Eye size={12} className="text-[#208DCA]" />
                                                 <span className="text-xs font-semibold text-[#208DCA] uppercase tracking-wide">Vista previa — datos de ejemplo</span>
-                                                <span className="ml-auto text-xs text-white/25 font-mono">Concierto Aitana · Madrid Arena 2025</span>
+                                                <span className="ml-auto text-xs text-gray-400 font-mono">Concierto Aitana · Madrid Arena 2025</span>
                                             </div>
-                                            <pre className="px-5 py-4 text-xs text-white/70 leading-relaxed whitespace-pre-wrap font-sans overflow-y-auto max-h-96">
+                                            <pre className="px-5 py-4 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans overflow-y-auto max-h-96">
                                                 {preview}
                                             </pre>
                                         </div>
@@ -268,15 +268,15 @@ export default function PromptEdit({ prompt, flash }) {
                     </div>
 
                     {/* Ejemplo de salida + toggle few-shot */}
-                    <div className="rounded-2xl bg-white/3 border border-white/8 overflow-hidden">
+                    <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
                         {/* Header */}
-                        <div className="px-5 pt-5 pb-4 border-b border-white/6 space-y-2">
+                        <div className="px-5 pt-5 pb-4 border-b border-gray-100 space-y-2">
                             <div className="flex items-center gap-2">
                                 <BookOpen size={13} className="text-amber-400" />
-                                <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">Ejemplo de texto de salida</label>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ejemplo de texto de salida</label>
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">Opcional</span>
                             </div>
-                            <p className="text-xs text-white/40 leading-relaxed max-w-2xl">
+                            <p className="text-xs text-gray-500 leading-relaxed max-w-2xl">
                                 Referencia del formato y estilo esperados para esta sección. Sirve como guía visual para el equipo y,
                                 si se activa la opción de abajo, se envía a la IA junto con el prompt para mejorar la consistencia del resultado.
                             </p>
@@ -295,13 +295,13 @@ export default function PromptEdit({ prompt, flash }) {
                             <div className={`rounded-xl border p-4 transition-colors ${
                                 data.use_example_output
                                     ? "border-amber-500/30 bg-amber-500/6"
-                                    : "border-white/8 bg-white/2"
+                                    : "border-gray-200 bg-gray-50"
                             }`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="space-y-1.5 flex-1">
                                         <div className="flex items-center gap-2">
-                                            <Zap size={12} className={data.use_example_output ? "text-amber-400" : "text-white/30"} />
-                                            <span className={`text-xs font-semibold ${data.use_example_output ? "text-amber-300" : "text-white/50"}`}>
+                                            <Zap size={12} className={data.use_example_output ? "text-amber-400" : "text-gray-400"} />
+                                            <span className={`text-xs font-semibold ${data.use_example_output ? "text-amber-300" : "text-gray-500"}`}>
                                                 Enviar ejemplo a la IA como guía de estilo
                                             </span>
                                             {data.use_example_output && (
@@ -310,7 +310,7 @@ export default function PromptEdit({ prompt, flash }) {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-white/35 leading-relaxed">
+                                        <p className="text-[11px] text-gray-400 leading-relaxed">
                                             Cuando está activo, el ejemplo se añade al final del mensaje del usuario con la instrucción{" "}
                                             <em>"úsalo solo como guía de estructura y tono, no lo copies"</em>.
                                             La IA tendrá una referencia explícita del formato esperado.
@@ -338,7 +338,7 @@ export default function PromptEdit({ prompt, flash }) {
                                         className={`relative flex-shrink-0 w-10 h-5 rounded-full transition-all duration-200 focus:outline-none ${
                                             data.use_example_output
                                                 ? "bg-amber-500"
-                                                : "bg-white/15"
+                                                : "bg-gray-200"
                                         } ${!data.example_output?.trim() ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
@@ -351,7 +351,7 @@ export default function PromptEdit({ prompt, flash }) {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <RippleButton type="submit" disabled={processing} className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2">
+                        <RippleButton type="submit" disabled={processing} className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2">
                             <Save size={14} />
                             {processing ? "Guardando..." : "Guardar prompt"}
                         </RippleButton>

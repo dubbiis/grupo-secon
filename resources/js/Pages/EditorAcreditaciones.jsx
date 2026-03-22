@@ -16,18 +16,18 @@ export default function EditorAcreditaciones() {
                 <motion.div
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-3 rounded-2xl bg-[#253C87]/8 border border-[#253C87]/20 p-4 mb-6"
+                    className="flex items-start gap-3 rounded-2xl bg-[#273887]/8 border border-[#273887]/20 p-4 mb-6"
                 >
                     <div className="w-9 h-9 rounded-xl bg-[#208DCA]/15 border border-[#208DCA]/20 flex items-center justify-center flex-shrink-0">
                         <CreditCard size={17} className="text-[#208DCA]" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-white mb-1">Diseñador de tarjetas de acreditación</p>
-                        <p className="text-xs text-white/45 leading-relaxed">
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Diseñador de tarjetas de acreditación</p>
+                        <p className="text-xs text-gray-500 leading-relaxed">
                             Crea tarjetas visuales para el personal del evento: staff, prensa, VIPs, artistas y seguridad.
                             Añade foto, logo, colores corporativos y campos personalizados. Descarga en PNG o inclúyelas directamente en un plan.
                         </p>
-                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-white/30">
+                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-gray-400">
                             <span className="flex items-center gap-1"><Info size={10} /> Sube la foto del portador y el logo del evento</span>
                             <span className="flex items-center gap-1"><Info size={10} /> Elige una paleta o personaliza los colores</span>
                             <span className="flex items-center gap-1"><Info size={10} /> Añade hasta 4 campos personalizados</span>

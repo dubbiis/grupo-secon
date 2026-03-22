@@ -112,7 +112,7 @@ export default function LeafletMap({ command, onStatus }) {
                     }).addTo(map);
 
                     markersRef.current.push(
-                        L.marker([locA.lat, locA.lng], { icon: labelIcon("A", "#253C87") }).addTo(map),
+                        L.marker([locA.lat, locA.lng], { icon: labelIcon("A", "#273887") }).addTo(map),
                         L.marker([locB.lat, locB.lng], { icon: labelIcon("B", "#208DCA") }).addTo(map),
                     );
 

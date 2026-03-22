@@ -14,7 +14,7 @@ const LOGO_W    = 80;
 const LOGO_H    = 36;
 
 const COLOR_PRESETS = [
-    { label: "Secon",    bg: "#253C87", accent: "#208DCA", text: "#ffffff" },
+    { label: "Secon",    bg: "#273887", accent: "#208DCA", text: "#ffffff" },
     { label: "Noir",     bg: "#1a1a1a", accent: "#C9A96E", text: "#ffffff" },
     { label: "Rojo",     bg: "#CC0000", accent: "#ffffff", text: "#ffffff" },
     { label: "Verde",    bg: "#1B5E20", accent: "#66BB6A", text: "#ffffff" },
@@ -154,7 +154,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
     const logoImgRef     = useRef(null);
 
     const [config, setConfig] = useState({
-        bg: "#253C87", accent: "#208DCA", textColor: "#ffffff",
+        bg: "#273887", accent: "#208DCA", textColor: "#ffffff",
         name: "", position: "", showLogo: true,
         extraFields: [
             { label: "Zona de acceso", value: "" },
@@ -333,12 +333,12 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
     };
 
     return (
-        <div className="rounded-2xl border border-white/8 bg-white/2 overflow-hidden">
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden">
             <div className="flex gap-0">
 
                 {/* ── Left: canvas + controls ── */}
-                <div className="flex-shrink-0 p-5 flex flex-col items-center gap-3 border-r border-white/8 bg-black/20">
-                    <p className="text-[10px] text-white/30 uppercase tracking-wider">Vista previa</p>
+                <div className="flex-shrink-0 p-5 flex flex-col items-center gap-3 border-r border-gray-200 bg-black/20">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Vista previa</p>
 
                     {/* Canvas */}
                     <div className="rounded-xl overflow-hidden shadow-2xl shadow-black/60 relative">
@@ -357,21 +357,21 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                         {!photoImgRef.current && (
                             <div className="absolute pointer-events-none"
                                 style={{ left: PHOTO_X + 2, top: PHOTO_Y + PHOTO_H + 4 }}>
-                                <span className="text-[8px] text-white/30">↑ foto</span>
+                                <span className="text-[8px] text-gray-400">↑ foto</span>
                             </div>
                         )}
                     </div>
 
                     {/* Photo/logo positioning controls (shown when an area is active) */}
                     {activeTarget && (activeTx !== null) && (photoImgRef.current || logoImgRef.current) && (
-                        <div className="w-full rounded-xl bg-white/5 border border-white/8 p-3 space-y-2">
+                        <div className="w-full rounded-xl bg-gray-100 border border-gray-200 p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-white/40 uppercase tracking-wider flex items-center gap-1">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider flex items-center gap-1">
                                     <Move size={9} />
                                     {activeTarget === "photo" ? "Foto" : "Logo"} — arrastrar para mover
                                 </span>
                                 <button onClick={resetActiveTx}
-                                    className="text-[10px] text-white/30 hover:text-white flex items-center gap-1 transition-colors"
+                                    className="text-[10px] text-gray-400 hover:text-gray-900 flex items-center gap-1 transition-colors"
                                     title="Restablecer posición">
                                     <RotateCcw size={9} />
                                     Reset
@@ -379,14 +379,14 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                             </div>
                             {/* Zoom slider */}
                             <div className="flex items-center gap-2">
-                                <ZoomOut size={11} className="text-white/30 flex-shrink-0" />
+                                <ZoomOut size={11} className="text-gray-400 flex-shrink-0" />
                                 <input type="range" min={30} max={400} step={5}
                                     value={Math.round(activeTx.zoom * 100)}
                                     onChange={e => setActiveTx(t => ({ ...t, zoom: parseInt(e.target.value) / 100 }))}
                                     className="flex-1 h-1 accent-[#208DCA] cursor-pointer"
                                 />
-                                <ZoomIn size={11} className="text-white/30 flex-shrink-0" />
-                                <span className="text-[10px] text-white/35 w-8 text-right">
+                                <ZoomIn size={11} className="text-gray-400 flex-shrink-0" />
+                                <span className="text-[10px] text-gray-400 w-8 text-right">
                                     {Math.round(activeTx.zoom * 100)}%
                                 </span>
                             </div>
@@ -394,13 +394,13 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                             <div className="flex gap-1">
                                 {photoImgRef.current && (
                                     <button onClick={() => setActiveTarget("photo")}
-                                        className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${activeTarget === "photo" ? "bg-[#208DCA]/20 text-[#208DCA]" : "text-white/30 hover:text-white hover:bg-white/8"}`}>
+                                        className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${activeTarget === "photo" ? "bg-[#208DCA]/20 text-[#208DCA]" : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"}`}>
                                         Ajustar foto
                                     </button>
                                 )}
                                 {logoImgRef.current && (
                                     <button onClick={() => setActiveTarget("logo")}
-                                        className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${activeTarget === "logo" ? "bg-[#208DCA]/20 text-[#208DCA]" : "text-white/30 hover:text-white hover:bg-white/8"}`}>
+                                        className={`flex-1 text-[10px] py-1 rounded-lg transition-colors ${activeTarget === "logo" ? "bg-[#208DCA]/20 text-[#208DCA]" : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"}`}>
                                         Ajustar logo
                                     </button>
                                 )}
@@ -410,7 +410,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
 
                     {/* Tip */}
                     {(photoImgRef.current || logoImgRef.current) && (
-                        <p className="text-[9px] text-white/20 text-center leading-relaxed">
+                        <p className="text-[9px] text-gray-300 text-center leading-relaxed">
                             Arrastra foto/logo para mover · Rueda del ratón para zoom
                         </p>
                     )}
@@ -418,7 +418,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                     {/* Upload buttons */}
                     <div className="flex gap-2 w-full">
                         <button onClick={() => photoInputRef.current?.click()}
-                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]">
+                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-900 hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]">
                             {photoPreview
                                 ? <img src={photoPreview} alt="" className="absolute inset-0 w-full h-full object-cover" />
                                 : <><User size={14} className="group-hover:text-[#208DCA]/60 transition-colors" />
@@ -426,7 +426,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                             }
                         </button>
                         <button onClick={() => logoInputRef.current?.click()}
-                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-white/12 text-white/35 hover:text-white hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]">
+                            className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-900 hover:border-[#208DCA]/30 transition-all group relative overflow-hidden min-h-[60px]">
                             {logoPreview
                                 ? <img src={logoPreview} alt="" className="absolute inset-0 w-full h-full object-contain p-1" />
                                 : <><ImageIcon size={14} className="group-hover:text-[#208DCA]/60 transition-colors" />
@@ -438,7 +438,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                     {/* Action buttons */}
                     <div className="flex gap-2 w-full">
                         <button onClick={download}
-                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-xl bg-white/8 border border-white/10 text-white/60 hover:text-white hover:bg-white/12 transition-all">
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-xl bg-gray-100 border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-white/12 transition-all">
                             <Download size={12} />
                             PNG
                         </button>
@@ -461,7 +461,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                 {/* ── Right: config tabs ── */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {/* Tabs */}
-                    <div className="flex border-b border-white/8">
+                    <div className="flex border-b border-gray-200">
                         {[
                             { id: "datos",  label: "Datos",  icon: Type    },
                             { id: "diseño", label: "Diseño", icon: Palette  },
@@ -469,7 +469,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                         ].map(({ id, label, icon: Icon }) => (
                             <button key={id} onClick={() => setActiveTab(id)}
                                 className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium border-b-2 transition-all ${
-                                    activeTab === id ? "border-[#208DCA] text-[#208DCA]" : "border-transparent text-white/35 hover:text-white/60"}`}>
+                                    activeTab === id ? "border-[#208DCA] text-[#208DCA]" : "border-transparent text-gray-400 hover:text-gray-600"}`}>
                                 <Icon size={12} />
                                 {label}
                             </button>
@@ -481,43 +481,43 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                         {/* ── Datos ── */}
                         {activeTab === "datos" && (<>
                             <div>
-                                <label className="text-[10px] font-semibold text-white/35 mb-1 block uppercase tracking-wide">Nombre *</label>
+                                <label className="text-[10px] font-semibold text-gray-400 mb-1 block uppercase tracking-wide">Nombre *</label>
                                 <input value={config.name}
                                     onChange={e => setConfig(c => ({ ...c, name: e.target.value }))}
                                     placeholder="Nombre completo del portador"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/50 focus:bg-white/8 transition-all"
+                                    className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#208DCA]/50 focus:bg-gray-100 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] font-semibold text-white/35 mb-1 block uppercase tracking-wide">Cargo / Tipo de acreditación</label>
+                                <label className="text-[10px] font-semibold text-gray-400 mb-1 block uppercase tracking-wide">Cargo / Tipo de acreditación</label>
                                 <input value={config.position}
                                     onChange={e => setConfig(c => ({ ...c, position: e.target.value }))}
                                     placeholder="Ej: Staff, Prensa, VIP, Artista..."
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[#208DCA]/50 focus:bg-white/8 transition-all"
+                                    className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#208DCA]/50 focus:bg-gray-100 transition-all"
                                 />
                             </div>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" checked={config.showLogo}
                                     onChange={e => setConfig(c => ({ ...c, showLogo: e.target.checked }))}
                                     className="accent-[#208DCA]" />
-                                <span className="text-xs text-white/50">Mostrar logo</span>
+                                <span className="text-xs text-gray-500">Mostrar logo</span>
                             </label>
                         </>)}
 
                         {/* ── Diseño ── */}
                         {activeTab === "diseño" && (<>
                             <div>
-                                <label className="text-[10px] font-semibold text-white/35 mb-2 block uppercase tracking-wide">Paletas</label>
+                                <label className="text-[10px] font-semibold text-gray-400 mb-2 block uppercase tracking-wide">Paletas</label>
                                 <div className="grid grid-cols-4 gap-1.5">
                                     {COLOR_PRESETS.map(p => (
                                         <button key={p.label}
                                             onClick={() => setConfig(c => ({ ...c, bg: p.bg, accent: p.accent, textColor: p.text }))}
-                                            className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-white/8 transition-colors group">
-                                            <div className="w-10 h-6 rounded-md overflow-hidden flex border border-white/10">
+                                            className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-gray-100 transition-colors group">
+                                            <div className="w-10 h-6 rounded-md overflow-hidden flex border border-gray-200">
                                                 <div className="flex-1" style={{ backgroundColor: p.bg }} />
                                                 <div className="w-[10px]" style={{ backgroundColor: p.accent }} />
                                             </div>
-                                            <span className="text-[9px] text-white/35 group-hover:text-white/60">{p.label}</span>
+                                            <span className="text-[9px] text-gray-400 group-hover:text-gray-600">{p.label}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -528,21 +528,21 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                                     { key: "accent", label: "Acento" },
                                 ].map(({ key, label }) => (
                                     <div key={key}>
-                                        <label className="text-[10px] text-white/35 mb-1 block">{label}</label>
+                                        <label className="text-[10px] text-gray-400 mb-1 block">{label}</label>
                                         <div className="flex items-center gap-2">
                                             <input type="color" value={config[key]}
                                                 onChange={e => setConfig(c => ({ ...c, [key]: e.target.value }))}
                                                 className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent" />
-                                            <span className="text-[10px] text-white/30 font-mono">{config[key]}</span>
+                                            <span className="text-[10px] text-gray-400 font-mono">{config[key]}</span>
                                         </div>
                                     </div>
                                 ))}
                                 <div>
-                                    <label className="text-[10px] text-white/35 mb-1 block">Texto</label>
+                                    <label className="text-[10px] text-gray-400 mb-1 block">Texto</label>
                                     <div className="flex gap-1">
                                         {[{ v: "#ffffff", l: "Blanco" }, { v: "#1a1a1a", l: "Negro" }].map(({ v, l }) => (
                                             <button key={v} onClick={() => setConfig(c => ({ ...c, textColor: v }))}
-                                                className={`flex-1 py-1.5 rounded-lg text-[10px] border transition-all ${config.textColor === v ? "bg-white/15 border-white/30 text-white" : "border-white/10 text-white/30 hover:text-white"}`}>
+                                                className={`flex-1 py-1.5 rounded-lg text-[10px] border transition-all ${config.textColor === v ? "bg-gray-200 border-white/30 text-white" : "border-gray-200 text-gray-400 hover:text-gray-900"}`}>
                                                 {l}
                                             </button>
                                         ))}
@@ -553,22 +553,22 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
 
                         {/* ── Campos ── */}
                         {activeTab === "campos" && (<>
-                            <p className="text-xs text-white/35">Campos adicionales (máx. 4)</p>
+                            <p className="text-xs text-gray-400">Campos adicionales (máx. 4)</p>
                             <div className="space-y-2">
                                 {config.extraFields.map((field, idx) => (
                                     <div key={idx} className="flex items-center gap-2">
                                         <input value={field.label}
                                             onChange={e => updateField(idx, "label", e.target.value)}
                                             placeholder="Etiqueta"
-                                            className="w-28 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#208DCA]/50 transition-all"
+                                            className="w-28 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-white/20 focus:outline-none focus:border-[#208DCA]/50 transition-all"
                                         />
                                         <input value={field.value}
                                             onChange={e => updateField(idx, "value", e.target.value)}
                                             placeholder="Valor"
-                                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#208DCA]/50 transition-all"
+                                            className="flex-1 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-white/20 focus:outline-none focus:border-[#208DCA]/50 transition-all"
                                         />
                                         <button onClick={() => setConfig(c => ({ ...c, extraFields: c.extraFields.filter((_, i) => i !== idx) }))}
-                                            className="p-1 text-white/20 hover:text-red-400 transition-colors flex-shrink-0">
+                                            className="p-1 text-gray-300 hover:text-red-400 transition-colors flex-shrink-0">
                                             <X size={13} />
                                         </button>
                                     </div>
@@ -576,7 +576,7 @@ export default function CredentialCreator({ uuid, sectionNumber = 12, onSaved })
                             </div>
                             {config.extraFields.length < 4 && (
                                 <button onClick={() => setConfig(c => ({ ...c, extraFields: [...c.extraFields, { label: "", value: "" }] }))}
-                                    className="flex items-center gap-1.5 text-xs text-white/35 hover:text-[#208DCA] transition-colors">
+                                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#208DCA] transition-colors">
                                     <Plus size={12} />
                                     Añadir campo
                                 </button>

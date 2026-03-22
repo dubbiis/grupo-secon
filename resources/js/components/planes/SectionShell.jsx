@@ -44,7 +44,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/40 uppercase tracking-wide">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-100 border border-gray-200 text-gray-500 uppercase tracking-wide">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
                             Sección {section.section_number}
                         </span>
@@ -62,14 +62,14 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                             )}
                         </AnimatePresence>
                     </div>
-                    <h2 className="text-2xl font-bold text-white leading-tight">{section.section_name}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">{section.section_name}</h2>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
                     <button
                         onClick={() => save(formData, generatedText, section.status)}
                         disabled={saving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/6 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200 disabled:opacity-50"
                     >
                         {saving
                             ? <RefreshCw size={13} className="animate-spin" />
@@ -80,7 +80,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                     <RippleButton
                         size="sm"
                         onClick={confirm}
-                        className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#253C87]/25 text-xs"
+                        className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#273887]/25 text-xs"
                     >
                         Confirmar
                         <ChevronRight size={13} />
@@ -89,7 +89,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             </div>
 
             {/* Form card */}
-            <div className="rounded-2xl bg-white/3 border border-white/8 p-6 space-y-5 shadow-xl shadow-black/20">
+            <div className="rounded-2xl bg-white border border-gray-200 p-6 space-y-5 shadow-xl shadow-gray-200/50">
                 {children}
 
                 {/* Custom questions — only for sections with IA */}
@@ -104,7 +104,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
 
             {/* AI generator */}
             {showIA && (
-                <div className="rounded-2xl bg-white/2 border border-white/6 overflow-hidden">
+                <div className="rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
                     <div className="px-6 pt-5 pb-5">
                         <GeneradorIA
                             uuid={plan.uuid}

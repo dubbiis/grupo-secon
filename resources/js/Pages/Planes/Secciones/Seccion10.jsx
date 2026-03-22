@@ -39,7 +39,7 @@ export default function Seccion10({ plan, section }) {
                                 }}
                                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                                     selected
-                                        ? "bg-[#253C87] text-white border-[#253C87]"
+                                        ? "bg-[#273887] text-gray-900 border-[#273887]"
                                         : "bg-transparent text-muted-foreground border-input hover:border-[#208DCA]"
                                 }`}
                             >

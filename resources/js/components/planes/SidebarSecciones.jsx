@@ -25,23 +25,23 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
     const doneSections = sections.filter((s) => s.status === "listo" || s.status === "editado").length;
 
     return (
-        <aside className="w-[260px] flex flex-col border-r border-white/6 bg-[#050709] h-full">
+        <aside className="w-[260px] flex flex-col border-r border-gray-100 bg-[#F8FAFC] h-full">
 
             {/* Progress header */}
-            <div className="px-4 py-4 border-b border-white/6">
+            <div className="px-4 py-4 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[10px] font-bold text-white/25 uppercase tracking-widest">Progreso del plan</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Progreso del plan</span>
                     <span className="text-xs font-bold text-[#208DCA]"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
-                <div className="h-1 rounded-full bg-white/6 overflow-hidden">
+                <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
                     <motion.div
-                        className="h-full rounded-full bg-gradient-to-r from-[#253C87] to-[#208DCA] shadow-sm shadow-[#208DCA]/30"
+                        className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA] shadow-sm shadow-[#208DCA]/30"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.7, ease: "easeOut" }}
                     />
                 </div>
-                <p className="text-[10px] text-white/20 mt-2">
+                <p className="text-[10px] text-gray-300 mt-2">
                     {doneSections} de 15 secciones completadas
                 </p>
             </div>
@@ -64,15 +64,15 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                 className={cn(
                                     "relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all group mb-0.5",
                                     isActive
-                                        ? "bg-white/8 shadow-inner shadow-black/20"
-                                        : "hover:bg-white/4"
+                                        ? "bg-gray-100 shadow-inner shadow-gray-200/50"
+                                        : "hover:bg-gray-50"
                                 )}
                             >
                                 {/* Active left glow bar */}
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeBar"
-                                        className="absolute left-0 inset-y-1 w-0.5 rounded-full bg-gradient-to-b from-[#253C87] to-[#208DCA]"
+                                        className="absolute left-0 inset-y-1 w-0.5 rounded-full bg-gradient-to-b from-[#273887] to-[#208DCA]"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                                     />
                                 )}
@@ -81,10 +81,10 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                 <span className={cn(
                                     "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all",
                                     isActive
-                                        ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/20"
+                                        ? "bg-gradient-to-br from-[#273887] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/20"
                                         : isDone
                                             ? "bg-green-500/15 text-green-400 border border-green-500/20"
-                                            : "bg-white/6 text-white/30 border border-white/8 group-hover:border-white/15 group-hover:text-white/50"
+                                            : "bg-gray-100 text-gray-400 border border-gray-200 group-hover:border-gray-200 group-hover:text-gray-500"
                                 )}>
                                     {isDone && !isActive ? <Check size={9} strokeWidth={3} /> : section.section_number}
                                 </span>
@@ -92,7 +92,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                 {/* Section name */}
                                 <span className={cn(
                                     "flex-1 leading-snug line-clamp-2 transition-colors",
-                                    isActive ? "text-white font-medium" : "text-white/40 group-hover:text-white/65"
+                                    isActive ? "text-gray-900 font-medium" : "text-gray-500 group-hover:text-white/65"
                                 )}>
                                     {section.section_name}
                                 </span>

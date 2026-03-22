@@ -100,7 +100,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
             <div className="flex items-center gap-2 mb-1">
                 <div className="flex items-center gap-1.5">
                     <Sparkles size={14} className="text-[#208DCA]" />
-                    <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">Generador IA</span>
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Generador IA</span>
                 </div>
             </div>
 
@@ -109,7 +109,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                     <RippleButton
                         onClick={handleGenerar}
-                        className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2 shadow-lg shadow-[#253C87]/25 hover:shadow-[#253C87]/40 hover:opacity-90"
+                        className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 shadow-lg shadow-[#273887]/25 hover:shadow-[#273887]/40 hover:opacity-90"
                     >
                         <Zap size={15} />
                         Generar con IA
@@ -131,7 +131,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 {generating ? (
                                     <>
                                         <Loader2 size={13} className="text-[#208DCA] animate-spin" />
-                                        <span className="text-xs text-white/40">Generando texto...</span>
+                                        <span className="text-xs text-gray-500">Generando texto...</span>
                                         <div className="flex gap-0.5">
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-0" />
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-1" />
@@ -142,9 +142,9 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                     <>
                                         {editMode
                                             ? <Pencil size={12} className="text-[#208DCA]" />
-                                            : <Eye size={12} className="text-white/30" />
+                                            : <Eye size={12} className="text-gray-400" />
                                         }
-                                        <span className="text-xs text-white/50">
+                                        <span className="text-xs text-gray-500">
                                             {editMode ? "Editando texto" : "Vista previa"}
                                         </span>
                                     </>
@@ -188,7 +188,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                         }}
                                         readOnly={generating}
                                         rows={16}
-                                        className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 p-5 text-sm leading-relaxed text-gray-800 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
                                         placeholder="El texto generado aparecerá aquí."
                                     />
                                     {generating && (
@@ -197,7 +197,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 </>
                             ) : (
                                 <div
-                                    className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner min-h-[200px] max-h-[500px] overflow-y-auto"
+                                    className="w-full rounded-xl border border-gray-200 bg-gray-50 p-5 text-sm leading-relaxed text-gray-800 shadow-inner min-h-[200px] max-h-[500px] overflow-y-auto"
                                     dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
                                 />
                             )}
@@ -205,10 +205,10 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
 
                         {/* Solicitar cambios */}
                         {!generating && text && (
-                            <div className="rounded-xl border border-white/8 bg-white/2 overflow-hidden">
+                            <div className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
                                 <button
                                     onClick={() => setShowCambios(!showCambios)}
-                                    className="w-full flex items-center justify-between px-4 py-3 text-xs font-medium text-white/50 hover:text-white hover:bg-white/4 transition-colors"
+                                    className="w-full flex items-center justify-between px-4 py-3 text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                                 >
                                     <span className="flex items-center gap-2">
                                         <RefreshCw size={12} className="text-[#208DCA]" />
@@ -228,7 +228,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             transition={{ duration: 0.2 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-white/6">
+                                            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-gray-100">
                                                 <Textarea
                                                     value={instrucciones}
                                                     onChange={(e) => setInstrucciones(e.target.value)}
@@ -239,7 +239,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                                     size="sm"
                                                     onClick={handleCambios}
                                                     disabled={applyingCambios || !instrucciones.trim()}
-                                                    className="bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 gap-2 text-xs"
+                                                    className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 text-xs"
                                                 >
                                                     {applyingCambios ? (
                                                         <><Loader2 size={12} className="animate-spin" /> Aplicando...</>

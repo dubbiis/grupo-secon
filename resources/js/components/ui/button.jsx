@@ -6,15 +6,15 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-white/10 text-white border border-white/10 shadow hover:bg-white/15 hover:border-white/20",
+                default: "bg-gray-100 text-gray-900 border border-gray-200 shadow hover:bg-gray-200 hover:border-gray-200",
                 destructive: "bg-red-500/20 text-red-400 border border-red-500/20 hover:bg-red-500/30",
-                outline: "border border-white/15 bg-transparent text-white/70 hover:bg-white/8 hover:text-white hover:border-white/25",
-                secondary: "bg-white/8 text-white/80 border border-white/8 hover:bg-white/12",
-                ghost: "text-white/50 hover:bg-white/8 hover:text-white",
+                outline: "border border-gray-200 bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:border-white/25",
+                secondary: "bg-gray-100 text-gray-800 border border-gray-200 hover:bg-white/12",
+                ghost: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
                 link: "text-[#208DCA] underline-offset-4 hover:underline",
-                secon: "bg-[#253C87] text-white shadow-lg shadow-[#253C87]/25 hover:bg-[#253C87]/90 hover:shadow-[#253C87]/40",
-                "secon-gradient": "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-0 shadow-lg shadow-[#253C87]/25 hover:shadow-[#253C87]/40 hover:opacity-90",
-                "secon-outline": "border border-[#253C87]/50 text-[#208DCA] bg-transparent hover:bg-[#253C87]/10 hover:border-[#253C87]",
+                secon: "bg-[#273887] text-gray-900 shadow-lg shadow-[#273887]/25 hover:bg-[#273887]/90 hover:shadow-[#273887]/40",
+                "secon-gradient": "bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 shadow-lg shadow-[#273887]/25 hover:shadow-[#273887]/40 hover:opacity-90",
+                "secon-outline": "border border-[#273887]/50 text-[#208DCA] bg-transparent hover:bg-[#273887]/10 hover:border-[#273887]",
             },
             size: {
                 default: "h-9 px-4 py-2",

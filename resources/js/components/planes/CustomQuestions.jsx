@@ -129,7 +129,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                 <Shine enableOnHover color="white" opacity={0.3} duration={600} asChild>
                     <button
                         onClick={() => setShowPicker(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/4 text-white/40 border border-white/8 hover:bg-white/8 hover:text-white/60 hover:border-white/15"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200"
                     >
                         <MessageSquarePlus size={13} />
                         Añadir pregunta personalizada
@@ -150,10 +150,10 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className="rounded-xl bg-white/3 border border-white/8 p-3 space-y-2"
+                        className="rounded-xl bg-white border border-gray-200 p-3 space-y-2"
                     >
                         <div className="flex items-center gap-2">
-                            <span className="flex-1 text-xs font-medium text-white/60">{q.question_text}</span>
+                            <span className="flex-1 text-xs font-medium text-gray-600">{q.question_text}</span>
                             <button
                                 onClick={() => toggleTemplate(q.id)}
                                 title={q.is_template ? "Quitar de plantilla" : "Añadir a plantilla (aparecerá en futuros planes)"}
@@ -171,7 +171,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                             value={customAnswers[q.id] ?? ""}
                             onChange={(e) => updateAnswer(q.id, e.target.value)}
                             placeholder="Escribe la respuesta..."
-                            className="w-full bg-white/4 border border-white/8 rounded-lg px-3 py-2 text-xs text-white/70 placeholder:text-white/20 focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors"
                         />
                     </motion.div>
                 ))}
@@ -182,7 +182,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                 <Shine enableOnHover color="white" opacity={0.3} duration={600} asChild>
                     <button
                         onClick={() => setShowPicker(!showPicker)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/4 text-white/40 border border-white/8 hover:bg-white/8 hover:text-white/60 hover:border-white/15"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200"
                     >
                         <Plus size={12} />
                         Añadir pregunta
@@ -195,11 +195,11 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                             initial={{ opacity: 0, y: 4, scale: 0.97 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                            className="absolute bottom-full left-0 mb-2 w-80 bg-[#0f1219] border border-white/12 rounded-xl shadow-2xl overflow-hidden z-50"
+                            className="absolute bottom-full left-0 mb-2 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden z-50"
                         >
                             {/* Search */}
-                            <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/8">
-                                <Search size={13} className="text-white/25 flex-shrink-0" />
+                            <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-200">
+                                <Search size={13} className="text-gray-400 flex-shrink-0" />
                                 <input
                                     autoFocus
                                     type="text"
@@ -207,7 +207,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && canCreate && createQuestion(search.trim())}
                                     placeholder="Buscar o escribir pregunta..."
-                                    className="flex-1 bg-transparent text-xs text-white placeholder:text-white/25 focus:outline-none"
+                                    className="flex-1 bg-transparent text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none"
                                 />
                             </div>
 
@@ -217,18 +217,18 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                                     <button
                                         key={q.id}
                                         onClick={() => addFromCatalog(q)}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/60 hover:bg-white/6 hover:text-white transition-colors text-left"
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors text-left"
                                     >
                                         {q.is_template
                                             ? <Star size={11} className="text-amber-400 flex-shrink-0" fill="currentColor" />
-                                            : <MessageSquarePlus size={11} className="text-white/25 flex-shrink-0" />
+                                            : <MessageSquarePlus size={11} className="text-gray-400 flex-shrink-0" />
                                         }
                                         <span className="flex-1 truncate">{q.question_text}</span>
                                     </button>
                                 ))}
 
                                 {availableQuestions.length === 0 && !canCreate && (
-                                    <p className="px-3 py-3 text-[11px] text-white/25 text-center">
+                                    <p className="px-3 py-3 text-[11px] text-gray-400 text-center">
                                         {search ? "No se encontraron preguntas" : "No hay preguntas anteriores"}
                                     </p>
                                 )}
@@ -239,7 +239,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                                 <button
                                     onClick={() => createQuestion(search.trim())}
                                     disabled={loading}
-                                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-[#208DCA] hover:bg-[#208DCA]/8 transition-colors border-t border-white/8"
+                                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-[#208DCA] hover:bg-[#208DCA]/8 transition-colors border-t border-gray-200"
                                 >
                                     <Plus size={12} />
                                     <span>Crear: "{search.trim()}"</span>
