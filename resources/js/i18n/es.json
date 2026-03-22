@@ -54,8 +54,8 @@
     "no_plans_description": "Crea tu primer plan de seguridad para comenzar",
     "create_first_plan": "Crear primer plan",
     "progress": "Progreso",
-    "plan_count_one": "{{count}} plan activo",
-    "plan_count_other": "{{count}} planes activos",
+    "plan_count_one": "plan activo",
+    "plan_count_other": "planes activos",
     "new_plan_modal_title": "Nuevo Plan de Seguridad",
     "new_plan_modal_description": "Dale un nombre al evento o instalación",
     "event_name_label": "Nombre del evento/instalación",
@@ -66,7 +66,11 @@
     "delete_confirm": "¿Seguro que quieres eliminar",
     "delete_warning": "Esta acción no se puede deshacer.",
     "delete_confirm_btn": "Sí, eliminar",
-    "deleting": "Eliminando..."
+    "deleting": "Eliminando...",
+    "status_draft": "Borrador",
+    "status_progress": "En progreso",
+    "status_completed": "Completado",
+    "status_pdf": "PDF listo"
   },
   "plan": {
     "back_to_dashboard": "Volver al dashboard",

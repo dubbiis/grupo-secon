@@ -54,8 +54,8 @@
     "no_plans_description": "Create your first security plan to get started",
     "create_first_plan": "Create first plan",
     "progress": "Progress",
-    "plan_count_one": "{{count}} active plan",
-    "plan_count_other": "{{count}} active plans",
+    "plan_count_one": "active plan",
+    "plan_count_other": "active plans",
     "new_plan_modal_title": "New Security Plan",
     "new_plan_modal_description": "Name the event or facility",
     "event_name_label": "Event/facility name",
@@ -66,7 +66,11 @@
     "delete_confirm": "Are you sure you want to delete",
     "delete_warning": "This action cannot be undone.",
     "delete_confirm_btn": "Yes, delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "status_draft": "Draft",
+    "status_progress": "In progress",
+    "status_completed": "Completed",
+    "status_pdf": "PDF ready"
   },
   "plan": {
     "back_to_dashboard": "Back to dashboard",

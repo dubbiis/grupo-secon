@@ -14,11 +14,15 @@ import { TypingText, TypingTextCursor } from "@/components/animate-ui/primitives
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { useTranslation } from "@/i18n";
 
-const STATUS_CONFIG = {
-    borrador:    { label: "Borrador",    color: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20" },
-    en_progreso: { label: "En progreso", color: "bg-[#208DCA]/15 text-[#208DCA] border-[#208DCA]/20" },
-    completado:  { label: "Completado",  color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
-    pdf_listo:   { label: "PDF listo",   color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
+const STATUS_COLORS = {
+    borrador:    "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+    en_progreso: "bg-[#208DCA]/15 text-[#208DCA] border-[#208DCA]/20",
+    completado:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+    pdf_listo:   "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+};
+const STATUS_KEYS = {
+    borrador: "dashboard.status_draft", en_progreso: "dashboard.status_progress",
+    completado: "dashboard.status_completed", pdf_listo: "dashboard.status_pdf",
 };
 
 export default function Dashboard({ plans, auth }) {
@@ -52,14 +56,14 @@ export default function Dashboard({ plans, auth }) {
                     transition={{ duration: 0.4 }}
                 >
                     <div>
-                        <p className="text-slate-900 text-sm mb-1">Bienvenido, {auth?.user?.name}</p>
+                        <p className="text-slate-500 text-sm mb-1">{t("dashboard.welcome", { name: auth?.user?.name })}</p>
                         <h1 className="text-3xl font-bold tracking-tight">
-                            <MorphingText text="Mis Planes" />
+                            <MorphingText text={t("dashboard.my_plans")} />
                         </h1>
-                        <p className="text-slate-900 text-sm mt-1">
+                        <p className="text-slate-500 text-sm mt-1">
                             {plans.length === 0
-                                ? "Crea tu primer plan"
-                                : <><SlidingNumber number={plans.length} inView={true} initiallyStable={true} />{` plan${plans.length !== 1 ? 'es' : ''} activo${plans.length !== 1 ? 's' : ''}`}</>
+                                ? t("dashboard.no_plans_description")
+                                : <><SlidingNumber number={plans.length} inView={true} initiallyStable={true} /> {plans.length === 1 ? t("dashboard.plan_count_one", { count: plans.length }) : t("dashboard.plan_count_other", { count: plans.length })}</>
                             }
                         </p>
                     </div>
@@ -68,7 +72,7 @@ export default function Dashboard({ plans, auth }) {
                         className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 shadow-lg shadow-[#273887]/25 hover:shadow-[#273887]/40"
                     >
                         <Plus size={16} />
-                        Nuevo Plan
+                        {t("dashboard.new_plan")}
                     </RippleButton>
                 </motion.div>
 
@@ -85,7 +89,7 @@ export default function Dashboard({ plans, auth }) {
                             <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain mx-auto mb-5 opacity-60" />
                             <h3 className="font-semibold text-lg mb-2">{ t("dashboard.no_plans_title") }</h3>
                             <div className="text-slate-900 text-sm mb-6">
-                                <TypingText text="Crea tu primer plan de seguridad para comenzar" duration={35} inView={true}>
+                                <TypingText text={t("dashboard.no_plans_description")} duration={35} inView={true}>
                                     <TypingTextCursor className="text-[#208DCA]/60" />
                                 </TypingText>
                             </div>
@@ -102,7 +106,8 @@ export default function Dashboard({ plans, auth }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <AnimatePresence>
                             {plans.map((plan, i) => {
-                                const status = STATUS_CONFIG[plan.status] ?? STATUS_CONFIG.borrador;
+                                const statusColor = STATUS_COLORS[plan.status] ?? STATUS_COLORS.borrador;
+                                const statusKey = STATUS_KEYS[plan.status] ?? STATUS_KEYS.borrador;
                                 return (
                                     <motion.div
                                         key={plan.id}
@@ -144,8 +149,8 @@ export default function Dashboard({ plans, auth }) {
                                                 <p className="text-xs text-slate-900 font-mono mb-3">{plan.uuid}</p>
 
                                                 <div className="flex items-center gap-2 mb-4">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${status.color}`}>
-                                                        {status.label}
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${statusColor}`}>
+                                                        {t(statusKey)}
                                                     </span>
                                                     <span className="text-xs text-slate-900 ml-auto">{plan.created_at}</span>
                                                 </div>
