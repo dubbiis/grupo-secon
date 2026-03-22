@@ -1,6 +1,6 @@
 import { useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import { Shield, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
 import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
@@ -46,8 +46,19 @@ export default function Login() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] shadow-lg shadow-[#253C87]/40 mb-4">
-                        <Shield size={28} className="text-white" />
+                    <div className="relative inline-block mb-4 overflow-hidden">
+                        <img src="/images/logo.png" alt="Grupo Secon" className="h-20 w-auto object-contain" />
+                        <motion.div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)",
+                                backgroundSize: "300% 100%",
+                                mixBlendMode: "overlay",
+                            }}
+                            initial={{ backgroundPosition: "-150% 0%" }}
+                            animate={{ backgroundPosition: "350% 0%" }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+                        />
                     </div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">
                         <GradientText
