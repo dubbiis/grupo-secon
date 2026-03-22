@@ -929,7 +929,9 @@ export default function MapEditor({
 
                 {/* Canvas area — hidden when map is active */}
                 <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto min-h-[560px] ${showMap ? "hidden" : ""}`}>
-                    {!hasBg ? (
+
+                    {/* Upload dropzone — visible only when no image loaded */}
+                    {!hasBg && (
                         <div
                             className="w-full h-full flex flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed border-white/15 bg-white/2 cursor-pointer transition-colors hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3"
                             onDrop={handleDrop}
@@ -960,51 +962,52 @@ export default function MapEditor({
                                 ))}
                             </div>
                         </div>
-                    ) : (
-                        <div className="relative origin-top-left" style={{ transform: `scale(${zoom})` }}>
-                            <canvas
-                                ref={canvasRef}
-                                className={`rounded-xl shadow-2xl shadow-black/40 max-w-full block ${cursorClass}`}
-                                onMouseDown={onMouseDown}
-                                onMouseMove={onMouseMove}
-                                onMouseUp={onMouseUp}
-                                onMouseLeave={onMouseUp}
-                                onContextMenu={onContextMenu}
-                                onTouchStart={(e) => { e.preventDefault(); onMouseDown(e); }}
-                                onTouchMove={(e) => { e.preventDefault(); onMouseMove(e); }}
-                                onTouchEnd={(e) => { e.preventDefault(); onMouseUp(e); }}
-                            />
-                            {/* Text input overlay */}
-                            {textPrompt && (
-                                <div className="absolute z-10 -translate-y-full" style={{ left: textPrompt.x, top: textPrompt.y - 16 }}>
-                                    <div className="flex items-center gap-1 bg-[#0f1219] border border-[#208DCA]/40 rounded-lg shadow-xl px-2 py-1">
-                                        <input autoFocus value={textValue}
-                                            onChange={(e) => setTextValue(e.target.value)}
-                                            onKeyDown={(e) => { if (e.key === "Enter") confirmText(); if (e.key === "Escape") setTextPrompt(null); }}
-                                            className="bg-transparent text-sm text-white outline-none w-44" placeholder="Escribe el texto..."
-                                        />
-                                        <button onClick={confirmText} className="text-[#208DCA] hover:text-white transition-colors"><Check size={14} /></button>
-                                        <button onClick={() => setTextPrompt(null)} className="text-white/30 hover:text-white transition-colors"><X size={13} /></button>
-                                    </div>
-                                </div>
-                            )}
-                            {/* Reset image button */}
-                            <button
-                                onClick={() => { setHasBg(false); bgRef.current = null; setElements([]); setSelectedIdx(null); }}
-                                className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 border border-white/15 text-white/40 hover:text-white flex items-center justify-center transition-colors"
-                                title="Cambiar imagen"
-                            >
-                                <X size={12} />
-                            </button>
-                            {/* Select mode indicator */}
-                            {tool === "select" && selectedIdx !== null && (
-                                <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-white text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
-                                    <Crosshair size={10} />
-                                    Elemento seleccionado — <kbd className="bg-white/20 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
-                                </div>
-                            )}
-                        </div>
                     )}
+
+                    {/* Canvas — always in DOM so canvasRef is always valid */}
+                    <div className={`relative origin-top-left ${!hasBg ? "hidden" : ""}`} style={{ transform: `scale(${zoom})` }}>
+                        <canvas
+                            ref={canvasRef}
+                            className={`rounded-xl shadow-2xl shadow-black/40 max-w-full block ${cursorClass}`}
+                            onMouseDown={onMouseDown}
+                            onMouseMove={onMouseMove}
+                            onMouseUp={onMouseUp}
+                            onMouseLeave={onMouseUp}
+                            onContextMenu={onContextMenu}
+                            onTouchStart={(e) => { e.preventDefault(); onMouseDown(e); }}
+                            onTouchMove={(e) => { e.preventDefault(); onMouseMove(e); }}
+                            onTouchEnd={(e) => { e.preventDefault(); onMouseUp(e); }}
+                        />
+                        {/* Text input overlay */}
+                        {textPrompt && (
+                            <div className="absolute z-10 -translate-y-full" style={{ left: textPrompt.x, top: textPrompt.y - 16 }}>
+                                <div className="flex items-center gap-1 bg-[#0f1219] border border-[#208DCA]/40 rounded-lg shadow-xl px-2 py-1">
+                                    <input autoFocus value={textValue}
+                                        onChange={(e) => setTextValue(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === "Enter") confirmText(); if (e.key === "Escape") setTextPrompt(null); }}
+                                        className="bg-transparent text-sm text-white outline-none w-44" placeholder="Escribe el texto..."
+                                    />
+                                    <button onClick={confirmText} className="text-[#208DCA] hover:text-white transition-colors"><Check size={14} /></button>
+                                    <button onClick={() => setTextPrompt(null)} className="text-white/30 hover:text-white transition-colors"><X size={13} /></button>
+                                </div>
+                            </div>
+                        )}
+                        {/* Reset image button */}
+                        <button
+                            onClick={() => { setHasBg(false); bgRef.current = null; setElements([]); setSelectedIdx(null); }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 border border-white/15 text-white/40 hover:text-white flex items-center justify-center transition-colors"
+                            title="Cambiar imagen"
+                        >
+                            <X size={12} />
+                        </button>
+                        {/* Select mode indicator */}
+                        {tool === "select" && selectedIdx !== null && (
+                            <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-white text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
+                                <Crosshair size={10} />
+                                Elemento seleccionado — <kbd className="bg-white/20 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
+                            </div>
+                        )}
+                    </div>
 
                     <input id="map-file-input" type="file" accept="image/*" className="hidden"
                         onChange={(e) => { if (e.target.files[0]) loadBg(e.target.files[0]); }}
