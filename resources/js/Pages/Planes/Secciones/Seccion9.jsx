@@ -3,30 +3,40 @@ import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Table2, Upload, Plus, X, ChevronRight, Save, CheckCircle2,
-    RefreshCw, Trash2, CloudUpload,
+    RefreshCw, CloudUpload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import * as XLSX from "xlsx";
 
-// Column mapping: Excel col index (0-based) → our field name
-// B=1(event name, ignored), F=5(day), G=6(name/position), I=8(start), K=10(finish), M=12(number), N=13(type), O=14(total hours)
-const COL_MAP = { 5: "dia", 6: "nombre", 8: "inicio", 10: "fin", 12: "cantidad", 13: "categoria", 14: "horas" };
-const HEADER_ROW = 6; // 0-based index of header row (row 7 in Excel)
 const FIELDS = ["dia", "nombre", "inicio", "fin", "cantidad", "categoria", "horas"];
-const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Hora inicio", fin: "Hora fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
+const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fin: "Fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
+
+// Header patterns to detect columns dynamically
+const HEADER_PATTERNS = {
+    dia: /day|d[ií]a|jornada/i,
+    nombre: /name.*pos|pos.*name|nombre|position|puesto/i,
+    inicio: /start|inicio|entrada|hora.*ini/i,
+    fin: /finish|fin|salida|hora.*fin|end/i,
+    cantidad: /number|n[uú]mero|cantidad|n[°º]/i,
+    categoria: /type.*guard|categor|tipo/i,
+    horas: /total.*hour|hora.*total|total.*hora|horas/i,
+};
 
 function formatTime(val) {
     if (val == null || val === "") return "";
-    // Excel stores times as fractions of a day (0.0 = 00:00, 0.5 = 12:00)
-    if (typeof val === "number" && val >= 0 && val < 1) {
+    if (typeof val === "number" && val >= 0 && val <= 1) {
         const totalMinutes = Math.round(val * 24 * 60);
-        const h = Math.floor(totalMinutes / 60);
+        const h = Math.floor(totalMinutes / 60) % 24;
         const m = totalMinutes % 60;
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
-    return String(val);
+    // Already a string like "08:00" or Date
+    const s = String(val);
+    const timeMatch = s.match(/(\d{1,2}):(\d{2})/);
+    if (timeMatch) return `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}`;
+    return s;
 }
 
 function parseExcel(file) {
@@ -35,22 +45,54 @@ function parseExcel(file) {
         reader.onload = (e) => {
             try {
                 const wb = XLSX.read(e.target.result, { type: "array" });
-                // Use first sheet (Overview Event)
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
 
+                // Step 1: Find header row by scanning for known column names
+                let headerRowIdx = -1;
+                let colMap = {};
+
+                for (let r = 0; r < Math.min(20, raw.length); r++) {
+                    const row = raw[r];
+                    if (!row) continue;
+                    const matched = {};
+                    for (let c = 0; c < row.length; c++) {
+                        const cellText = String(row[c] ?? "").trim();
+                        if (!cellText) continue;
+                        for (const [field, pattern] of Object.entries(HEADER_PATTERNS)) {
+                            if (!matched[field] && pattern.test(cellText)) {
+                                matched[field] = c;
+                            }
+                        }
+                    }
+                    // Need at least 3 matches to consider this the header row
+                    if (Object.keys(matched).length >= 3) {
+                        headerRowIdx = r;
+                        colMap = matched;
+                        break;
+                    }
+                }
+
+                if (headerRowIdx === -1) {
+                    // Fallback: try fixed positions
+                    headerRowIdx = 6;
+                    colMap = { dia: 5, nombre: 6, inicio: 8, fin: 10, cantidad: 12, categoria: 13, horas: 14 };
+                }
+
+                // Step 2: Parse data rows
                 const rows = [];
-                for (let i = HEADER_ROW + 1; i < raw.length; i++) {
+                for (let i = headerRowIdx + 1; i < raw.length; i++) {
                     const row = raw[i];
                     if (!row || row.every((c) => c === "" || c == null)) continue;
 
                     const entry = {};
                     let hasData = false;
-                    for (const [colIdx, field] of Object.entries(COL_MAP)) {
-                        let val = row[Number(colIdx)] ?? "";
+                    for (const field of FIELDS) {
+                        const colIdx = colMap[field];
+                        if (colIdx == null) { entry[field] = ""; continue; }
+                        let val = row[colIdx] ?? "";
                         if (field === "inicio" || field === "fin") val = formatTime(val);
-                        else if (field === "cantidad" || field === "horas") val = val === "" ? "" : String(val);
-                        else val = String(val);
+                        else val = val === "" || val === 0 ? "" : String(val);
                         entry[field] = val;
                         if (val !== "" && val !== "0") hasData = true;
                     }
@@ -91,16 +133,12 @@ export default function Seccion9({ plan, section, files = [] }) {
         grouped.push({ type: "row", row, idx });
     });
 
-    // Handle file upload + parse
     const handleFile = async (file) => {
         if (!file) return;
         setUploading(true);
-
-        // Parse Excel client-side
         const parsed = await parseExcel(file);
         if (parsed.length > 0) setRows(parsed);
 
-        // Also upload to server as attachment
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const fd = new FormData();
         fd.append("file", file);
@@ -129,14 +167,12 @@ export default function Seccion9({ plan, section, files = [] }) {
         if (inputRef.current) inputRef.current.value = "";
     };
 
-    // Edit table
     const updateCell = (idx, field, value) => {
         setRows((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
     };
     const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
     const addRow = () => setRows((prev) => [...prev, emptyRow()]);
 
-    // Save
     const save = (status) => {
         setSaving(true);
         router.put(
@@ -238,7 +274,6 @@ export default function Seccion9({ plan, section, files = [] }) {
                 </div>
                 <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleInputChange} />
 
-                {/* Show attached file */}
                 {excelFiles.length > 0 && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-white/40">
                         <CheckCircle2 size={12} className="text-green-400" />
@@ -250,11 +285,11 @@ export default function Seccion9({ plan, section, files = [] }) {
             {/* Editable table */}
             {rows.length > 0 && (
                 <div className="rounded-2xl bg-white/3 border border-white/8 shadow-xl shadow-black/20 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+                    <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Table2 size={14} className="text-[#208DCA]" />
                             <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">
-                                Tabla de planificación — {rows.length} registros
+                                {rows.length} registros
                             </span>
                         </div>
                         <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
@@ -266,23 +301,32 @@ export default function Seccion9({ plan, section, files = [] }) {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-[11px] table-fixed min-w-[700px]">
+                            <colgroup>
+                                <col className="w-[28%]" /> {/* nombre */}
+                                <col className="w-[10%]" /> {/* inicio */}
+                                <col className="w-[10%]" /> {/* fin */}
+                                <col className="w-[7%]" />  {/* cantidad */}
+                                <col className="w-[22%]" /> {/* categoria */}
+                                <col className="w-[10%]" /> {/* horas */}
+                                <col className="w-[30px]" /> {/* delete */}
+                            </colgroup>
                             <thead>
                                 <tr className="border-b border-white/8">
                                     {FIELDS.filter((f) => f !== "dia").map((f) => (
-                                        <th key={f} className="px-3 py-2.5 text-left text-white/40 font-medium uppercase tracking-wide">
+                                        <th key={f} className="px-2 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">
                                             {LABELS[f]}
                                         </th>
                                     ))}
-                                    <th className="px-3 py-2.5 w-8" />
+                                    <th className="w-[30px]" />
                                 </tr>
                             </thead>
                             <tbody>
                                 {grouped.map((item, gIdx) => {
                                     if (item.type === "header") {
                                         return (
-                                            <tr key={`day-${gIdx}`} className="bg-[#208DCA]/8 border-b border-white/6">
-                                                <td colSpan={FIELDS.length} className="px-3 py-2 text-xs font-bold text-[#208DCA] uppercase tracking-wide">
+                                            <tr key={`day-${gIdx}`} className="bg-[#208DCA]/10 border-b border-[#208DCA]/20">
+                                                <td colSpan={7} className="px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
                                                     {item.day}
                                                 </td>
                                             </tr>
@@ -290,21 +334,21 @@ export default function Seccion9({ plan, section, files = [] }) {
                                     }
 
                                     return (
-                                        <tr key={item.idx} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                                        <tr key={item.idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
                                             {FIELDS.filter((f) => f !== "dia").map((f) => (
-                                                <td key={f} className="px-1 py-0.5">
+                                                <td key={f} className="px-1 py-0">
                                                     <input
                                                         type="text"
                                                         value={item.row[f] ?? ""}
                                                         onChange={(e) => updateCell(item.idx, f, e.target.value)}
-                                                        className="w-full bg-transparent text-white/70 text-xs px-2 py-1.5 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors"
+                                                        className="w-full bg-transparent text-white/70 text-[11px] px-1 py-1 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors truncate"
                                                     />
                                                 </td>
                                             ))}
-                                            <td className="px-1 py-0.5">
+                                            <td className="px-0 py-0 w-[30px]">
                                                 <button onClick={() => removeRow(item.idx)}
-                                                    className="text-white/15 hover:text-red-400 transition-colors p-1">
-                                                    <X size={12} />
+                                                    className="text-white/0 group-hover/row:text-white/20 hover:!text-red-400 transition-colors p-1">
+                                                    <X size={11} />
                                                 </button>
                                             </td>
                                         </tr>
@@ -314,11 +358,10 @@ export default function Seccion9({ plan, section, files = [] }) {
                         </table>
                     </div>
 
-                    {/* Summary */}
-                    <div className="px-6 py-3 border-t border-white/8 flex items-center justify-between text-xs text-white/40">
+                    <div className="px-4 py-2.5 border-t border-white/8 flex items-center justify-between text-[11px] text-white/40">
                         <span>{rows.length} filas</span>
-                        <span>
-                            Total horas: {rows.reduce((sum, r) => sum + (parseFloat(r.horas) || 0), 0).toFixed(1)}h
+                        <span className="font-medium">
+                            Total: {rows.reduce((sum, r) => sum + (parseFloat(r.horas) || 0), 0).toFixed(1)}h
                         </span>
                     </div>
                 </div>
