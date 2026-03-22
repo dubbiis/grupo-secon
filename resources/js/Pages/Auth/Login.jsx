@@ -56,7 +56,7 @@ export default function Login() {
                         <motion.div
                             className="absolute inset-0 pointer-events-none"
                             style={{
-                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
+                                background: "linear-gradient(90deg, transparent 0%, rgba(32,141,202,0.85) 45%, rgba(255,255,255,1) 50%, rgba(32,141,202,0.85) 55%, transparent 100%)",
                                 backgroundSize: "300% 100%",
                                 WebkitMaskImage: "url('/images/logo-blanco.png')",
                                 maskImage: "url('/images/logo-blanco.png')",
