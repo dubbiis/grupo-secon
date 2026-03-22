@@ -33,7 +33,7 @@ export default function FileUpload({
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setUploaded((prev) => [...prev, data.file]);
+                    setUploaded((prev) => [...prev, data]);
                 }
             } catch {}
         }

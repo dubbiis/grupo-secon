@@ -45,17 +45,13 @@ export default function Login() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
-                    {/* Emblema */}
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] shadow-2xl shadow-[#253C87]/50 mb-5 relative overflow-hidden">
-                        <img src="/images/logo-blanco.png" alt="" className="h-14 w-14 object-contain" style={{ mixBlendMode: "screen" }}
-                            onError={(e) => { e.target.style.display = "none"; }} />
-                        <motion.div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                                background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%)",
-                            }}
-                        />
-                    </div>
+                    {/* Logo */}
+                    <img
+                        src="/images/logo-blanco.png"
+                        alt="Grupo Secon"
+                        className="h-20 w-auto object-contain mx-auto mb-5"
+                        onError={(e) => { e.target.style.display = "none"; }}
+                    />
                     <h1 className="text-3xl font-bold tracking-tight">
                         <GradientText
                             text="Grupo Secon"
