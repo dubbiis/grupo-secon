@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 
 function renderMarkdown(raw) {
     const escaped = raw
@@ -150,27 +150,27 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                     </>
                                 )}
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 {!generating && text && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setEditMode((m) => !m)}
-                                        className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
-                                    >
-                                        {editMode ? <><Eye size={11} /> Vista previa</> : <><Pencil size={11} /> Editar</>}
-                                    </Button>
+                                    <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
+                                        <button
+                                            onClick={() => setEditMode((m) => !m)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/25 hover:bg-[#208DCA]/25 hover:border-[#208DCA]/40 hover:shadow-md hover:shadow-[#208DCA]/10"
+                                        >
+                                            {editMode ? <><Eye size={12} /> Vista previa</> : <><Pencil size={12} /> Editar</>}
+                                        </button>
+                                    </Shine>
                                 )}
                                 {!generating && text && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleGenerar}
-                                        className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
-                                    >
-                                        <RefreshCw size={11} />
-                                        Regenerar
-                                    </Button>
+                                    <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
+                                        <button
+                                            onClick={handleGenerar}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/15 text-purple-400 border border-purple-500/25 hover:bg-purple-500/25 hover:border-purple-500/40 hover:shadow-md hover:shadow-purple-500/10"
+                                        >
+                                            <RefreshCw size={12} />
+                                            Regenerar
+                                        </button>
+                                    </Shine>
                                 )}
                             </div>
                         </div>
