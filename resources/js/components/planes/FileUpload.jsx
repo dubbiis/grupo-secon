@@ -11,10 +11,11 @@ export default function FileUpload({
 }) {
     const [uploading, setUploading] = useState(false);
     const [uploaded, setUploaded] = useState([]);
+    const [deletedIds, setDeletedIds] = useState([]);
     const [dragOver, setDragOver] = useState(false);
     const inputRef = useRef(null);
 
-    const allFiles = [...existingFiles, ...uploaded];
+    const allFiles = [...existingFiles.filter((f) => !deletedIds.includes(f.id)), ...uploaded].filter(Boolean);
 
     const uploadFiles = async (fileList) => {
         if (fileList.length === 0) return;
@@ -55,6 +56,7 @@ export default function FileUpload({
             method: "DELETE",
             headers: { "X-CSRF-TOKEN": csrfToken, "Accept": "application/json" },
         });
+        setDeletedIds((prev) => [...prev, fileId]);
         setUploaded((prev) => prev.filter((f) => f.id !== fileId));
     };
 
