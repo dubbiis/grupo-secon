@@ -3,6 +3,25 @@ import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp } from "lucide-react";
 
+function LogoShimmer() {
+    return (
+        <div className="relative overflow-hidden inline-block">
+            <img src="/images/logo.png" alt="Grupo Secon" className="h-8 w-auto object-contain relative z-10" />
+            <motion.div
+                className="absolute inset-0 z-20 pointer-events-none"
+                style={{
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
+                    backgroundSize: "300% 100%",
+                    mixBlendMode: "overlay",
+                }}
+                initial={{ backgroundPosition: "-150% 0%" }}
+                animate={{ backgroundPosition: "350% 0%" }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+            />
+        </div>
+    );
+}
+
 export default function AppLayout({ children, title, subtitle }) {
     const { auth } = usePage().props;
     const currentUrl = typeof window !== "undefined" ? window.location.pathname : "";
@@ -51,11 +70,7 @@ export default function AppLayout({ children, title, subtitle }) {
                 {/* Logo */}
                 <div className="px-4 py-5 border-b border-white/6">
                     <Link href="/" className="flex items-center gap-3">
-                        <img
-                            src="/images/logo.png"
-                            alt="Grupo Secon"
-                            className="h-8 w-auto object-contain"
-                        />
+                        <LogoShimmer />
                     </Link>
                 </div>
 
