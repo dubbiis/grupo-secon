@@ -320,5 +320,114 @@
     "progress": "Progreso del plan",
     "completed": "secciones completadas",
     "of": "de"
+  },
+  "s2": {
+    "event_desc": "Descripcion del evento *",
+    "event_desc_ph": "Describe brevemente el evento, artistas, actividades...",
+    "event_obj": "Objetivo del evento",
+    "event_obj_ph": "Proposito y objetivos del evento",
+    "date_start": "Fecha de inicio *",
+    "date_end": "Fecha de fin *",
+    "time_open": "Hora apertura",
+    "time_close": "Hora cierre",
+    "setup_start": "Inicio montaje",
+    "setup_end": "Fin desmontaje",
+    "attendees": "Numero de asistentes *",
+    "attendees_ph": "Aforo total esperado",
+    "vip_zone": "Zona VIP?",
+    "vip_desc": "Descripcion zona VIP",
+    "vip_ph": "Accesos, capacidad y caracteristicas de la zona VIP"
+  },
+  "s4": {
+    "capacity": "Aforo total *",
+    "capacity_ph": "Capacidad maxima del recinto",
+    "accesses": "Numero de accesos *",
+    "accesses_ph": "Numero de entradas/salidas",
+    "access_desc": "Descripcion de accesos y zonas *",
+    "transport": "Transporte publico y parkings",
+    "public_transport": "Transporte publico cercano",
+    "auto_hint": "Rellenado automaticamente o escribe manualmente.",
+    "parking_nearby": "Parkings cercanos"
+  },
+  "s5": {
+    "emergency": "Recursos de emergencia cercanos",
+    "hospitals": "Recursos sanitarios cercanos *",
+    "hospitals_hint": "Rellenado automaticamente o escribe manualmente.",
+    "police": "Fuerzas de seguridad cercanas *",
+    "police_hint": "Rellenado automaticamente o escribe manualmente.",
+    "route_map": "Mapa de rutas de emergencia",
+    "close_editor": "Cerrar editor",
+    "open_editor": "Abrir editor de mapas",
+    "upload_routes": "O sube una imagen de rutas",
+    "upload_routes_desc": "PNG, JPG o PDF con la ubicacion de recursos de emergencia"
+  },
+  "s6": {
+    "public_type": "Tipo de publico *",
+    "specify_public": "Especifica el tipo de publico...",
+    "age_range": "Rango de edad estimado",
+    "geo_scope": "Ambito geografico",
+    "vips_title": "Artistas / VIPs / Personalidades",
+    "registered": "registrado/s",
+    "vips_desc": "Anade cada artista, VIP o personalidad relevante.",
+    "add_vip": "Anadir artista / VIP",
+    "vip_name": "Nombre / Artista / Personalidad",
+    "full_name": "Nombre completo",
+    "security_profile": "Perfil y consideraciones de seguridad",
+    "write_name_first": "Escribe el nombre primero",
+    "generate_ai": "Generar perfil con IA",
+    "generating": "Generando...",
+    "generate_with_ai": "Generar con IA",
+    "add_photo": "Anadir foto",
+    "uploading_photo": "Subiendo..."
+  },
+  "s8": {
+    "title": "Planos del dispositivo de seguridad",
+    "desc": "Sube los planos del recinto con la distribucion del personal de seguridad.",
+    "upload_file": "Subir archivo",
+    "map_editor": "Editor de mapas",
+    "upload_plan": "Subir plano del recinto"
+  },
+  "s10": {
+    "profiles": "Perfiles de asistentes que necesitan gestion de transporte",
+    "manual_ph": "O escribe los perfiles manualmente...",
+    "vehicles": "Vehiculos y medios de transporte utilizados",
+    "parking_q": "Hay zonas de aparcamiento habilitadas?",
+    "parking_desc": "Descripcion de zonas de aparcamiento"
+  },
+  "s11": {
+    "format": "Formato del run of show",
+    "image_doc": "Imagen / Documento",
+    "text_table": "Texto / Tabla",
+    "upload": "Subir run of show",
+    "text_label": "Run of show (texto)"
+  },
+  "s12": {
+    "desc": "Define los tipos de acreditacion del evento.",
+    "list_view": "Lista de acreditaciones",
+    "designer_view": "Disenador de tarjetas",
+    "add": "Anadir tipo de acreditacion"
+  },
+  "s13": {
+    "desc": "Registra todos los contactos clave.",
+    "add": "Anadir contacto"
+  },
+  "s14": {
+    "desc": "Lista y sube los documentos que se adjuntan al plan de seguridad como anexos.",
+    "add": "Anadir anexo",
+    "upload": "Subir documentos adjuntos"
+  },
+  "places": {
+    "auto_search": "Busqueda automatica",
+    "search_nearby": "Buscar cerca del evento",
+    "searching": "Buscando...",
+    "retry": "Volver a buscar",
+    "found": "encontrados",
+    "no_results": "No se encontraron lugares. Introduce los datos manualmente.",
+    "use_selected": "Usar datos seleccionados",
+    "error": "Error al buscar datos."
+  },
+  "loop": {
+    "add_item": "Anadir item",
+    "item": "Item"
   }
 }

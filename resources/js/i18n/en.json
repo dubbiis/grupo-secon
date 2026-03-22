@@ -320,5 +320,114 @@
     "progress": "Plan progress",
     "completed": "sections completed",
     "of": "of"
+  },
+  "s2": {
+    "event_desc": "Event description *",
+    "event_desc_ph": "Briefly describe the event, artists, activities...",
+    "event_obj": "Event objective",
+    "event_obj_ph": "Purpose and objectives",
+    "date_start": "Start date *",
+    "date_end": "End date *",
+    "time_open": "Opening time",
+    "time_close": "Closing time",
+    "setup_start": "Setup start",
+    "setup_end": "Teardown end",
+    "attendees": "Number of attendees *",
+    "attendees_ph": "Total expected capacity",
+    "vip_zone": "VIP zone?",
+    "vip_desc": "VIP zone description",
+    "vip_ph": "Access, capacity and VIP zone features"
+  },
+  "s4": {
+    "capacity": "Total capacity *",
+    "capacity_ph": "Maximum venue capacity",
+    "accesses": "Number of accesses *",
+    "accesses_ph": "Number of entrances/exits",
+    "access_desc": "Description of accesses and zones *",
+    "transport": "Public transport and parking",
+    "public_transport": "Nearby public transport",
+    "auto_hint": "Auto-filled or write manually.",
+    "parking_nearby": "Nearby parking"
+  },
+  "s5": {
+    "emergency": "Nearby emergency resources",
+    "hospitals": "Nearby health resources *",
+    "hospitals_hint": "Auto-filled or write manually.",
+    "police": "Nearby security forces *",
+    "police_hint": "Auto-filled or write manually.",
+    "route_map": "Emergency route map",
+    "close_editor": "Close editor",
+    "open_editor": "Open map editor",
+    "upload_routes": "Or upload a route image",
+    "upload_routes_desc": "PNG, JPG or PDF with emergency resource locations"
+  },
+  "s6": {
+    "public_type": "Public type *",
+    "specify_public": "Specify the public type...",
+    "age_range": "Estimated age range",
+    "geo_scope": "Geographic scope",
+    "vips_title": "Artists / VIPs / Personalities",
+    "registered": "registered",
+    "vips_desc": "Add each artist, VIP or relevant personality.",
+    "add_vip": "Add artist / VIP",
+    "vip_name": "Name / Artist / Personality",
+    "full_name": "Full name",
+    "security_profile": "Security profile and considerations",
+    "write_name_first": "Write the name first",
+    "generate_ai": "Generate profile with AI",
+    "generating": "Generating...",
+    "generate_with_ai": "Generate with AI",
+    "add_photo": "Add photo",
+    "uploading_photo": "Uploading..."
+  },
+  "s8": {
+    "title": "Security device plans",
+    "desc": "Upload the venue plans with security personnel distribution.",
+    "upload_file": "Upload file",
+    "map_editor": "Map editor",
+    "upload_plan": "Upload venue plan"
+  },
+  "s10": {
+    "profiles": "Attendee profiles requiring transport management",
+    "manual_ph": "Or write profiles manually...",
+    "vehicles": "Vehicles and transport means used",
+    "parking_q": "Are there designated parking areas?",
+    "parking_desc": "Parking zones description"
+  },
+  "s11": {
+    "format": "Run of show format",
+    "image_doc": "Image / Document",
+    "text_table": "Text / Table",
+    "upload": "Upload run of show",
+    "text_label": "Run of show (text)"
+  },
+  "s12": {
+    "desc": "Define event credential types.",
+    "list_view": "Credentials list",
+    "designer_view": "Card designer",
+    "add": "Add credential type"
+  },
+  "s13": {
+    "desc": "Register all key contacts.",
+    "add": "Add contact"
+  },
+  "s14": {
+    "desc": "List and upload documents attached to the security plan as annexes.",
+    "add": "Add annex",
+    "upload": "Upload attached documents"
+  },
+  "places": {
+    "auto_search": "Automatic search",
+    "search_nearby": "Search near the event",
+    "searching": "Searching...",
+    "retry": "Search again",
+    "found": "found",
+    "no_results": "No places found. Enter data manually.",
+    "use_selected": "Use selected data",
+    "error": "Error searching data."
+  },
+  "loop": {
+    "add_item": "Add item",
+    "item": "Item"
   }
 }
