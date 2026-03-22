@@ -188,7 +188,10 @@ class PlanSectionController extends Controller
 
     public function cambios(Request $request, string $uuid, int $section)
     {
-        $request->validate(['instrucciones' => 'required|string']);
+        $request->validate([
+            'instrucciones' => 'required|string',
+            'texto_actual'  => 'nullable|string',
+        ]);
 
         $plan = Plan::where('uuid', $uuid)->firstOrFail();
         $planSection = $plan->getSectionByNumber($section);
@@ -196,11 +199,13 @@ class PlanSectionController extends Controller
 
         $model = config('openai.model', 'gpt-4o-mini');
 
-        return response()->stream(function () use ($openAI, $planSection, $plan, $section, $request, $model) {
+        $currentText = $request->input('texto_actual', $planSection->generated_text);
+
+        return response()->stream(function () use ($openAI, $planSection, $plan, $section, $request, $model, $currentText) {
             $fullText = '';
 
             $usage = $openAI->streamCambios(
-                $planSection->generated_text,
+                $currentText,
                 $request->input('instrucciones'),
                 function (string $chunk) use (&$fullText) {
                     $fullText .= $chunk;

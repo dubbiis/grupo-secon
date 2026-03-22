@@ -20,7 +20,7 @@ export default function Login() {
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0f1e]">
             <GravityStarsBackground
-                className="absolute inset-0 text-[#208DCA]/60"
+                className="absolute inset-0 text-[#208DCA]/60 pointer-events-none"
                 starsCount={100}
                 mouseGravity="attract"
                 gravityStrength={60}
@@ -49,7 +49,7 @@ export default function Login() {
                     <img
                         src="/images/logo-blanco.png"
                         alt="Grupo Secon"
-                        className="h-20 w-auto object-contain mb-5"
+                        className="h-20 w-auto object-contain mb-5 mx-auto"
                         onError={(e) => { e.target.style.display = "none"; }}
                     />
                     <h1 className="text-3xl font-bold tracking-tight">

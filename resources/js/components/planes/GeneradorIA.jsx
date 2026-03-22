@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil, Eye, EyeOff } from "lucide-react";
+import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
@@ -73,6 +73,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
 
     const handleGenerar = () => {
         setText("");
+        setEditMode(false);
         streamSSE(
             `/planes/${uuid}/seccion/${section}/generar`,
             { form_data: formData ?? {} },
@@ -83,9 +84,10 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
 
     const handleCambios = () => {
         if (!instrucciones.trim()) return;
+        setEditMode(false);
         streamSSE(
             `/planes/${uuid}/seccion/${section}/cambios`,
-            { instrucciones },
+            { instrucciones, texto_actual: text },
             () => setApplyingCambios(true),
             () => { setApplyingCambios(false); setInstrucciones(""); setShowCambios(false); }
         );
@@ -143,7 +145,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             : <Eye size={12} className="text-white/30" />
                                         }
                                         <span className="text-xs text-white/50">
-                                            {editMode ? "Editando texto" : "Vista formateada"}
+                                            {editMode ? "Editando texto" : "Vista previa"}
                                         </span>
                                     </>
                                 )}
@@ -156,7 +158,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                         onClick={() => setEditMode((m) => !m)}
                                         className="text-white/30 hover:text-white gap-1.5 text-xs h-7"
                                     >
-                                        {editMode ? <><EyeOff size={11} /> Vista</> : <><Pencil size={11} /> Editar</>}
+                                        {editMode ? <><Eye size={11} /> Vista previa</> : <><Pencil size={11} /> Editar</>}
                                     </Button>
                                 )}
                                 {!generating && text && (
@@ -173,7 +175,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                             </div>
                         </div>
 
-                        {/* Text: formatted view or editable textarea */}
+                        {/* Text area */}
                         <div className="relative">
                             {generating || editMode ? (
                                 <>
@@ -195,7 +197,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 </>
                             ) : (
                                 <div
-                                    className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner min-h-[200px]"
+                                    className="w-full rounded-xl border border-white/8 bg-black/30 p-5 text-sm leading-relaxed text-white/80 shadow-inner min-h-[200px] max-h-[500px] overflow-y-auto"
                                     dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
                                 />
                             )}
