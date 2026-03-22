@@ -30,6 +30,7 @@ class PromptTemplate extends Model
     {
         $prompt = $this->user_prompt_template;
         foreach ($variables as $key => $value) {
+            if (is_array($value) || is_object($value)) continue;
             $prompt = str_replace('{{' . $key . '}}', $value ?? '', $prompt);
         }
         return $prompt;
