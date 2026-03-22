@@ -12,7 +12,7 @@ import * as XLSX from "xlsx";
 const FIELDS = ["dia", "nombre", "inicio", "fin", "cantidad", "categoria", "horas"];
 const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fin: "Fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
 
-// Patterns to detect the PLANNING sheet headers
+// Patterns to detect planning sheet headers
 const PLANNING_PATTERNS = {
     dia: /\bday\b|d[ií]a|jornada/i,
     nombre: /name.{0,5}pos|pos.{0,5}name|nombre|position|puesto/i,
@@ -21,13 +21,6 @@ const PLANNING_PATTERNS = {
     cantidad: /\bnumber\b|n[uú]mero|cantidad/i,
     categoria: /type.*guard|categor[ií]|tipo.*guard/i,
     horas: /total.*hour|hora.*total|total.*hora|\bhoras\b|\bhours\b/i,
-};
-
-// Patterns to detect the STAFF sheet headers
-const STAFF_PATTERNS = {
-    nombre: /\bname\b|nombre/i,
-    horas: /\bhours\b|\bhoras\b/i,
-    coste: /\bcost\b|coste|precio/i,
 };
 
 function formatTime(val) {
@@ -44,113 +37,80 @@ function formatTime(val) {
     return s;
 }
 
-/**
- * Scan a sheet's first 20 rows for header patterns.
- * Returns { headerRowIdx, colMap, matchCount } or null.
- */
-function detectHeaders(ws, patterns, minMatches = 2) {
-    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-    for (let r = 0; r < Math.min(20, raw.length); r++) {
-        const row = raw[r];
-        if (!row) continue;
-        const matched = {};
-        for (let c = 0; c < row.length; c++) {
-            const cellText = String(row[c] ?? "").trim();
-            if (!cellText) continue;
-            for (const [field, pattern] of Object.entries(patterns)) {
-                if (!matched[field] && pattern.test(cellText)) {
-                    matched[field] = c;
-                }
-            }
-        }
-        if (Object.keys(matched).length >= minMatches) {
-            return { headerRowIdx: r, colMap: matched, matchCount: Object.keys(matched).length, raw };
-        }
-    }
-    return null;
-}
-
 function parseExcel(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const wb = XLSX.read(e.target.result, { type: "array" });
-                let planningRows = [];
-                let staffRows = [];
 
-                // Find sheets by name (always "Overview Event" and "Staff")
-                // Explicitly skip auxiliary sheets like "Data"
-                let bestPlanning = null;
-                let bestStaff = null;
-                const SKIP_SHEETS = new Set(["data", "datos", "config", "configuración", "settings", "listas"]);
+                // Only read "Overview Event" sheet (or first sheet as fallback)
+                const ws = wb.Sheets["Overview Event"] ?? wb.Sheets[wb.SheetNames[0]];
+                if (!ws) { resolve([]); return; }
 
-                // Planning sheet: "Overview Event" or first non-skipped sheet
-                let planSheet = wb.Sheets["Overview Event"];
-                if (!planSheet) {
-                    const fallbackName = wb.SheetNames.find((n) => !SKIP_SHEETS.has(n.toLowerCase()) && n.toLowerCase() !== "staff");
-                    if (fallbackName) planSheet = wb.Sheets[fallbackName];
-                }
-                if (planSheet) {
-                    const result = detectHeaders(planSheet, PLANNING_PATTERNS, 3);
-                    if (result) bestPlanning = result;
-                }
+                const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
 
-                // Staff sheet: "Staff"
-                const staffSheet = wb.Sheets["Staff"];
-                if (staffSheet) {
-                    const result = detectHeaders(staffSheet, STAFF_PATTERNS, 2);
-                    if (result) bestStaff = result;
-                }
-
-                // Parse planning data
-                if (bestPlanning) {
-                    const { headerRowIdx, colMap, raw } = bestPlanning;
-                    for (let i = headerRowIdx + 1; i < raw.length; i++) {
-                        const row = raw[i];
-                        if (!row || row.every((c) => c === "" || c == null)) continue;
-                        const entry = {};
-                        let hasData = false;
-                        for (const field of FIELDS) {
-                            const colIdx = colMap[field];
-                            if (colIdx == null) { entry[field] = ""; continue; }
-                            let val = row[colIdx] ?? "";
-                            if (field === "inicio" || field === "fin") val = formatTime(val);
-                            else val = val === "" || val === 0 ? "" : String(val);
-                            entry[field] = val;
-                            if (val !== "" && val !== "0") hasData = true;
+                // Find header row by matching known column names
+                let headerRowIdx = -1;
+                let colMap = {};
+                for (let r = 0; r < Math.min(20, raw.length); r++) {
+                    const row = raw[r];
+                    if (!row) continue;
+                    const matched = {};
+                    for (let c = 0; c < row.length; c++) {
+                        const cellText = String(row[c] ?? "").trim();
+                        if (!cellText) continue;
+                        for (const [field, pattern] of Object.entries(PLANNING_PATTERNS)) {
+                            if (!matched[field] && pattern.test(cellText)) {
+                                matched[field] = c;
+                            }
                         }
-                        if (hasData) planningRows.push(entry);
+                    }
+                    if (Object.keys(matched).length >= 3) {
+                        headerRowIdx = r;
+                        colMap = matched;
+                        break;
                     }
                 }
+                if (headerRowIdx === -1) { resolve([]); return; }
 
-                // Parse staff data
-                if (bestStaff) {
-                    const { headerRowIdx, colMap, raw } = bestStaff;
-                    for (let i = headerRowIdx + 1; i < raw.length; i++) {
-                        const row = raw[i];
-                        if (!row || row.every((c) => c === "" || c == null)) continue;
-                        const entry = {};
-                        let hasData = false;
-                        for (const field of ["nombre", "horas", "coste"]) {
-                            const colIdx = colMap[field];
-                            if (colIdx == null) { entry[field] = ""; continue; }
-                            let val = row[colIdx] ?? "";
-                            val = val === "" || val === 0 ? "" : String(val);
-                            entry[field] = val;
-                            if (val !== "" && val !== "0" && val !== ".") hasData = true;
-                        }
-                        if (hasData) staffRows.push(entry);
+                // Parse data rows
+                const rows = [];
+                for (let i = headerRowIdx + 1; i < raw.length; i++) {
+                    const row = raw[i];
+                    if (!row || row.every((c) => c === "" || c == null)) continue;
+                    const entry = {};
+                    let hasData = false;
+                    for (const field of FIELDS) {
+                        const colIdx = colMap[field];
+                        if (colIdx == null) { entry[field] = ""; continue; }
+                        let val = row[colIdx] ?? "";
+                        if (field === "inicio" || field === "fin") val = formatTime(val);
+                        else val = val === "" || val === 0 ? "" : String(val);
+                        entry[field] = val;
+                        if (val !== "" && val !== "0") hasData = true;
                     }
+                    if (hasData) rows.push(entry);
                 }
-
-                resolve({ planning: planningRows, staff: staffRows });
+                resolve(rows);
             } catch {
-                resolve({ planning: [], staff: [] });
+                resolve([]);
             }
         };
         reader.readAsArrayBuffer(file);
     });
+}
+
+/** Calculate staff summary from planning rows: group by nombre, sum horas */
+function calcStaff(rows) {
+    const map = {};
+    for (const r of rows) {
+        const name = (r.nombre || "").trim();
+        if (!name) continue;
+        if (!map[name]) map[name] = 0;
+        map[name] += parseFloat(r.horas) || 0;
+    }
+    return Object.entries(map).map(([nombre, horas]) => ({ nombre, horas: horas.toFixed(1) }));
 }
 
 let rowIdCounter = 0;
@@ -161,7 +121,7 @@ function ensureIds(rows) {
     return rows.map((r) => r._id ? r : { ...r, _id: `r-${Date.now()}-${rowIdCounter++}` });
 }
 
-function DraggableRow({ row, showDayHeader, onUpdate, onRemove, onInsert }) {
+function DraggableRow({ row, onUpdate, onRemove, onInsert }) {
     const dragControls = useDragControls();
     return (
         <Reorder.Item
@@ -169,14 +129,9 @@ function DraggableRow({ row, showDayHeader, onUpdate, onRemove, onInsert }) {
             dragListener={false}
             dragControls={dragControls}
             className="list-none"
-            whileDrag={{ scale: 1.01, zIndex: 50, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+            whileDrag={{ scale: 1.02, zIndex: 50, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", backgroundColor: "rgba(32,141,202,0.08)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
         >
-            {showDayHeader && (
-                <div className="bg-[#208DCA]/10 border-b border-[#208DCA]/20 px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
-                    {row.dia}
-                </div>
-            )}
             <div className="grid border-b border-white/5 hover:bg-white/3 transition-colors group/row items-center px-1"
                 style={{ gridTemplateColumns: "28px 1fr 70px 70px 40px 1fr 60px 28px" }}>
                 {/* Drag handle + insert */}
@@ -217,7 +172,6 @@ function DraggableRow({ row, showDayHeader, onUpdate, onRemove, onInsert }) {
 
 export default function Seccion9({ plan, section, files = [] }) {
     const [rows, setRows] = useState(() => ensureIds(section.form_data?.filas ?? []));
-    const [staff, setStaff] = useState(section.form_data?.staff ?? []);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -241,9 +195,8 @@ export default function Seccion9({ plan, section, files = [] }) {
     const handleFile = async (file) => {
         if (!file) return;
         setUploading(true);
-        const { planning, staff: staffData } = await parseExcel(file);
+        const planning = await parseExcel(file);
         if (planning.length > 0) setRows(ensureIds(planning));
-        if (staffData.length > 0) setStaff(staffData);
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const fd = new FormData();
@@ -286,16 +239,14 @@ export default function Seccion9({ plan, section, files = [] }) {
         });
     };
 
-    const updateStaffCell = (idx, field, value) => {
-        setStaff((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
-    };
-    const removeStaffRow = (idx) => setStaff((prev) => prev.filter((_, i) => i !== idx));
+    // Staff summary: calculated from planning rows
+    const staff = calcStaff(rows);
 
     const save = (status) => {
         setSaving(true);
         router.put(
             `/planes/${plan.uuid}/seccion/9`,
-            { form_data: { filas: rows, staff }, generated_text: section.generated_text, status },
+            { form_data: { filas: rows }, generated_text: section.generated_text, status },
             {
                 preserveScroll: true,
                 onSuccess: () => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2500); },
@@ -335,9 +286,9 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <h2 className="text-2xl font-bold text-white leading-tight">{section.section_name}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
-                    {(rows.length > 0 || staff.length > 0) && (
+                    {rows.length > 0 && (
                         <button
-                            onClick={() => { setRows([]); setStaff([]); }}
+                            onClick={() => setRows([])}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-red-500/10 text-red-400/70 border border-red-500/20 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30"
                         >
                             <X size={12} /> Limpiar
@@ -438,23 +389,26 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <div />
                     </div>
 
-                    {/* Reorderable rows */}
+                    {/* Reorderable rows with day headers */}
                     <Reorder.Group axis="y" values={rows} onReorder={setRows} className="min-w-[700px]">
-                        {rows.map((row) => {
-                            // Day header: check if this row starts a new day group
-                            const idx = rows.indexOf(row);
+                        {rows.map((row, idx) => {
                             const prevDay = idx > 0 ? rows[idx - 1].dia : null;
                             const showDayHeader = row.dia && row.dia !== prevDay;
 
                             return (
-                                <DraggableRow
-                                    key={row._id}
-                                    row={row}
-                                    showDayHeader={showDayHeader}
-                                    onUpdate={(field, val) => updateCell(row._id, field, val)}
-                                    onRemove={() => removeRow(row._id)}
-                                    onInsert={() => insertRowAfter(row._id)}
-                                />
+                                <div key={row._id}>
+                                    {showDayHeader && (
+                                        <div className="bg-[#208DCA]/10 border-b border-[#208DCA]/20 px-3 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
+                                            {row.dia}
+                                        </div>
+                                    )}
+                                    <DraggableRow
+                                        row={row}
+                                        onUpdate={(field, val) => updateCell(row._id, field, val)}
+                                        onRemove={() => removeRow(row._id)}
+                                        onInsert={() => insertRowAfter(row._id)}
+                                    />
+                                </div>
                             );
                         })}
                     </Reorder.Group>
@@ -482,33 +436,15 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <table className="w-full text-[11px]">
                             <thead>
                                 <tr className="border-b border-white/8">
-                                    <th className="px-3 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">Nombre</th>
-                                    <th className="px-3 py-2 text-right text-white/40 font-medium uppercase tracking-wide text-[10px] w-24">Horas</th>
-                                    <th className="px-3 py-2 text-right text-white/40 font-medium uppercase tracking-wide text-[10px] w-24">Coste</th>
-                                    <th className="w-[30px]" />
+                                    <th className="px-3 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">Nombre / Posición</th>
+                                    <th className="px-3 py-2 text-right text-white/40 font-medium uppercase tracking-wide text-[10px] w-24">Total horas</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {staff.map((s, idx) => (
-                                    <tr key={idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
-                                        <td className="px-1 py-0">
-                                            <input type="text" value={s.nombre ?? ""} onChange={(e) => updateStaffCell(idx, "nombre", e.target.value)}
-                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
-                                        </td>
-                                        <td className="px-1 py-0">
-                                            <input type="text" value={s.horas ?? ""} onChange={(e) => updateStaffCell(idx, "horas", e.target.value)}
-                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded text-right focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
-                                        </td>
-                                        <td className="px-1 py-0">
-                                            <input type="text" value={s.coste ?? ""} onChange={(e) => updateStaffCell(idx, "coste", e.target.value)}
-                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded text-right focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
-                                        </td>
-                                        <td className="px-0 py-0 w-[30px]">
-                                            <button onClick={() => removeStaffRow(idx)}
-                                                className="text-white/0 group-hover/row:text-white/20 hover:!text-red-400 transition-colors p-1">
-                                                <X size={11} />
-                                            </button>
-                                        </td>
+                                    <tr key={idx} className="border-b border-white/5">
+                                        <td className="px-3 py-1.5 text-[11px] text-white/70">{s.nombre}</td>
+                                        <td className="px-3 py-1.5 text-[11px] text-white/70 text-right font-mono">{s.horas}h</td>
                                     </tr>
                                 ))}
                             </tbody>
