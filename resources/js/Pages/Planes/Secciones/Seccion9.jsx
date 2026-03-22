@@ -86,10 +86,28 @@ function parseExcel(file) {
                 }
                 if (headerRowIdx === -1) { resolve([]); return; }
 
+                // Summary section keywords — stop parsing when we hit these
+                const STOP_WORDS = /^(expenses|gastos|total\b|amount|total of hours|guard\*?|cpo\*?|team leader\*?|ssiap\d|transport)/i;
+
                 const rows = [];
+                let emptyStreak = 0;
                 for (let i = headerRowIdx + 1; i < raw.length; i++) {
                     const row = raw[i];
-                    if (!row || row.every((c) => c === "" || c == null)) continue;
+                    if (!row || row.every((c) => c === "" || c == null)) {
+                        emptyStreak++;
+                        if (emptyStreak >= 3) break; // 3+ consecutive empty rows = end of data
+                        continue;
+                    }
+                    emptyStreak = 0;
+
+                    // Check if any cell in key columns matches summary keywords
+                    const checkCols = [colMap.dia, colMap.nombre, colMap.categoria].filter((c) => c != null);
+                    const isSummary = checkCols.some((c) => {
+                        const v = String(row[c] ?? "").trim();
+                        return v && STOP_WORDS.test(v);
+                    });
+                    if (isSummary) break;
+
                     const entry = {};
                     let hasData = false;
                     for (const field of FIELDS) {
