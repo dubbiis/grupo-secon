@@ -1,7 +1,6 @@
 import { useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
 import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
@@ -118,17 +117,13 @@ export default function Login() {
                             <label htmlFor="remember" className="text-sm text-white/40">Recordarme</label>
                         </div>
 
-                        <RippleButton
+                        <button
                             type="submit"
                             disabled={processing}
-                            className="w-full bg-gradient-to-r from-[#253C87] to-[#208DCA] hover:from-[#253C87]/90 hover:to-[#208DCA]/90 text-white border-0 h-10 font-medium shadow-lg shadow-[#253C87]/30 mt-2"
+                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#253C87] to-[#208DCA] hover:from-[#253C87]/90 hover:to-[#208DCA]/90 text-white h-10 rounded-lg font-medium shadow-lg shadow-[#253C87]/30 mt-2 transition-all disabled:opacity-60"
                         >
-                            {processing ? "Accediendo..." : (
-                                <span className="flex items-center gap-2">
-                                    Iniciar sesión <ArrowRight size={16} />
-                                </span>
-                            )}
-                        </RippleButton>
+                            {processing ? "Accediendo..." : (<>Iniciar sesión <ArrowRight size={16} /></>)}
+                        </button>
                     </form>
                 </motion.div>
 

@@ -68,7 +68,7 @@ export default function AppLayout({ children, title, subtitle }) {
             <aside className="w-56 flex-shrink-0 flex flex-col border-r border-white/8 bg-[#050709]">
 
                 {/* Logo */}
-                <div className="px-4 py-6 border-b border-white/6 flex justify-center">
+                <div className="py-6 border-b border-white/6 flex justify-center">
                     <Link href="/">
                         <LogoShimmer />
                     </Link>
