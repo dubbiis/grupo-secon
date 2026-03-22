@@ -111,15 +111,16 @@ export default function Dashboard({ plans, auth }) {
                                         className="group relative"
                                     >
                                         <Shine
-                                            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 hover:bg-slate-200 hover:border-slate-200 transition-all duration-300 p-5"
+                                            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white hover:border-[#208DCA]/30 hover:shadow-lg hover:shadow-[#208DCA]/10 transition-all duration-300 p-5 cursor-pointer"
                                             color="rgba(32,141,202,0.8)"
                                             opacity={0.1}
                                             duration={900}
                                             enableOnHover
                                             loop
+                                            onClick={() => router.visit(`/planes/${plan.uuid}/seccion/1`)}
                                         >
                                             {/* Subtle gradient on hover */}
-                                            <div className="absolute inset-0 bg-gradient-to-br from-[#273887]/0 to-[#208DCA]/0 group-hover:from-[#273887]/5 group-hover:to-[#208DCA]/5 transition-all duration-300 rounded-2xl" />
+                                            <div className="absolute inset-0 bg-gradient-to-br from-[#273887]/0 to-[#208DCA]/0 group-hover:from-[#273887]/3 group-hover:to-[#208DCA]/5 transition-all duration-300 rounded-2xl" />
 
                                             <div className="relative">
                                                 {/* Top row */}
@@ -129,8 +130,8 @@ export default function Dashboard({ plans, auth }) {
                                                     </div>
                                                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
-                                                            onClick={() => setPlanToDelete(plan)}
-                                                            className="p-1.5 rounded-lg text-slate-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                                            onClick={(e) => { e.stopPropagation(); setPlanToDelete(plan); }}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -163,15 +164,10 @@ export default function Dashboard({ plans, auth }) {
                                                     </div>
                                                 </div>
 
-                                                <Link href={`/planes/${plan.uuid}/seccion/1`}>
-                                                    <RippleButton
-                                                        className="w-full bg-slate-200 hover:bg-slate-200 text-slate-900 border border-slate-200 gap-1.5 h-8 text-xs font-medium"
-                                                        rippleColor="rgba(255,255,255,0.1)"
-                                                    >
-                                                        {plan.progress > 0 ? "Continuar" : "Comenzar"}
-                                                        <ChevronRight size={12} />
-                                                    </RippleButton>
-                                                </Link>
+                                                <div className="flex items-center justify-between text-xs text-[#208DCA] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <span>{plan.progress > 0 ? "Continuar" : "Comenzar"}</span>
+                                                    <ChevronRight size={14} />
+                                                </div>
                                             </div>
                                         </Shine>
                                     </motion.div>
