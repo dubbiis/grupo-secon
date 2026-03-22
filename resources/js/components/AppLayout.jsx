@@ -6,7 +6,7 @@ import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Setting
 function LogoShimmer() {
     return (
         <div className="relative overflow-hidden inline-block">
-            <img src="/images/logo.png" alt="Grupo Secon" className="h-8 w-auto object-contain relative z-10" />
+            <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain relative z-10" />
             <motion.div
                 className="absolute inset-0 z-20 pointer-events-none"
                 style={{
@@ -68,8 +68,8 @@ export default function AppLayout({ children, title, subtitle }) {
             <aside className="w-56 flex-shrink-0 flex flex-col border-r border-white/8 bg-[#050709]">
 
                 {/* Logo */}
-                <div className="px-4 py-5 border-b border-white/6">
-                    <Link href="/" className="flex items-center gap-3">
+                <div className="px-4 py-6 border-b border-white/6 flex justify-center">
+                    <Link href="/">
                         <LogoShimmer />
                     </Link>
                 </div>
