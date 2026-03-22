@@ -3,7 +3,7 @@ import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Table2, Upload, Plus, X, ChevronRight, Save, CheckCircle2,
-    RefreshCw, CloudUpload,
+    RefreshCw, CloudUpload, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
@@ -13,15 +13,22 @@ import * as XLSX from "xlsx";
 const FIELDS = ["dia", "nombre", "inicio", "fin", "cantidad", "categoria", "horas"];
 const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fin: "Fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
 
-// Header patterns to detect columns dynamically
-const HEADER_PATTERNS = {
-    dia: /day|d[ií]a|jornada/i,
-    nombre: /name.*pos|pos.*name|nombre|position|puesto/i,
-    inicio: /start|inicio|entrada|hora.*ini/i,
-    fin: /finish|fin|salida|hora.*fin|end/i,
-    cantidad: /number|n[uú]mero|cantidad|n[°º]/i,
-    categoria: /type.*guard|categor|tipo/i,
-    horas: /total.*hour|hora.*total|total.*hora|horas/i,
+// Patterns to detect the PLANNING sheet headers
+const PLANNING_PATTERNS = {
+    dia: /\bday\b|d[ií]a|jornada/i,
+    nombre: /name.{0,5}pos|pos.{0,5}name|nombre|position|puesto/i,
+    inicio: /start\s*time|inicio|entrada|hora.*ini/i,
+    fin: /finish\s*time|fin.*time|salida|hora.*fin/i,
+    cantidad: /\bnumber\b|n[uú]mero|cantidad/i,
+    categoria: /type.*guard|categor[ií]|tipo.*guard/i,
+    horas: /total.*hour|hora.*total|total.*hora|\bhoras\b|\bhours\b/i,
+};
+
+// Patterns to detect the STAFF sheet headers
+const STAFF_PATTERNS = {
+    nombre: /\bname\b|nombre/i,
+    horas: /\bhours\b|\bhoras\b/i,
+    coste: /\bcost\b|coste|precio/i,
 };
 
 function formatTime(val) {
@@ -32,11 +39,36 @@ function formatTime(val) {
         const m = totalMinutes % 60;
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
-    // Already a string like "08:00" or Date
     const s = String(val);
     const timeMatch = s.match(/(\d{1,2}):(\d{2})/);
     if (timeMatch) return `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}`;
     return s;
+}
+
+/**
+ * Scan a sheet's first 20 rows for header patterns.
+ * Returns { headerRowIdx, colMap, matchCount } or null.
+ */
+function detectHeaders(ws, patterns, minMatches = 2) {
+    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+    for (let r = 0; r < Math.min(20, raw.length); r++) {
+        const row = raw[r];
+        if (!row) continue;
+        const matched = {};
+        for (let c = 0; c < row.length; c++) {
+            const cellText = String(row[c] ?? "").trim();
+            if (!cellText) continue;
+            for (const [field, pattern] of Object.entries(patterns)) {
+                if (!matched[field] && pattern.test(cellText)) {
+                    matched[field] = c;
+                }
+            }
+        }
+        if (Object.keys(matched).length >= minMatches) {
+            return { headerRowIdx: r, colMap: matched, matchCount: Object.keys(matched).length, raw };
+        }
+    }
+    return null;
 }
 
 function parseExcel(file) {
@@ -45,62 +77,71 @@ function parseExcel(file) {
         reader.onload = (e) => {
             try {
                 const wb = XLSX.read(e.target.result, { type: "array" });
-                const ws = wb.Sheets[wb.SheetNames[0]];
-                const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+                let planningRows = [];
+                let staffRows = [];
 
-                // Step 1: Find header row by scanning for known column names
-                let headerRowIdx = -1;
-                let colMap = {};
+                // Find sheets by name (always "Overview Event" and "Staff")
+                let bestPlanning = null;
+                let bestStaff = null;
 
-                for (let r = 0; r < Math.min(20, raw.length); r++) {
-                    const row = raw[r];
-                    if (!row) continue;
-                    const matched = {};
-                    for (let c = 0; c < row.length; c++) {
-                        const cellText = String(row[c] ?? "").trim();
-                        if (!cellText) continue;
-                        for (const [field, pattern] of Object.entries(HEADER_PATTERNS)) {
-                            if (!matched[field] && pattern.test(cellText)) {
-                                matched[field] = c;
-                            }
+                // Planning sheet: "Overview Event"
+                const planSheet = wb.Sheets["Overview Event"] ?? wb.Sheets[wb.SheetNames[0]];
+                if (planSheet) {
+                    const result = detectHeaders(planSheet, PLANNING_PATTERNS, 3);
+                    if (result) bestPlanning = result;
+                }
+
+                // Staff sheet: "Staff"
+                const staffSheet = wb.Sheets["Staff"];
+                if (staffSheet) {
+                    const result = detectHeaders(staffSheet, STAFF_PATTERNS, 2);
+                    if (result) bestStaff = result;
+                }
+
+                // Parse planning data
+                if (bestPlanning) {
+                    const { headerRowIdx, colMap, raw } = bestPlanning;
+                    for (let i = headerRowIdx + 1; i < raw.length; i++) {
+                        const row = raw[i];
+                        if (!row || row.every((c) => c === "" || c == null)) continue;
+                        const entry = {};
+                        let hasData = false;
+                        for (const field of FIELDS) {
+                            const colIdx = colMap[field];
+                            if (colIdx == null) { entry[field] = ""; continue; }
+                            let val = row[colIdx] ?? "";
+                            if (field === "inicio" || field === "fin") val = formatTime(val);
+                            else val = val === "" || val === 0 ? "" : String(val);
+                            entry[field] = val;
+                            if (val !== "" && val !== "0") hasData = true;
                         }
-                    }
-                    // Need at least 3 matches to consider this the header row
-                    if (Object.keys(matched).length >= 3) {
-                        headerRowIdx = r;
-                        colMap = matched;
-                        break;
+                        if (hasData) planningRows.push(entry);
                     }
                 }
 
-                if (headerRowIdx === -1) {
-                    // Fallback: try fixed positions
-                    headerRowIdx = 6;
-                    colMap = { dia: 5, nombre: 6, inicio: 8, fin: 10, cantidad: 12, categoria: 13, horas: 14 };
-                }
-
-                // Step 2: Parse data rows
-                const rows = [];
-                for (let i = headerRowIdx + 1; i < raw.length; i++) {
-                    const row = raw[i];
-                    if (!row || row.every((c) => c === "" || c == null)) continue;
-
-                    const entry = {};
-                    let hasData = false;
-                    for (const field of FIELDS) {
-                        const colIdx = colMap[field];
-                        if (colIdx == null) { entry[field] = ""; continue; }
-                        let val = row[colIdx] ?? "";
-                        if (field === "inicio" || field === "fin") val = formatTime(val);
-                        else val = val === "" || val === 0 ? "" : String(val);
-                        entry[field] = val;
-                        if (val !== "" && val !== "0") hasData = true;
+                // Parse staff data
+                if (bestStaff) {
+                    const { headerRowIdx, colMap, raw } = bestStaff;
+                    for (let i = headerRowIdx + 1; i < raw.length; i++) {
+                        const row = raw[i];
+                        if (!row || row.every((c) => c === "" || c == null)) continue;
+                        const entry = {};
+                        let hasData = false;
+                        for (const field of ["nombre", "horas", "coste"]) {
+                            const colIdx = colMap[field];
+                            if (colIdx == null) { entry[field] = ""; continue; }
+                            let val = row[colIdx] ?? "";
+                            val = val === "" || val === 0 ? "" : String(val);
+                            entry[field] = val;
+                            if (val !== "" && val !== "0" && val !== ".") hasData = true;
+                        }
+                        if (hasData) staffRows.push(entry);
                     }
-                    if (hasData) rows.push(entry);
                 }
-                resolve(rows);
+
+                resolve({ planning: planningRows, staff: staffRows });
             } catch {
-                resolve([]);
+                resolve({ planning: [], staff: [] });
             }
         };
         reader.readAsArrayBuffer(file);
@@ -113,6 +154,7 @@ function emptyRow() {
 
 export default function Seccion9({ plan, section, files = [] }) {
     const [rows, setRows] = useState(section.form_data?.filas ?? []);
+    const [staff, setStaff] = useState(section.form_data?.staff ?? []);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -136,8 +178,9 @@ export default function Seccion9({ plan, section, files = [] }) {
     const handleFile = async (file) => {
         if (!file) return;
         setUploading(true);
-        const parsed = await parseExcel(file);
-        if (parsed.length > 0) setRows(parsed);
+        const { planning, staff: staffData } = await parseExcel(file);
+        if (planning.length > 0) setRows(planning);
+        if (staffData.length > 0) setStaff(staffData);
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const fd = new FormData();
@@ -173,11 +216,16 @@ export default function Seccion9({ plan, section, files = [] }) {
     const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
     const addRow = () => setRows((prev) => [...prev, emptyRow()]);
 
+    const updateStaffCell = (idx, field, value) => {
+        setStaff((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+    };
+    const removeStaffRow = (idx) => setStaff((prev) => prev.filter((_, i) => i !== idx));
+
     const save = (status) => {
         setSaving(true);
         router.put(
             `/planes/${plan.uuid}/seccion/9`,
-            { form_data: { filas: rows }, generated_text: section.generated_text, status },
+            { form_data: { filas: rows, staff }, generated_text: section.generated_text, status },
             {
                 preserveScroll: true,
                 onSuccess: () => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2500); },
@@ -238,8 +286,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                 <div>
                     <p className="text-sm font-semibold text-green-400 mb-0.5">Planificación del personal de seguridad</p>
                     <p className="text-sm text-white/45 leading-relaxed">
-                        Importa tu Excel de planificación. Los datos se mostrarán en una tabla editable
-                        que se incluirá en el PDF final.
+                        Importa tu Excel de planificación. Se detectan automáticamente las hojas de planificación y personal.
                     </p>
                 </div>
             </motion.div>
@@ -282,14 +329,14 @@ export default function Seccion9({ plan, section, files = [] }) {
                 )}
             </div>
 
-            {/* Editable table */}
+            {/* Planning table */}
             {rows.length > 0 && (
                 <div className="rounded-2xl bg-white/3 border border-white/8 shadow-xl shadow-black/20 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Table2 size={14} className="text-[#208DCA]" />
                             <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">
-                                {rows.length} registros
+                                Planificación — {rows.length} registros
                             </span>
                         </div>
                         <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
@@ -303,13 +350,13 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-[11px] table-fixed min-w-[700px]">
                             <colgroup>
-                                <col className="w-[28%]" /> {/* nombre */}
-                                <col className="w-[10%]" /> {/* inicio */}
-                                <col className="w-[10%]" /> {/* fin */}
-                                <col className="w-[7%]" />  {/* cantidad */}
-                                <col className="w-[22%]" /> {/* categoria */}
-                                <col className="w-[10%]" /> {/* horas */}
-                                <col className="w-[30px]" /> {/* delete */}
+                                <col className="w-[28%]" />
+                                <col className="w-[10%]" />
+                                <col className="w-[10%]" />
+                                <col className="w-[7%]" />
+                                <col className="w-[22%]" />
+                                <col className="w-[10%]" />
+                                <col className="w-[30px]" />
                             </colgroup>
                             <thead>
                                 <tr className="border-b border-white/8">
@@ -332,7 +379,6 @@ export default function Seccion9({ plan, section, files = [] }) {
                                             </tr>
                                         );
                                     }
-
                                     return (
                                         <tr key={item.idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
                                             {FIELDS.filter((f) => f !== "dia").map((f) => (
@@ -362,6 +408,62 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <span>{rows.length} filas</span>
                         <span className="font-medium">
                             Total: {rows.reduce((sum, r) => sum + (parseFloat(r.horas) || 0), 0).toFixed(1)}h
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* Staff summary table */}
+            {staff.length > 0 && (
+                <div className="rounded-2xl bg-white/3 border border-white/8 shadow-xl shadow-black/20 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
+                        <Users size={14} className="text-purple-400" />
+                        <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                            Resumen de personal — {staff.length} trabajadores
+                        </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-[11px]">
+                            <thead>
+                                <tr className="border-b border-white/8">
+                                    <th className="px-3 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">Nombre</th>
+                                    <th className="px-3 py-2 text-right text-white/40 font-medium uppercase tracking-wide text-[10px] w-24">Horas</th>
+                                    <th className="px-3 py-2 text-right text-white/40 font-medium uppercase tracking-wide text-[10px] w-24">Coste</th>
+                                    <th className="w-[30px]" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {staff.map((s, idx) => (
+                                    <tr key={idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
+                                        <td className="px-1 py-0">
+                                            <input type="text" value={s.nombre ?? ""} onChange={(e) => updateStaffCell(idx, "nombre", e.target.value)}
+                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
+                                        </td>
+                                        <td className="px-1 py-0">
+                                            <input type="text" value={s.horas ?? ""} onChange={(e) => updateStaffCell(idx, "horas", e.target.value)}
+                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded text-right focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
+                                        </td>
+                                        <td className="px-1 py-0">
+                                            <input type="text" value={s.coste ?? ""} onChange={(e) => updateStaffCell(idx, "coste", e.target.value)}
+                                                className="w-full bg-transparent text-white/70 text-[11px] px-2 py-1 rounded text-right focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-purple-400/30" />
+                                        </td>
+                                        <td className="px-0 py-0 w-[30px]">
+                                            <button onClick={() => removeStaffRow(idx)}
+                                                className="text-white/0 group-hover/row:text-white/20 hover:!text-red-400 transition-colors p-1">
+                                                <X size={11} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="px-4 py-2.5 border-t border-white/8 flex items-center justify-between text-[11px] text-white/40">
+                        <span>{staff.length} trabajadores</span>
+                        <span className="font-medium">
+                            Total: {staff.reduce((sum, s) => sum + (parseFloat(s.horas) || 0), 0).toFixed(1)}h
                         </span>
                     </div>
                 </div>
