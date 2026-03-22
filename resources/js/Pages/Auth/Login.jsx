@@ -2,6 +2,7 @@ import { useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
 
 export default function Login() {
@@ -44,21 +45,25 @@ export default function Login() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
-                    <div className="relative inline-block mb-4 overflow-hidden">
-                        <img src="/images/logo-blanco.png" alt="Grupo Secon" className="h-16 w-auto object-contain relative z-10" />
+                    {/* Emblema */}
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[#253C87] to-[#208DCA] shadow-2xl shadow-[#253C87]/50 mb-5 relative overflow-hidden">
+                        <img src="/images/logo-blanco.png" alt="" className="h-14 w-14 object-contain" style={{ mixBlendMode: "screen" }}
+                            onError={(e) => { e.target.style.display = "none"; }} />
                         <motion.div
-                            className="absolute inset-0 z-20 pointer-events-none"
+                            className="absolute inset-0 pointer-events-none"
                             style={{
-                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
-                                backgroundSize: "300% 100%",
-                                mixBlendMode: "overlay",
+                                background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%)",
                             }}
-                            initial={{ backgroundPosition: "-150% 0%" }}
-                            animate={{ backgroundPosition: "350% 0%" }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
                         />
                     </div>
-                    <p className="text-sm text-white/50 mt-2">Planes de Seguridad Privada</p>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        <GradientText
+                            text="Grupo Secon"
+                            gradient="linear-gradient(90deg, #ffffff 0%, #208DCA 30%, #253C87 60%, #208DCA 80%, #ffffff 100%)"
+                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                        />
+                    </h1>
+                    <p className="text-sm text-white/50 mt-1">Planes de Seguridad Privada</p>
                 </motion.div>
 
                 {/* Card */}
