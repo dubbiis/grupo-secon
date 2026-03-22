@@ -41,12 +41,13 @@ function formatNumber(n) {
     return Number(n).toLocaleString("es-ES");
 }
 
+const USD_TO_EUR = 0.92;
 function formatCost(n) {
-    if (!n) return "$0.000000";
-    const val = parseFloat(n);
-    if (val < 0.01) return `$${val.toFixed(6)}`;
-    if (val < 1)    return `$${val.toFixed(4)}`;
-    return `$${val.toFixed(2)}`;
+    if (!n) return "0.000000 €";
+    const val = parseFloat(n) * USD_TO_EUR;
+    if (val < 0.01) return `${val.toFixed(6)} €`;
+    if (val < 1)    return `${val.toFixed(4)} €`;
+    return `${val.toFixed(2)} €`;
 }
 
 export default function Stats({ totals, byModel, bySection, recent, daily }) {
@@ -67,7 +68,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard icon={Zap}        label="Generaciones totales" value={<SlidingNumber number={totalCalls} inView={true} />}                                     color="text-[#208DCA]" delay={0} />
                     <StatCard icon={Hash}        label="Tokens totales"       value={<SlidingNumber number={totalTokens} inView={true} />}                                   color="text-purple-400" delay={0.05} sub={`${formatNumber(totalPrompt)} entrada · ${formatNumber(totalCompletion)} salida`} />
-                    <StatCard icon={DollarSign}  label="Coste total estimado" value={formatCost(totalCost)}                                                                 color="text-amber-400" delay={0.1} sub="Precios oficiales OpenAI" />
+                    <StatCard icon={DollarSign}  label="Coste total estimado" value={formatCost(totalCost)}                                                                 color="text-amber-400" delay={0.1} sub="Tipo de cambio fijo aprox. 1 $ = 0.92 €" />
                     <StatCard icon={TrendingUp}  label="Tokens por llamada"   value={totalCalls > 0 ? <SlidingNumber number={Math.round(totalTokens / totalCalls)} inView={true} /> : "—"} color="text-emerald-400" delay={0.15} sub="Promedio" />
                 </div>
 
