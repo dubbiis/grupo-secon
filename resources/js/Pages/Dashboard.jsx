@@ -12,6 +12,7 @@ import { MorphingText } from "@/components/animate-ui/primitives/texts/morphing"
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { TypingText, TypingTextCursor } from "@/components/animate-ui/primitives/texts/typing";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 const STATUS_CONFIG = {
     borrador:    { label: "Borrador",    color: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20" },
@@ -81,7 +82,7 @@ export default function Dashboard({ plans, auth }) {
                         <GradientBackground className="absolute inset-0 opacity-30" />
                         <div className="relative z-10">
                             <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain mx-auto mb-5 opacity-60" />
-                            <h3 className="font-semibold text-lg mb-2">Sin planes todavía</h3>
+                            <h3 className="font-semibold text-lg mb-2">{ t("dashboard.no_plans_title") }</h3>
                             <div className="text-slate-900 text-sm mb-6">
                                 <TypingText text="Crea tu primer plan de seguridad para comenzar" duration={35} inView={true}>
                                     <TypingTextCursor className="text-[#208DCA]/60" />
@@ -151,7 +152,7 @@ export default function Dashboard({ plans, auth }) {
                                                 {/* Progress */}
                                                 <div className="space-y-1.5 mb-4">
                                                     <div className="flex justify-between text-xs text-slate-900">
-                                                        <span>Progreso</span>
+                                                        <span>{t("dashboard.progress")}</span>
                                                         <span><SlidingNumber number={plan.progress} inView={true} />%</span>
                                                     </div>
                                                     <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
@@ -165,7 +166,7 @@ export default function Dashboard({ plans, auth }) {
                                                 </div>
 
                                                 <div className="flex items-center justify-between text-xs text-[#208DCA] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <span>{plan.progress > 0 ? "Continuar" : "Comenzar"}</span>
+                                                    <span>{plan.progress > 0 ? t("common.continue") : t("common.start")}</span>
                                                     <ChevronRight size={14} />
                                                 </div>
                                             </div>
@@ -183,29 +184,29 @@ export default function Dashboard({ plans, auth }) {
                 <DialogHeader>
                     <div className="flex items-center gap-2 mb-1">
                         <Sparkles size={16} className="text-[#208DCA]" />
-                        <DialogTitle>Nuevo Plan de Seguridad</DialogTitle>
+                        <DialogTitle>{ t("dashboard.new_plan_modal_title") }</DialogTitle>
                     </div>
-                    <p className="text-sm text-muted-foreground">Dale un nombre al evento o instalación</p>
+                    <p className="text-sm text-muted-foreground">{ t("dashboard.new_plan_modal_description") }</p>
                 </DialogHeader>
                 <form onSubmit={createPlan}>
                     <DialogContent>
-                        <label className="text-sm font-medium mb-1.5 block">Nombre del evento/instalación</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t("dashboard.event_name_label")}</label>
                         <Input
                             value={data.title}
                             onChange={(e) => setData("title", e.target.value)}
-                            placeholder="Ej: Concierto Madrid Arena 2025"
+                            placeholder={t("dashboard.event_name_placeholder")}
                             autoFocus
                         />
                         {errors.title && <p className="text-destructive text-xs mt-1">{errors.title}</p>}
                     </DialogContent>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => { setShowModal(false); reset(); }}>Cancelar</Button>
+                        <Button type="button" variant="outline" onClick={() => { setShowModal(false); reset(); }}>{t("common.cancel")}</Button>
                         <RippleButton
                             type="submit"
                             disabled={processing || !data.title.trim()}
                             className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0"
                         >
-                            {processing ? "Creando..." : "Crear plan"}
+                            {processing ? t("dashboard.creating") : t("dashboard.create_plan")}
                         </RippleButton>
                     </DialogFooter>
                 </form>
@@ -218,12 +219,12 @@ export default function Dashboard({ plans, auth }) {
                         <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
                             <AlertTriangle size={16} className="text-red-400" />
                         </div>
-                        <DialogTitle className="text-red-400">Eliminar plan</DialogTitle>
+                        <DialogTitle className="text-red-400">{ t("dashboard.delete_plan") }</DialogTitle>
                     </div>
                     <p className="text-sm text-slate-900 mt-2 leading-relaxed">
-                        ¿Seguro que quieres eliminar <span className="text-slate-900 font-medium">"{planToDelete?.title}"</span>?
+                        {t("dashboard.delete_confirm")} <span className="text-slate-900 font-medium">"{planToDelete?.title}"</span>?
                         <br />
-                        <span className="text-slate-900 text-xs">Esta acción no se puede deshacer.</span>
+                        <span className="text-slate-900 text-xs">{t("dashboard.delete_warning")}</span>
                     </p>
                 </DialogHeader>
                 <DialogFooter>
@@ -242,7 +243,7 @@ export default function Dashboard({ plans, auth }) {
                         rippleColor="rgba(255,255,255,0.2)"
                     >
                         <Trash2 size={14} />
-                        {deleting ? "Eliminando..." : "Sí, eliminar"}
+                        {deleting ? t("dashboard.deleting") : t("dashboard.delete_confirm_btn")}
                     </RippleButton>
                 </DialogFooter>
             </Dialog>

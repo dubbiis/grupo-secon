@@ -3,6 +3,7 @@ import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
+import { useTranslation } from "@/i18n";
 
 function LogoShimmer() {
     return (
@@ -23,25 +24,26 @@ export default function AppLayout({ children, title, subtitle }) {
     const [submenuPos, setSubmenuPos] = useState({ top: 0, left: 0 });
     const adminRef = useRef(null);
 
+    const { t } = useTranslation();
     const isAdmin = auth?.user?.role === "admin";
     const isAdminActive = currentUrl.startsWith("/admin");
 
     const navItems = [
         {
             href: "/",
-            label: "Mis Planes",
+            label: t("nav.my_plans"),
             icon: LayoutDashboard,
             active: currentUrl === "/",
         },
         {
             href: "/editor-mapas",
-            label: "Editor de Mapas",
+            label: t("nav.map_editor"),
             icon: Map,
             active: currentUrl === "/editor-mapas",
         },
         {
             href: "/editor-acreditaciones",
-            label: "Acreditaciones",
+            label: t("nav.credentials"),
             icon: CreditCard,
             active: currentUrl === "/editor-acreditaciones",
         },
@@ -111,7 +113,7 @@ export default function AppLayout({ children, title, subtitle }) {
                                     />
                                 )}
                                 <Shield size={16} className={isAdminActive ? "text-[#208DCA]" : "text-slate-900"} />
-                                Panel Admin
+                                {t("nav.admin_panel")}
                                 <ChevronRight size={12} className={`ml-auto transition-transform duration-200 ${adminHover ? "rotate-90" : ""} ${isAdminActive ? "text-[#208DCA]/50" : "text-slate-900"}`} />
                             </div>
                         </div>
@@ -155,21 +157,21 @@ export default function AppLayout({ children, title, subtitle }) {
                         onMouseLeave={() => setAdminHover(false)}
                     >
                         <div className="px-3 py-2 border-b border-slate-200">
-                            <p className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">Administración</p>
+                            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{t("nav.administration")}</p>
                         </div>
                         <Link
                             href="/admin/prompts"
                             className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-200 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-slate-900 hover:text-slate-900"}`}
                         >
                             <Settings size={14} className="text-[#208DCA]" />
-                            Prompts IA
+                            {t("nav.ai_prompts")}
                         </Link>
                         <Link
                             href="/admin/stats"
                             className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-200 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-slate-900 hover:text-slate-900"}`}
                         >
                             <TrendingUp size={14} className="text-[#208DCA]" />
-                            Estadísticas IA
+                            {t("nav.ai_stats")}
                         </Link>
                     </motion.div>
                 )}

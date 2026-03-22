@@ -4,6 +4,7 @@ import { Sparkles, RefreshCw, Send, ChevronDown, Loader2, Zap, Pencil, Eye } fro
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 function renderMarkdown(raw) {
     const escaped = raw
@@ -17,6 +18,7 @@ function renderMarkdown(raw) {
 }
 
 export default function GeneradorIA({ uuid, section, formData, initialText, onTextChange, onStatusChange }) {
+    const { t } = useTranslation();
     const [text, setText] = useState(initialText ?? "");
     const [generating, setGenerating] = useState(false);
     const [showCambios, setShowCambios] = useState(false);
@@ -100,7 +102,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
             <div className="flex items-center gap-2 mb-1">
                 <div className="flex items-center gap-1.5">
                     <Sparkles size={14} className="text-[#208DCA]" />
-                    <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Generador IA</span>
+                    <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{ t("ai.generator") }</span>
                 </div>
             </div>
 
@@ -131,7 +133,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 {generating ? (
                                     <>
                                         <Loader2 size={13} className="text-[#208DCA] animate-spin" />
-                                        <span className="text-xs text-slate-900">Generando texto...</span>
+                                        <span className="text-xs text-slate-900">{t("ai.generating_text")}</span>
                                         <div className="flex gap-0.5">
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-0" />
                                             <span className="w-1 h-1 rounded-full bg-[#208DCA]/60 dot-pulse dot-pulse-1" />
@@ -145,7 +147,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             : <Eye size={12} className="text-slate-900" />
                                         }
                                         <span className="text-xs text-slate-900">
-                                            {editMode ? "Editando texto" : "Vista previa"}
+                                            {editMode ? t("ai.editing_text") : t("ai.preview")}
                                         </span>
                                     </>
                                 )}
@@ -157,7 +159,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             onClick={() => setEditMode((m) => !m)}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/25 hover:bg-[#208DCA]/25 hover:border-[#208DCA]/40 hover:shadow-md hover:shadow-[#208DCA]/10"
                                         >
-                                            {editMode ? <><Eye size={12} /> Vista previa</> : <><Pencil size={12} /> Editar</>}
+                                            {editMode ? <><Eye size={12} /> {t("ai.preview")}</> : <><Pencil size={12} /> {t("common.edit")}</>}
                                         </button>
                                     </Shine>
                                 )}
@@ -189,7 +191,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                         readOnly={generating}
                                         rows={6}
                                         className="w-full rounded-xl border border-slate-200 bg-slate-100 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-none focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans field-sizing-content min-h-[150px]"
-                                        placeholder="El texto generado aparecerá aquí."
+                                        placeholder={t("ai.text_placeholder")}
                                     />
                                     {generating && (
                                         <span className="absolute bottom-6 right-5 inline-block w-0.5 h-4 bg-[#208DCA] rounded-full animate-pulse" />
@@ -212,7 +214,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                 >
                                     <span className="flex items-center gap-2">
                                         <RefreshCw size={12} className="text-[#208DCA]" />
-                                        Solicitar cambios al texto
+                                        {t("ai.request_changes")}
                                     </span>
                                     <motion.div animate={{ rotate: showCambios ? 180 : 0 }} transition={{ duration: 0.2 }}>
                                         <ChevronDown size={13} />
@@ -242,9 +244,9 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                                     className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 text-xs"
                                                 >
                                                     {applyingCambios ? (
-                                                        <><Loader2 size={12} className="animate-spin" /> Aplicando...</>
+                                                        <><Loader2 size={12} className="animate-spin" /> {t("common.applying")}</>
                                                     ) : (
-                                                        <><Send size={12} /> Aplicar cambios</>
+                                                        <><Send size={12} /> {t("ai.apply_changes")}</>
                                                     )}
                                                 </RippleButton>
                                             </div>

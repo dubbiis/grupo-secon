@@ -5,8 +5,10 @@ import { ChevronRight, Save, CheckCircle2, RefreshCw } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import GeneradorIA from "./GeneradorIA";
 import CustomQuestions from "./CustomQuestions";
+import { useTranslation } from "@/i18n";
 
 export default function SectionShell({ plan, section, formData, onFormChange, showIA = true, children }) {
+    const { t } = useTranslation();
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [generatedText, setGeneratedText] = useState(section.generated_text ?? "");
@@ -46,7 +48,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-200 border border-slate-200 text-slate-900 uppercase tracking-wide">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
-                            Sección {section.section_number}
+                            {t("common.section")} {section.section_number}
                         </span>
                         <AnimatePresence>
                             {saved && (
@@ -57,7 +59,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                                     className="inline-flex items-center gap-1 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
                                 >
                                     <CheckCircle2 size={11} />
-                                    Guardado
+                                    {t("common.saved")}
                                 </motion.span>
                             )}
                         </AnimatePresence>
@@ -75,14 +77,14 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                             ? <RefreshCw size={13} className="animate-spin" />
                             : <Save size={13} />
                         }
-                        <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
+                        <span className="hidden sm:inline">{saving ? "..." : t("common.save")}</span>
                     </button>
                     <RippleButton
                         size="sm"
                         onClick={confirm}
                         className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#273887]/25 text-xs"
                     >
-                        Confirmar
+                        {t("common.confirm")}
                         <ChevronRight size={13} />
                     </RippleButton>
                 </div>

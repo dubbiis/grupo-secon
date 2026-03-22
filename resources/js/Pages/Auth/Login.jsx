@@ -5,8 +5,10 @@ import { GravityStarsBackground } from "@/components/animate-ui/components/backg
 import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
 import LanguageSelector from "@/components/LanguageSelector";
+import { useTranslation } from "@/i18n";
 
 export default function Login() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         email: "",
         password: "",
@@ -46,7 +48,6 @@ export default function Login() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
-                    {/* Logo */}
                     <img
                         src="/images/logo-secon.svg"
                         alt="Grupo Secon"
@@ -60,7 +61,7 @@ export default function Login() {
                             transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                         />
                     </h1>
-                    <p className="text-sm text-slate-500 mt-1">Planes de Seguridad Privada</p>
+                    <p className="text-sm text-slate-500 mt-1">{t("auth.app_subtitle")}</p>
                 </motion.div>
 
                 {/* Card */}
@@ -70,17 +71,17 @@ export default function Login() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h2 className="text-lg font-semibold text-slate-900 mb-1">Iniciar sesión</h2>
-                    <p className="text-sm text-slate-500 mb-6">Accede a tu cuenta</p>
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">{t("auth.login")}</h2>
+                    <p className="text-sm text-slate-500 mb-6">{t("auth.login_subtitle")}</p>
 
                     <form onSubmit={submit} className="space-y-4">
                         <div>
-                            <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">Email</label>
+                            <label className="text-xs font-medium text-slate-700 mb-1.5 block uppercase tracking-wide">{t("auth.email")}</label>
                             <Input
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData("email", e.target.value)}
-                                placeholder="tu@email.com"
+                                placeholder={t("auth.email_placeholder")}
                                 autoComplete="email"
                                 className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
@@ -88,12 +89,12 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">Contraseña</label>
+                            <label className="text-xs font-medium text-slate-700 mb-1.5 block uppercase tracking-wide">{t("auth.password")}</label>
                             <Input
                                 type="password"
                                 value={data.password}
                                 onChange={(e) => setData("password", e.target.value)}
-                                placeholder="••••••••"
+                                placeholder={t("auth.password_placeholder")}
                                 autoComplete="current-password"
                                 className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
@@ -106,9 +107,9 @@ export default function Login() {
                                 id="remember"
                                 checked={data.remember}
                                 onChange={(e) => setData("remember", e.target.checked)}
-                                className="rounded border-slate-200 bg-slate-200"
+                                className="rounded border-slate-300 bg-white"
                             />
-                            <label htmlFor="remember" className="text-sm text-slate-900">Recordarme</label>
+                            <label htmlFor="remember" className="text-sm text-slate-600">{t("auth.remember_me")}</label>
                         </div>
 
                         <button
@@ -116,22 +117,22 @@ export default function Login() {
                             disabled={processing}
                             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#273887] to-[#208DCA] hover:from-[#273887]/90 hover:to-[#208DCA]/90 text-white h-10 rounded-lg font-medium shadow-lg shadow-[#273887]/30 mt-2 transition-all disabled:opacity-60"
                         >
-                            {processing ? "Accediendo..." : (<>Iniciar sesión <ArrowRight size={16} /></>)}
+                            {processing ? t("auth.logging_in") : (<>{t("auth.login")} <ArrowRight size={16} /></>)}
                         </button>
                     </form>
                 </motion.div>
 
                 <p className="text-center text-sm text-slate-500 mt-5">
-                    ¿No tienes cuenta?{" "}
+                    {t("auth.no_account")}{" "}
                     <Link href="/register" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
-                        Registrarse
+                        {t("auth.register")}
                     </Link>
                 </p>
             </motion.div>
 
             {/* Language selector */}
             <div className="fixed bottom-4 right-4 z-20">
-                <LanguageSelector compact />
+                <LanguageSelector />
             </div>
         </div>
     );

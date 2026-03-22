@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation, LANGUAGES } from "@/i18n";
-import { Globe } from "lucide-react";
+import { Globe, Check } from "lucide-react";
 
 export default function LanguageSelector({ compact = false }) {
     const { lang, setLang } = useTranslation();
@@ -20,11 +20,11 @@ export default function LanguageSelector({ compact = false }) {
         <div className="relative" ref={ref}>
             <button
                 onClick={() => setOpen(!open)}
-                className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-slate-900 hover:text-slate-900 hover:bg-slate-200 transition-all"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-slate-200 bg-white hover:bg-slate-50 hover:border-[#208DCA]/30 transition-all shadow-sm"
             >
-                <Globe size={13} />
-                {!compact && <span>{current.flag} {current.code.toUpperCase()}</span>}
-                {compact && <span>{current.flag}</span>}
+                <span className="text-base leading-none">{current.flag}</span>
+                {!compact && <span className="text-slate-700">{current.label}</span>}
+                <Globe size={14} className="text-slate-400" />
             </button>
 
             <AnimatePresence>
@@ -33,20 +33,21 @@ export default function LanguageSelector({ compact = false }) {
                         initial={{ opacity: 0, y: 4, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                        className="absolute bottom-full left-0 mb-1 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-50 min-w-[130px]"
+                        className="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50 min-w-[160px]"
                     >
                         {LANGUAGES.map((l) => (
                             <button
                                 key={l.code}
                                 onClick={() => { setLang(l.code); setOpen(false); }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
+                                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors ${
                                     lang === l.code
-                                        ? "text-[#208DCA] bg-[#208DCA]/8"
-                                        : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"
+                                        ? "text-[#273887] bg-[#208DCA]/8 font-medium"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                                 }`}
                             >
-                                <span>{l.flag}</span>
-                                <span>{l.label}</span>
+                                <span className="text-base leading-none">{l.flag}</span>
+                                <span className="flex-1">{l.label}</span>
+                                {lang === l.code && <Check size={14} className="text-[#208DCA]" />}
                             </button>
                         ))}
                     </motion.div>
