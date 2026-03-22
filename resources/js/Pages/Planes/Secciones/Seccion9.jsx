@@ -523,38 +523,29 @@ export default function Seccion9({ plan, section, files = [] }) {
 
             {/* Staff summary (auto-calculated) */}
             {staff.length > 0 && (
-                <div className="rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-2">
-                        <Users size={14} className="text-purple-400" />
-                        <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">
-                            Resumen de personal — {staff.length} trabajadores
+                <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Users size={14} className="text-purple-500" />
+                            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                                {t("section9.staff_summary")} — {staff.length} {t("section9.workers")}
+                            </span>
+                        </div>
+                        <span className="text-xs font-mono font-semibold text-slate-700">
+                            {staff.reduce((sum, s) => sum + (parseFloat(s.horas) || 0), 0).toFixed(1)}h
                         </span>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-[11px]">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="px-3 py-2 text-left text-slate-900 font-medium uppercase tracking-wide text-[10px]">{t("section9.name_position")}</th>
-                                    <th className="px-3 py-2 text-left text-slate-900 font-medium uppercase tracking-wide text-[10px] w-32">Categoría</th>
-                                    <th className="px-3 py-2 text-right text-slate-900 font-medium uppercase tracking-wide text-[10px] w-24">Total horas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {staff.map((s, idx) => (
-                                    <tr key={idx} className="border-b border-slate-200">
-                                        <td className="px-3 py-1.5 text-slate-900">{s.nombre}</td>
-                                        <td className="px-3 py-1.5 text-slate-900">{s.categoria}</td>
-                                        <td className="px-3 py-1.5 text-slate-900 text-right font-mono">{s.horas}h</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="px-4 py-2.5 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-900">
-                        <span>{staff.length} trabajadores</span>
-                        <span className="font-medium font-mono">
-                            Total: {staff.reduce((sum, s) => sum + (parseFloat(s.horas) || 0), 0).toFixed(1)}h
-                        </span>
+                    <div className="divide-y divide-slate-100">
+                        {staff.map((s, idx) => (
+                            <div key={idx} className="flex items-center px-4 py-2 hover:bg-slate-50 transition-colors">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#273887]/15 to-[#208DCA]/15 flex items-center justify-center text-[10px] font-bold text-[#208DCA] flex-shrink-0 mr-3">
+                                    {s.nombre.charAt(0)}
+                                </div>
+                                <span className="flex-1 text-sm font-medium text-slate-800 min-w-0 truncate">{s.nombre}</span>
+                                <span className="text-xs text-slate-500 px-3 flex-shrink-0">{s.categoria}</span>
+                                <span className="text-sm font-mono font-semibold text-slate-700 w-20 text-right flex-shrink-0">{s.horas}h</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
