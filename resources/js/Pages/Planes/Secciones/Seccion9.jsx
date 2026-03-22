@@ -503,11 +503,14 @@ export default function Seccion9({ plan, section, files = [] }) {
                             // If no days at all, single group
                             if (groups.length === 0 && rows.length > 0) groups.push({ day: null, rows });
 
+                            // Build a map of day → count from groups
+                            const dayCounts = {};
+                            groups.forEach((g) => { if (g.day) dayCounts[g.day] = g.rows.length; });
+
                             return (
                                 <Reorder.Group axis="y" values={rows} onReorder={setRows} className="min-w-[750px]">
-                                    {rows.map((row) => {
-                                        const idx = rows.indexOf(row);
-                                        const prevDay = idx > 0 ? rows[idx - 1].dia : null;
+                                    {rows.map((row, i) => {
+                                        const prevDay = i > 0 ? rows[i - 1].dia : null;
                                         const showDayHeader = row.dia && row.dia !== prevDay;
                                         return (
                                             <React.Fragment key={row._id}>
@@ -515,14 +518,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                                                     <div className="bg-[#208DCA]/8 border-y border-[#208DCA]/15 px-3 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide flex items-center justify-between pointer-events-none">
                                                         <span>{row.dia}</span>
                                                         <span className="text-[10px] font-normal text-[#208DCA]/50">
-                                                            {(() => {
-                                                                let count = 0;
-                                                                for (let j = idx; j < rows.length; j++) {
-                                                                    if (j > idx && rows[j].dia && rows[j].dia !== row.dia) break;
-                                                                    count++;
-                                                                }
-                                                                return count;
-                                                            })()} {t("common.rows")}
+                                                            {dayCounts[row.dia] ?? 0} {t("common.rows")}
                                                         </span>
                                                     </div>
                                                 )}
