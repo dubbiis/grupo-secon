@@ -125,9 +125,9 @@ export default function Seccion15({ plan, section, files = [] }) {
                             <button
                                 key={tip.id}
                                 type="button"
-                                onClick={() => setForm((prev) => ({ ...prev, tipografia: t.id }))}
+                                onClick={() => setForm((prev) => ({ ...prev, tipografia: tip.id }))}
                                 className={`px-4 py-2.5 rounded-lg border text-sm transition-all text-left ${
-                                    form.tipografia === t.id
+                                    form.tipografia === tip.id
                                         ? "bg-[#273887]/10 border-[#273887] text-[#273887] font-medium"
                                         : "border-input text-muted-foreground hover:border-muted-foreground"
                                 }`}
