@@ -41,6 +41,7 @@ class PlanFileController extends Controller
             'id' => $planFile->id,
             'file_category' => $planFile->file_category,
             'original_name' => $planFile->original_name,
+            'mime_type' => $planFile->mime_type,
             'url' => $planFile->url,
             'metadata' => $planFile->metadata,
             'order' => $planFile->order,

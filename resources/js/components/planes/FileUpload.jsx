@@ -16,9 +16,12 @@ export default function FileUpload({
     const [dragOver, setDragOver] = useState(false);
     const inputRef = useRef(null);
 
-    // When server data refreshes, clear optimistic items (they're now in existingFiles)
+    // When server data refreshes, remove optimistic items that now exist in existingFiles
     useEffect(() => {
-        setOptimistic([]);
+        if (existingFiles.length > 0) {
+            const serverNames = new Set(existingFiles.map((f) => f?.original_name));
+            setOptimistic((prev) => prev.filter((o) => !serverNames.has(o.original_name)));
+        }
     }, [existingFiles]);
 
     const visible = [

@@ -42,6 +42,7 @@ class PlanSectionController extends Controller
                 'id' => $f->id,
                 'file_category' => $f->file_category,
                 'original_name' => $f->original_name,
+                'mime_type' => $f->mime_type,
                 'url' => $f->url,
                 'metadata' => $f->metadata,
                 'order' => $f->order,
