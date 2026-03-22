@@ -62,7 +62,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
     const maxSectionTokens = Math.max(...(bySection?.map((s) => parseInt(s.total_tokens)) ?? [1]), 1);
 
     return (
-        <AppLayout title={t("stats.title")} subtitle="Consumo de tokens y coste por modelo y sección">
+        <AppLayout title={t("stats.title")} subtitle={t("stats.subtitle")}>
             <div className="px-8 py-6 max-w-5xl mx-auto space-y-8">
 
                 {/* KPIs */}
@@ -125,7 +125,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                             {s.section_number}
                                         </span>
                                         <span className="text-xs text-slate-700 w-36 flex-shrink-0 truncate">
-                                            {SECTION_NAMES[s.section_number] ?? `Sección ${s.section_number}`}
+                                            {t(`section_names.${s.section_number}`) || `Section ${s.section_number}`}
                                         </span>
                                         <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                                             <motion.div
@@ -181,7 +181,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                             </td>
                                             <td className="px-3 py-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs font-medium border ${log.type === 'generate' ? 'text-[#208DCA] bg-blue-50 border-blue-200' : 'text-amber-600 bg-amber-50 border-amber-200'}`}>
-                                                    {log.type === 'generate' ? 'Generar' : 'Cambios'}
+                                                    {log.type === 'generate' ? t('stats.generate') : t('stats.changes')}
                                                 </span>
                                             </td>
                                             <td className="px-3 py-3 text-right font-mono text-slate-700">{formatNumber(log.total_tokens)}</td>
@@ -199,7 +199,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                 {!recent?.length && (
                     <div className="text-center py-20 text-slate-400">
                         <BarChart2 size={32} className="mx-auto mb-3 opacity-30" />
-                        <p className="text-sm text-slate-500">Aún no hay generaciones registradas.</p>
+                        <p className="text-sm text-slate-500">{t("stats.no_generations")}</p>
                         <p className="text-xs text-slate-400 mt-1">Los datos aparecen aquí después de generar texto en cualquier sección.</p>
                     </div>
                 )}

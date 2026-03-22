@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
+import { useTranslation } from "@/i18n";
 
 export default function Prompts({ prompts, flash }) {
+    const { t } = useTranslation();
     return (
-        <AppLayout title="Gestión de Prompts IA" subtitle="Configura las instrucciones de IA para cada sección del plan de seguridad">
+        <AppLayout title={t("admin.prompts_title")} subtitle={t("admin.prompts_subtitle")}>
             <div className="px-8 py-6 max-w-4xl mx-auto">
 
                 <AnimatePresence>
@@ -30,22 +32,22 @@ export default function Prompts({ prompts, flash }) {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-200 hover:border-slate-200 transition-all group"
+                            className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all group"
                         >
-                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#273887]/30 to-[#208DCA]/30 border border-[#208DCA]/20 flex items-center justify-center text-sm font-bold text-[#208DCA] flex-shrink-0">
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#273887]/20 to-[#208DCA]/20 border border-[#208DCA]/20 flex items-center justify-center text-sm font-bold text-[#208DCA] flex-shrink-0">
                                 {prompt.section_number}
                             </span>
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-white">{prompt.section_name}</p>
-                                <p className="text-xs text-slate-900 mt-0.5">
+                                <p className="font-medium text-sm text-slate-800">{prompt.section_name}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">
                                     {prompt.model} · max {prompt.max_tokens} tokens
-                                    {prompt.updated_at && ` · Editado ${prompt.updated_at}`}
+                                    {prompt.updated_at && ` · ${prompt.updated_at}`}
                                 </p>
                             </div>
                             <Link href={`/admin/prompts/${prompt.section_number}`}>
                                 <Button variant="outline" size="sm" className="gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Pencil size={12} />
-                                    Editar
+                                    {t("common.edit")}
                                 </Button>
                             </Link>
                         </motion.div>

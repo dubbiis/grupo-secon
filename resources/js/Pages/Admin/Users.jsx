@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 export default function UserManagement({ users }) {
+    const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
     const [editUser, setEditUser] = useState(null);
     const [deleteUser, setDeleteUser] = useState(null);
@@ -53,7 +55,7 @@ export default function UserManagement({ users }) {
     };
 
     return (
-        <AppLayout title="Gestión de usuarios" subtitle="Crear, editar y gestionar usuarios y roles">
+        <AppLayout title={t("admin.users_title")} subtitle={t("admin.users_subtitle")}>
             <div className="px-8 py-6 max-w-4xl mx-auto space-y-6">
 
                 {/* Header */}
@@ -77,12 +79,12 @@ export default function UserManagement({ users }) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wide text-xs">
-                                <th className="px-5 py-3 text-left font-medium">Nombre</th>
+                                <th className="px-5 py-3 text-left font-medium">{t("admin.name")}</th>
                                 <th className="px-3 py-3 text-left font-medium">Email</th>
-                                <th className="px-3 py-3 text-left font-medium">Rol</th>
-                                <th className="px-3 py-3 text-center font-medium">Planes</th>
-                                <th className="px-3 py-3 text-left font-medium">Creado</th>
-                                <th className="px-5 py-3 text-right font-medium">Acciones</th>
+                                <th className="px-3 py-3 text-left font-medium">{t("admin.role")}</th>
+                                <th className="px-3 py-3 text-center font-medium">{t("admin.plans")}</th>
+                                <th className="px-3 py-3 text-left font-medium">{t("admin.created")}</th>
+                                <th className="px-5 py-3 text-right font-medium">{t("admin.actions")}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -110,7 +112,7 @@ export default function UserManagement({ users }) {
                                                     ? "text-[#208DCA] bg-blue-50 border-blue-200"
                                                     : "text-slate-500 bg-slate-50 border-slate-200"
                                             }`}>
-                                                {user.role === "admin" ? "Admin" : "Usuario"}
+                                                {user.role === "admin" ? t("admin.admin_role") : t("admin.user_role")}
                                             </span>
                                         </td>
                                         <td className="px-3 py-3 text-center text-slate-600">{user.plans_count}</td>
@@ -137,13 +139,13 @@ export default function UserManagement({ users }) {
                 {/* Create/Edit Modal */}
                 <Dialog open={showModal} onClose={() => { setShowModal(false); reset(); setEditUser(null); }}>
                     <DialogHeader>
-                        <DialogTitle>{editUser ? "Editar usuario" : "Nuevo usuario"}</DialogTitle>
+                        <DialogTitle>{editUser ? t("admin.edit_user") : t("admin.new_user")}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit}>
                         <DialogContent className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Nombre</label>
-                                <Input value={data.name} onChange={(e) => setData("name", e.target.value)} placeholder="Nombre completo" />
+                                <label className="text-sm font-medium mb-1.5 block">{t("admin.name")}</label>
+                                <Input value={data.name} onChange={(e) => setData("name", e.target.value)} placeholder={t("admin.name")} />
                                 {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                             </div>
                             <div>
@@ -153,34 +155,34 @@ export default function UserManagement({ users }) {
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1.5 block">
-                                    Contraseña {editUser && <span className="text-slate-400 font-normal">(dejar vacío para no cambiar)</span>}
+                                    {t("admin.password")} {editUser && <span className="text-slate-400 font-normal">({t("admin.password_hint")})</span>}
                                 </label>
-                                <Input type="password" value={data.password} onChange={(e) => setData("password", e.target.value)} placeholder={editUser ? "••••••••" : "Mínimo 6 caracteres"} />
+                                <Input type="password" value={data.password} onChange={(e) => setData("password", e.target.value)} placeholder={editUser ? "••••••••" : t("admin.password_min")} />
                                 {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1.5 block">Rol</label>
+                                <label className="text-sm font-medium mb-1.5 block">{t("admin.role")}</label>
                                 <div className="flex gap-2">
                                     <button type="button" onClick={() => setData("role", "user")}
                                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all ${
                                             data.role === "user" ? "border-[#208DCA] bg-[#208DCA]/10 text-[#273887]" : "border-slate-200 text-slate-500 hover:bg-slate-50"
                                         }`}>
-                                        <User size={14} /> Usuario
+                                        <User size={14} /> {t("admin.user_role")}
                                     </button>
                                     <button type="button" onClick={() => setData("role", "admin")}
                                         className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all ${
                                             data.role === "admin" ? "border-[#208DCA] bg-[#208DCA]/10 text-[#273887]" : "border-slate-200 text-slate-500 hover:bg-slate-50"
                                         }`}>
-                                        <Shield size={14} /> Admin
+                                        <Shield size={14} /> {t("admin.admin_role")}
                                     </button>
                                 </div>
                             </div>
                         </DialogContent>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => { setShowModal(false); reset(); setEditUser(null); }}>Cancelar</Button>
+                            <Button type="button" variant="outline" onClick={() => { setShowModal(false); reset(); setEditUser(null); }}>{t("common.cancel")}</Button>
                             <RippleButton type="submit" disabled={processing}
                                 className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0">
-                                {processing ? "Guardando..." : editUser ? "Guardar cambios" : "Crear usuario"}
+                                {processing ? t("common.saving") : editUser ? t("admin.save_changes") : t("admin.create_user")}
                             </RippleButton>
                         </DialogFooter>
                     </form>
@@ -189,14 +191,14 @@ export default function UserManagement({ users }) {
                 {/* Delete confirmation */}
                 <Dialog open={!!deleteUser} onClose={() => setDeleteUser(null)}>
                     <DialogHeader>
-                        <DialogTitle className="text-red-500">Eliminar usuario</DialogTitle>
+                        <DialogTitle className="text-red-500">{t("admin.delete_user")}</DialogTitle>
                         <p className="text-sm text-slate-500 mt-2">
-                            ¿Seguro que quieres eliminar a <span className="font-medium text-slate-700">{deleteUser?.name}</span>?
-                            Se eliminarán también todos sus planes.
+                            {t("admin.delete_user_confirm")} <span className="font-medium text-slate-700">{deleteUser?.name}</span>?
+                            <br />{t("admin.delete_user_warning")}
                         </p>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setDeleteUser(null)}>Cancelar</Button>
+                        <Button variant="outline" onClick={() => setDeleteUser(null)}>{t("common.cancel")}</Button>
                         <RippleButton onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white border-0 gap-2">
                             <Trash2 size={14} /> Eliminar
                         </RippleButton>

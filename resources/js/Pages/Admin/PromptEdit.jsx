@@ -3,6 +3,7 @@ import { useForm, Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, Check, Code2, Eye, EyeOff, BookOpen, Zap, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { useTranslation } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ function applyExamples(template) {
 }
 
 export default function PromptEdit({ prompt, flash }) {
+    const { t } = useTranslation();
     const [showPreview, setShowPreview] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         system_prompt: prompt.system_prompt,
@@ -79,7 +81,7 @@ export default function PromptEdit({ prompt, flash }) {
     return (
         <AppLayout
             title={`§${prompt.section_number} — ${prompt.section_name}`}
-            subtitle="Edita el prompt que se envía a OpenAI para esta sección"
+            subtitle={t("admin.prompt_edit_subtitle")}
         >
             <div className="px-8 py-6 max-w-4xl mx-auto">
                 <div className="mb-2">
@@ -227,7 +229,7 @@ export default function PromptEdit({ prompt, flash }) {
                                 }`}
                             >
                                 {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
-                                {showPreview ? "Ocultar previsualización" : "Vista previa con ejemplos"}
+                                {showPreview ? t("admin.hide_preview") : t("admin.show_preview")}
                             </button>
                         </div>
 
@@ -353,7 +355,7 @@ export default function PromptEdit({ prompt, flash }) {
                     <div className="flex gap-3 pt-2">
                         <RippleButton type="submit" disabled={processing} className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2">
                             <Save size={14} />
-                            {processing ? "Guardando..." : "Guardar prompt"}
+                            {processing ? t("common.saving") : t("admin.save_prompt")}
                         </RippleButton>
                         <Link href="/admin/prompts">
                             <Button type="button" variant="outline">Cancelar</Button>

@@ -4,6 +4,7 @@ import { Shield, ArrowRight } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { StarsBackground } from "@/components/animate-ui/components/backgrounds/stars";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/i18n";
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
