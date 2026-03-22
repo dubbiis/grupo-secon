@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/planes/{uuid}/seccion/{section}', [PlanSectionController::class, 'update'])->name('planes.seccion.update');
     Route::post('/planes/{uuid}/seccion/{section}/generar', [PlanSectionController::class, 'generar'])->name('planes.seccion.generar');
     Route::post('/planes/{uuid}/seccion/{section}/cambios', [PlanSectionController::class, 'cambios'])->name('planes.seccion.cambios');
+    Route::post('/planes/{uuid}/seccion/7/identificar-riesgos', [PlanSectionController::class, 'identificarRiesgos'])->name('planes.seccion.identificar-riesgos');
+    Route::post('/planes/{uuid}/seccion/7/analizar-riesgos', [PlanSectionController::class, 'analizarRiesgos'])->name('planes.seccion.analizar-riesgos');
 
     // Archivos
     Route::post('/planes/{uuid}/seccion/{section}/archivo', [PlanFileController::class, 'store'])->name('planes.archivo.store');
