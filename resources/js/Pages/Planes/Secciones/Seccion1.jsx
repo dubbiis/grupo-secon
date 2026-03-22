@@ -49,13 +49,21 @@ export default function Seccion1({ plan, section }) {
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">Tipo de evento</label>
                     <select
-                        value={form.tipo_evento}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tipo_evento: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                        value={TIPOS_EVENTO.includes(form.tipo_evento) ? form.tipo_evento : form.tipo_evento ? "Otro" : ""}
+                        onChange={(e) => setForm((prev) => ({ ...prev, tipo_evento: e.target.value, ...(e.target.value !== "Otro" && { tipo_evento_otro: "" }) }))}
+                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_EVENTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                     </select>
+                    {form.tipo_evento === "Otro" && (
+                        <Input
+                            value={form.tipo_evento_otro ?? ""}
+                            onChange={(e) => setForm((prev) => ({ ...prev, tipo_evento_otro: e.target.value }))}
+                            placeholder="Especifica el tipo de evento..."
+                            className="mt-2"
+                        />
+                    )}
                 </div>
 
                 <div>
@@ -68,7 +76,7 @@ export default function Seccion1({ plan, section }) {
                     <select
                         value={form.tipo_espacio ?? ""}
                         onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_ESPACIO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}

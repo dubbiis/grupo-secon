@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp, Users } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "@/i18n";
 
@@ -161,17 +161,24 @@ export default function AppLayout({ children, title, subtitle }) {
                         </div>
                         <Link
                             href="/admin/prompts"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-200 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-slate-900 hover:text-slate-900"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-100 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-slate-600 hover:text-slate-900"}`}
                         >
                             <Settings size={14} className="text-[#208DCA]" />
                             {t("nav.ai_prompts")}
                         </Link>
                         <Link
                             href="/admin/stats"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-200 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-slate-900 hover:text-slate-900"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-100 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-slate-600 hover:text-slate-900"}`}
                         >
                             <TrendingUp size={14} className="text-[#208DCA]" />
                             {t("nav.ai_stats")}
+                        </Link>
+                        <Link
+                            href="/admin/users"
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-slate-100 ${currentUrl === "/admin/users" ? "text-[#273887] font-medium" : "text-slate-600 hover:text-slate-900"}`}
+                        >
+                            <Users size={14} className="text-[#208DCA]" />
+                            Usuarios
                         </Link>
                     </motion.div>
                 )}

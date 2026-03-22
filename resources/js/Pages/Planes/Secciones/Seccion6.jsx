@@ -279,11 +279,19 @@ export default function Seccion6({ plan, section }) {
                     <select
                         value={form.perfil_publico}
                         onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
+                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                     >
                         <option value="">Seleccionar...</option>
-                        {TIPOS_PUBLICO.map((tipo) => <option key={t} value={t}>{t}</option>)}
+                        {TIPOS_PUBLICO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                     </select>
+                    {form.perfil_publico === "Otro" && (
+                        <Input
+                            value={form.perfil_publico_otro ?? ""}
+                            onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico_otro: e.target.value }))}
+                            placeholder="Especifica el tipo de público..."
+                            className="mt-2"
+                        />
+                    )}
                 </div>
 
                 <div>

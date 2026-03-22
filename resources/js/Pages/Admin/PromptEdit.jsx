@@ -115,7 +115,7 @@ export default function PromptEdit({ prompt, flash }) {
                                 <select
                                     value={data.model}
                                     onChange={(e) => setData("model", e.target.value)}
-                                    className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
+                                    className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                                 >
                                     {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                                 </select>

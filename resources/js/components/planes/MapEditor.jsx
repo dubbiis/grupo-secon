@@ -677,7 +677,7 @@ export default function MapEditor({
                         onClick={() => setUseFill((v) => !v)}
                         title="Relleno"
                         className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                            useFill ? "bg-[#208DCA]/20 border-[#208DCA]/40 text-[#208DCA]" : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
+                            useFill ? "bg-[#208DCA]/20 border-[#208DCA]/40 text-[#208DCA]" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
                         }`}
                     >
                         <div className="w-3 h-3 rounded-sm border border-current" style={{ background: useFill ? color + "60" : "transparent" }} />
@@ -690,7 +690,7 @@ export default function MapEditor({
                     <div className="flex items-center gap-1 pr-3 border-r border-slate-200">
                         {TEXT_SIZES.map((s) => (
                             <button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
-                                className={`text-xs px-1.5 py-0.5 rounded transition-all ${textSize === s ? "bg-slate-200 text-white" : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"}`}
+                                className={`text-xs px-1.5 py-0.5 rounded transition-all ${textSize === s ? "bg-slate-200 text-slate-800" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
                                 style={{ fontSize: 10 + (TEXT_SIZES.indexOf(s)) }}
                             >A</button>
                         ))}
@@ -699,12 +699,12 @@ export default function MapEditor({
 
                 {/* Opacity */}
                 <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
-                    <span className="text-[10px] text-slate-900">Opacidad</span>
+                    <span className="text-[10px] text-slate-500">Opacidad</span>
                     <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
                         onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
                         className="w-16 h-1 accent-[#208DCA] cursor-pointer"
                     />
-                    <span className="text-[10px] text-slate-900 w-6">{Math.round(opacity * 100)}%</span>
+                    <span className="text-[10px] text-slate-500 w-6">{Math.round(opacity * 100)}%</span>
                 </div>
 
                 {/* Icons dropdown */}
@@ -732,12 +732,12 @@ export default function MapEditor({
                                     <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
                                         {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
                                             <button key={key} onClick={() => setOpenIconCat(key)}
-                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-slate-900 bg-slate-200 font-semibold" : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"}`}
+                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-[#273887] bg-[#273887]/10 font-semibold" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
                                             >{cat.label}</button>
                                         ))}
                                     </div>
                                     <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"}`}
+                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
                                         title="Mostrar etiqueta bajo el icono"
                                     >Etiq.</button>
                                 </div>
@@ -748,7 +748,7 @@ export default function MapEditor({
                                             className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-slate-200 transition-colors group"
                                         >
                                             <span className="text-xl leading-none">{ic.emoji}</span>
-                                            {showIconLabels && <span className="text-[9px] text-slate-900 group-hover:text-slate-900 truncate w-full text-center mt-0.5">{ic.label}</span>}
+                                            {showIconLabels && <span className="text-[9px] text-slate-400 group-hover:text-slate-700 truncate w-full text-center mt-0.5">{ic.label}</span>}
                                         </button>
                                     ))}
                                 </div>
@@ -760,11 +760,11 @@ export default function MapEditor({
                 {/* Undo / Redo / Clear */}
                 <div className="flex items-center gap-0.5 pr-3 border-r border-slate-200">
                     <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-900 hover:text-slate-900 hover:bg-slate-200 disabled:opacity-20 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 transition-all">
                         <Undo2 size={13} />
                     </button>
                     <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-900 hover:text-slate-900 hover:bg-slate-200 disabled:opacity-20 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 transition-all">
                         <Redo2 size={13} />
                     </button>
                     {selectedIdx !== null && (
@@ -782,11 +782,11 @@ export default function MapEditor({
                 {/* View controls */}
                 <div className="flex items-center gap-1 pr-3 border-r border-slate-200">
                     <button onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"}`}>
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
                         <Grid size={13} />
                     </button>
                     <button onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-900 hover:text-slate-900 hover:bg-slate-200 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">
                         <ZoomOut size={13} />
                     </button>
                     <button onClick={() => setZoom(1)} title="Zoom 100%"
@@ -794,7 +794,7 @@ export default function MapEditor({
                         {Math.round(zoom * 100)}%
                     </button>
                     <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-900 hover:text-slate-900 hover:bg-slate-200 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">
                         <ZoomIn size={13} />
                     </button>
                 </div>
@@ -802,7 +802,7 @@ export default function MapEditor({
                 {/* Map toggle */}
                 <button onClick={() => setShowMap((v) => !v)}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        showMap ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]" : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
+                        showMap ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
                     }`}
                 >
                     <Map size={12} />
@@ -813,7 +813,7 @@ export default function MapEditor({
                 <button onClick={() => setFullscreen((v) => !v)}
                     title={fullscreen ? "Salir de pantalla completa (Esc)" : "Pantalla completa"}
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
+                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
                     }`}
                 >
                     {fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
@@ -826,17 +826,17 @@ export default function MapEditor({
                             {mode === "standalone" && (
                                 <div className="flex items-center gap-1 text-xs">
                                     <button onClick={() => setExportFormat("png")}
-                                        className={`px-2 py-1 rounded-l-lg border border-slate-200 transition-colors ${exportFormat === "png" ? "bg-slate-200 text-white" : "text-slate-900 hover:text-slate-900"}`}>
+                                        className={`px-2 py-1 rounded-l-lg border border-slate-200 transition-colors ${exportFormat === "png" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}>
                                         PNG
                                     </button>
                                     <button onClick={() => setExportFormat("jpeg")}
-                                        className={`px-2 py-1 rounded-r-lg border border-slate-200 transition-colors ${exportFormat === "jpeg" ? "bg-slate-200 text-white" : "text-slate-900 hover:text-slate-900"}`}>
+                                        className={`px-2 py-1 rounded-r-lg border border-slate-200 transition-colors ${exportFormat === "jpeg" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}>
                                         JPG
                                     </button>
                                 </div>
                             )}
                             <button onClick={copyToClipboard} title="Copiar al portapapeles"
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${copiedMsg ? "bg-green-600/20 border-green-500/30 text-green-400" : "bg-white border-slate-200 text-slate-900 hover:text-slate-900 hover:bg-slate-200"}`}>
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${copiedMsg ? "bg-green-600/20 border-green-500/30 text-green-400" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
                                 {copiedMsg ? <Check size={13} /> : <Copy size={13} />}
                             </button>
                             <RippleButton size="sm" onClick={handleSave} disabled={saving}
@@ -868,13 +868,13 @@ export default function MapEditor({
                             <div className="flex gap-1 bg-slate-200 rounded-xl p-1">
                                 <button
                                     onClick={() => setMapMode("search")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-slate-200 text-white" : "text-slate-900 hover:text-slate-900"}`}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}
                                 >
                                     <Search size={11} /> Buscar lugar
                                 </button>
                                 <button
                                     onClick={() => setMapMode("route")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-slate-200 text-white" : "text-slate-900 hover:text-slate-900"}`}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}
                                 >
                                     <Navigation size={11} /> Ruta A → B
                                 </button>
@@ -968,7 +968,7 @@ export default function MapEditor({
                                     <button
                                         key={p.label}
                                         onClick={(e) => { e.stopPropagation(); initBlankCanvas(p.w, p.h); }}
-                                        className="text-xs px-3 py-1.5 rounded-xl bg-slate-200 border border-slate-200 text-slate-900 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                                        className="text-xs px-3 py-1.5 rounded-xl bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                                     >
                                         {p.label}
                                         <span className="text-slate-900 ml-1.5 text-[10px]">{p.w}×{p.h}</span>

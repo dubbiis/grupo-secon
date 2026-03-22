@@ -10,6 +10,7 @@ use App\Http\Controllers\GoogleMapsController;
 use App\Http\Controllers\CustomQuestionController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\StatsController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -66,5 +67,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/prompts/{section}', [PromptController::class, 'edit'])->name('prompts.edit');
         Route::put('/prompts/{section}', [PromptController::class, 'update'])->name('prompts.update');
         Route::get('/stats', [StatsController::class, 'index'])->name('stats');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
