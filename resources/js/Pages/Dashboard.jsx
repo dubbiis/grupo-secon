@@ -50,11 +50,11 @@ export default function Dashboard({ plans, auth }) {
                     transition={{ duration: 0.4 }}
                 >
                     <div>
-                        <p className="text-gray-900 text-sm mb-1">Bienvenido, {auth?.user?.name}</p>
+                        <p className="text-slate-900 text-sm mb-1">Bienvenido, {auth?.user?.name}</p>
                         <h1 className="text-3xl font-bold tracking-tight">
                             <MorphingText text="Mis Planes" />
                         </h1>
-                        <p className="text-gray-900 text-sm mt-1">
+                        <p className="text-slate-900 text-sm mt-1">
                             {plans.length === 0
                                 ? "Crea tu primer plan"
                                 : <><SlidingNumber number={plans.length} inView={true} initiallyStable={true} />{` plan${plans.length !== 1 ? 'es' : ''} activo${plans.length !== 1 ? 's' : ''}`}</>
@@ -73,7 +73,7 @@ export default function Dashboard({ plans, auth }) {
                 {/* Empty state */}
                 {plans.length === 0 ? (
                     <motion.div
-                        className="relative overflow-hidden rounded-2xl border border-gray-300 text-center py-24"
+                        className="relative overflow-hidden rounded-2xl border border-slate-200 text-center py-24"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
@@ -82,7 +82,7 @@ export default function Dashboard({ plans, auth }) {
                         <div className="relative z-10">
                             <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain mx-auto mb-5 opacity-60" />
                             <h3 className="font-semibold text-lg mb-2">Sin planes todavía</h3>
-                            <div className="text-gray-900 text-sm mb-6">
+                            <div className="text-slate-900 text-sm mb-6">
                                 <TypingText text="Crea tu primer plan de seguridad para comenzar" duration={35} inView={true}>
                                     <TypingTextCursor className="text-[#208DCA]/60" />
                                 </TypingText>
@@ -111,7 +111,7 @@ export default function Dashboard({ plans, auth }) {
                                         className="group relative"
                                     >
                                         <Shine
-                                            className="relative overflow-hidden rounded-2xl border border-gray-300 bg-gray-200 hover:bg-gray-200 hover:border-gray-300 transition-all duration-300 p-5"
+                                            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 hover:bg-slate-200 hover:border-slate-200 transition-all duration-300 p-5"
                                             color="rgba(32,141,202,0.8)"
                                             opacity={0.1}
                                             duration={900}
@@ -130,7 +130,7 @@ export default function Dashboard({ plans, auth }) {
                                                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
                                                             onClick={() => setPlanToDelete(plan)}
-                                                            className="p-1.5 rounded-lg text-gray-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                                            className="p-1.5 rounded-lg text-slate-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -138,22 +138,22 @@ export default function Dashboard({ plans, auth }) {
                                                 </div>
 
                                                 <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-2">{plan.title}</h3>
-                                                <p className="text-xs text-gray-900 font-mono mb-3">{plan.uuid}</p>
+                                                <p className="text-xs text-slate-900 font-mono mb-3">{plan.uuid}</p>
 
                                                 <div className="flex items-center gap-2 mb-4">
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${status.color}`}>
                                                         {status.label}
                                                     </span>
-                                                    <span className="text-xs text-gray-900 ml-auto">{plan.created_at}</span>
+                                                    <span className="text-xs text-slate-900 ml-auto">{plan.created_at}</span>
                                                 </div>
 
                                                 {/* Progress */}
                                                 <div className="space-y-1.5 mb-4">
-                                                    <div className="flex justify-between text-xs text-gray-900">
+                                                    <div className="flex justify-between text-xs text-slate-900">
                                                         <span>Progreso</span>
                                                         <span><SlidingNumber number={plan.progress} inView={true} />%</span>
                                                     </div>
-                                                    <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                                                    <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                                         <motion.div
                                                             className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
                                                             initial={{ width: 0 }}
@@ -165,7 +165,7 @@ export default function Dashboard({ plans, auth }) {
 
                                                 <Link href={`/planes/${plan.uuid}/seccion/1`}>
                                                     <RippleButton
-                                                        className="w-full bg-gray-200 hover:bg-gray-200 text-gray-900 border border-gray-300 gap-1.5 h-8 text-xs font-medium"
+                                                        className="w-full bg-slate-200 hover:bg-slate-200 text-slate-900 border border-slate-200 gap-1.5 h-8 text-xs font-medium"
                                                         rippleColor="rgba(255,255,255,0.1)"
                                                     >
                                                         {plan.progress > 0 ? "Continuar" : "Comenzar"}
@@ -224,10 +224,10 @@ export default function Dashboard({ plans, auth }) {
                         </div>
                         <DialogTitle className="text-red-400">Eliminar plan</DialogTitle>
                     </div>
-                    <p className="text-sm text-gray-900 mt-2 leading-relaxed">
-                        ¿Seguro que quieres eliminar <span className="text-gray-900 font-medium">"{planToDelete?.title}"</span>?
+                    <p className="text-sm text-slate-900 mt-2 leading-relaxed">
+                        ¿Seguro que quieres eliminar <span className="text-slate-900 font-medium">"{planToDelete?.title}"</span>?
                         <br />
-                        <span className="text-gray-900 text-xs">Esta acción no se puede deshacer.</span>
+                        <span className="text-slate-900 text-xs">Esta acción no se puede deshacer.</span>
                     </p>
                 </DialogHeader>
                 <DialogFooter>
@@ -242,7 +242,7 @@ export default function Dashboard({ plans, auth }) {
                     <RippleButton
                         onClick={confirmDelete}
                         disabled={deleting}
-                        className="bg-red-500/90 hover:bg-red-500 text-gray-900 border-0 gap-2"
+                        className="bg-red-500/90 hover:bg-red-500 text-slate-900 border-0 gap-2"
                         rippleColor="rgba(255,255,255,0.2)"
                     >
                         <Trash2 size={14} />

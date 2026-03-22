@@ -23,13 +23,13 @@ export default function EditorMapas() {
                         <Map size={17} className="text-[#208DCA]" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900 mb-1">Editor de mapas y rutas</p>
-                        <p className="text-xs text-gray-900 leading-relaxed">
+                        <p className="text-sm font-semibold text-slate-900 mb-1">Editor de mapas y rutas</p>
+                        <p className="text-xs text-slate-900 leading-relaxed">
                             Sube capturas de Google Maps, planos del recinto o cualquier imagen base y dibuja encima:
                             rutas de evacuación, puntos de acceso, hospitales, puestos de seguridad y más.
                             Descarga el resultado como PNG o JPG para incluirlo en cualquier plan.
                         </p>
-                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-gray-900">
+                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-slate-900">
                             <span className="flex items-center gap-1"><Info size={10} /> Busca el recinto en el mapa lateral · haz captura · pega con Ctrl+V</span>
                             <span className="flex items-center gap-1"><Info size={10} /> Clic derecho sobre iconos o texto para más opciones</span>
                         </div>

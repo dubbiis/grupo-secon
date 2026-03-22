@@ -17,7 +17,7 @@ function renderMarkdown(raw) {
     return escaped
         .replace(/\*\*(.+?)\*\*/gs, "<strong>$1</strong>")
         .replace(/\*(.+?)\*/gs, "<em>$1</em>")
-        .replace(/---/g, "<hr class='border-gray-300 my-4'>")
+        .replace(/---/g, "<hr class='border-slate-200 my-4'>")
         .replace(/\n/g, "<br>");
 }
 
@@ -190,7 +190,7 @@ export default function Seccion7({ plan, section }) {
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-200 border border-gray-300 text-gray-900 uppercase tracking-wide">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-200 border border-slate-200 text-slate-900 uppercase tracking-wide">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
                             Sección 7
                         </span>
@@ -208,13 +208,13 @@ export default function Seccion7({ plan, section }) {
                             )}
                         </AnimatePresence>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">{section.section_name}</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
                     <button
                         onClick={() => save(section.status)}
                         disabled={saving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-300 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-200 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:text-slate-900 hover:border-slate-200 disabled:opacity-50"
                     >
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
                         <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
@@ -239,7 +239,7 @@ export default function Seccion7({ plan, section }) {
                 </div>
                 <div>
                     <p className="text-sm font-semibold text-amber-400 mb-0.5">Análisis de riesgos en 2 pasos</p>
-                    <p className="text-sm text-gray-900 leading-relaxed">
+                    <p className="text-sm text-slate-900 leading-relaxed">
                         Primero se identifican los riesgos relevantes para el evento, luego se analiza cada uno con evaluación cuantitativa.
                         Asegúrate de completar las secciones 1-6 antes de comenzar.
                     </p>
@@ -247,11 +247,11 @@ export default function Seccion7({ plan, section }) {
             </motion.div>
 
             {/* Paso 1: Identificar riesgos */}
-            <div className="rounded-2xl bg-white border border-gray-300 p-6 space-y-4 shadow-xl shadow-gray-200/50">
+            <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4 shadow-xl shadow-slate-200/50">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Search size={14} className="text-[#208DCA]" />
-                        <span className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Paso 1 — Identificar riesgos</span>
+                        <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Paso 1 — Identificar riesgos</span>
                     </div>
                     <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                         <button
@@ -274,7 +274,7 @@ export default function Seccion7({ plan, section }) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ delay: index * 0.05 }}
-                            className="rounded-xl bg-gray-200 border border-gray-300 p-4 space-y-2"
+                            className="rounded-xl bg-slate-200 border border-slate-200 p-4 space-y-2"
                         >
                             <div className="flex items-center gap-3">
                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[#208DCA]/15 text-[#208DCA] text-xs font-bold flex-shrink-0">
@@ -285,11 +285,11 @@ export default function Seccion7({ plan, section }) {
                                     value={riesgo.nombre}
                                     onChange={(e) => updateRiesgo(index, "nombre", e.target.value)}
                                     placeholder="Nombre del riesgo"
-                                    className="flex-1 bg-transparent border-none text-sm font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none uppercase"
+                                    className="flex-1 bg-transparent border-none text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none uppercase"
                                 />
                                 <button
                                     onClick={() => removeRiesgo(index)}
-                                    className="text-gray-900 hover:text-red-400 transition-colors p-1"
+                                    className="text-slate-900 hover:text-red-400 transition-colors p-1"
                                 >
                                     <X size={14} />
                                 </button>
@@ -299,7 +299,7 @@ export default function Seccion7({ plan, section }) {
                                 onChange={(e) => updateRiesgo(index, "contexto", e.target.value)}
                                 placeholder="Breve descripción del escenario de riesgo..."
                                 rows={2}
-                                className="w-full bg-transparent border-none text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none leading-relaxed"
+                                className="w-full bg-transparent border-none text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
                             />
                         </motion.div>
                     ))}
@@ -308,7 +308,7 @@ export default function Seccion7({ plan, section }) {
                 {riesgos.length > 0 && (
                     <button
                         onClick={addRiesgo}
-                        className="flex items-center gap-1.5 text-xs text-gray-900 hover:text-[#208DCA] transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-slate-900 hover:text-[#208DCA] transition-colors"
                     >
                         <Plus size={12} /> Añadir riesgo
                     </button>
@@ -317,12 +317,12 @@ export default function Seccion7({ plan, section }) {
 
             {/* Paso 2: Analizar riesgos */}
             {riesgos.length > 0 && (
-                <div className="rounded-2xl bg-gray-200 border border-gray-300 overflow-hidden">
+                <div className="rounded-2xl bg-slate-200 border border-slate-200 overflow-hidden">
                     <div className="px-6 pt-5 pb-5 space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Sparkles size={14} className="text-[#208DCA]" />
-                                <span className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Paso 2 — Análisis detallado</span>
+                                <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Paso 2 — Análisis detallado</span>
                             </div>
                             {!generatedText && !analyzing && (
                                 <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
@@ -347,7 +347,7 @@ export default function Seccion7({ plan, section }) {
                                 <span className="text-xs text-[#208DCA]">
                                     Analizando riesgo {currentRisk} de {totalRisks}...
                                 </span>
-                                <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                                <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                     <motion.div
                                         className="h-full bg-gradient-to-r from-[#273887] to-[#208DCA] rounded-full"
                                         initial={{ width: "0%" }}
@@ -367,15 +367,15 @@ export default function Seccion7({ plan, section }) {
                                         {analyzing ? (
                                             <>
                                                 <Loader2 size={13} className="text-[#208DCA] animate-spin" />
-                                                <span className="text-xs text-gray-900">Generando análisis...</span>
+                                                <span className="text-xs text-slate-900">Generando análisis...</span>
                                             </>
                                         ) : (
                                             <>
                                                 {editMode
                                                     ? <Pencil size={12} className="text-[#208DCA]" />
-                                                    : <Eye size={12} className="text-gray-900" />
+                                                    : <Eye size={12} className="text-slate-900" />
                                                 }
-                                                <span className="text-xs text-gray-900">
+                                                <span className="text-xs text-slate-900">
                                                     {editMode ? "Editando texto" : "Vista previa"}
                                                 </span>
                                             </>
@@ -415,7 +415,7 @@ export default function Seccion7({ plan, section }) {
                                                 onChange={(e) => setGeneratedText(e.target.value)}
                                                 readOnly={analyzing}
                                                 rows={20}
-                                                className="w-full rounded-xl border border-gray-300 bg-gray-200 p-5 text-sm leading-relaxed text-gray-900 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
+                                                className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner resize-y focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors font-sans"
                                                 placeholder="El análisis aparecerá aquí."
                                             />
                                             {analyzing && (
@@ -424,7 +424,7 @@ export default function Seccion7({ plan, section }) {
                                         </>
                                     ) : (
                                         <div
-                                            className="w-full rounded-xl border border-gray-300 bg-gray-200 p-5 text-sm leading-relaxed text-gray-900 shadow-inner min-h-[200px] max-h-[600px] overflow-y-auto"
+                                            className="w-full rounded-xl border border-slate-200 bg-slate-200 p-5 text-sm leading-relaxed text-slate-900 shadow-inner min-h-[200px] max-h-[600px] overflow-y-auto"
                                             dangerouslySetInnerHTML={{ __html: renderMarkdown(generatedText) }}
                                         />
                                     )}
@@ -432,10 +432,10 @@ export default function Seccion7({ plan, section }) {
 
                                 {/* Solicitar cambios */}
                                 {!analyzing && generatedText && (
-                                    <div className="rounded-xl border border-gray-300 bg-gray-200 overflow-hidden">
+                                    <div className="rounded-xl border border-slate-200 bg-slate-200 overflow-hidden">
                                         <button
                                             onClick={() => setShowCambios(!showCambios)}
-                                            className="w-full flex items-center justify-between px-4 py-3 text-xs font-medium text-gray-900 hover:text-gray-900 hover:bg-gray-200 transition-colors"
+                                            className="w-full flex items-center justify-between px-4 py-3 text-xs font-medium text-slate-900 hover:text-slate-900 hover:bg-slate-200 transition-colors"
                                         >
                                             <span className="flex items-center gap-2">
                                                 <RefreshCw size={12} className="text-[#208DCA]" />
@@ -454,7 +454,7 @@ export default function Seccion7({ plan, section }) {
                                                     transition={{ duration: 0.2 }}
                                                     className="overflow-hidden"
                                                 >
-                                                    <div className="px-4 pb-4 pt-2 space-y-3 border-t border-gray-300">
+                                                    <div className="px-4 pb-4 pt-2 space-y-3 border-t border-slate-200">
                                                         <Textarea
                                                             value={instrucciones}
                                                             onChange={(e) => setInstrucciones(e.target.value)}

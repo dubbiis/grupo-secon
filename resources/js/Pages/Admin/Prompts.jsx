@@ -30,14 +30,14 @@ export default function Prompts({ prompts, flash }) {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-300 hover:bg-gray-200 hover:border-gray-300 transition-all group"
+                            className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-200 hover:border-slate-200 transition-all group"
                         >
                             <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#273887]/30 to-[#208DCA]/30 border border-[#208DCA]/20 flex items-center justify-center text-sm font-bold text-[#208DCA] flex-shrink-0">
                                 {prompt.section_number}
                             </span>
                             <div className="flex-1 min-w-0">
                                 <p className="font-medium text-sm text-white">{prompt.section_name}</p>
-                                <p className="text-xs text-gray-900 mt-0.5">
+                                <p className="text-xs text-slate-900 mt-0.5">
                                     {prompt.model} · max {prompt.max_tokens} tokens
                                     {prompt.updated_at && ` · Editado ${prompt.updated_at}`}
                                 </p>

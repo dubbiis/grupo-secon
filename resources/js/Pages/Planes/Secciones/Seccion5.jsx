@@ -67,7 +67,7 @@ export default function Seccion5({ plan, section, files = [] }) {
                         className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${
                             showMapEditor
                                 ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                                : "bg-white border-gray-300 text-gray-900 hover:text-gray-900"
+                                : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
                         }`}
                     >
                         <Map size={12} />

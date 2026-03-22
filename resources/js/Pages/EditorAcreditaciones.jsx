@@ -22,12 +22,12 @@ export default function EditorAcreditaciones() {
                         <CreditCard size={17} className="text-[#208DCA]" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900 mb-1">Diseñador de tarjetas de acreditación</p>
-                        <p className="text-xs text-gray-900 leading-relaxed">
+                        <p className="text-sm font-semibold text-slate-900 mb-1">Diseñador de tarjetas de acreditación</p>
+                        <p className="text-xs text-slate-900 leading-relaxed">
                             Crea tarjetas visuales para el personal del evento: staff, prensa, VIPs, artistas y seguridad.
                             Añade foto, logo, colores corporativos y campos personalizados. Descarga en PNG o inclúyelas directamente en un plan.
                         </p>
-                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-gray-900">
+                        <div className="flex flex-wrap gap-3 mt-2.5 text-[10px] text-slate-900">
                             <span className="flex items-center gap-1"><Info size={10} /> Sube la foto del portador y el logo del evento</span>
                             <span className="flex items-center gap-1"><Info size={10} /> Elige una paleta o personaliza los colores</span>
                             <span className="flex items-center gap-1"><Info size={10} /> Añade hasta 4 campos personalizados</span>

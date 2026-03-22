@@ -54,7 +54,7 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
 
     return (
         <div
-            className="w-20 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden flex-shrink-0"
+            className="w-20 h-24 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden flex-shrink-0"
             onClick={() => inputRef.current?.click()}
             title="Foto del VIP (opcional)"
         >
@@ -64,8 +64,8 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
                 <div className="text-[9px] text-[#208DCA] animate-pulse">Subiendo...</div>
             ) : (
                 <>
-                    <User size={18} className="text-gray-900 group-hover:text-[#208DCA]/50 transition-colors" />
-                    <span className="text-[9px] text-gray-900 text-center leading-tight">Añadir foto</span>
+                    <User size={18} className="text-slate-900 group-hover:text-[#208DCA]/50 transition-colors" />
+                    <span className="text-[9px] text-slate-900 text-center leading-tight">Añadir foto</span>
                 </>
             )}
             {displayUrl && (
@@ -136,31 +136,31 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="rounded-xl border border-gray-300 overflow-hidden bg-white"
+            className="rounded-xl border border-slate-200 overflow-hidden bg-white"
         >
             {/* Header */}
             <div
-                className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-gray-200" : "hover:bg-gray-200"}`}
+                className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-slate-200" : "hover:bg-slate-200"}`}
                 onClick={onToggle}
             >
                 {/* Avatar thumbnail */}
-                <div className="w-7 h-7 rounded-lg bg-gray-200 border border-gray-300 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-7 h-7 rounded-lg bg-slate-200 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {vip.foto_url
                         ? <img src={vip.foto_url} alt="" className="w-full h-full object-cover" />
-                        : <User size={13} className="text-gray-900" />
+                        : <User size={13} className="text-slate-900" />
                     }
                 </div>
-                <span className="flex-1 text-xs font-medium text-gray-900 truncate">
+                <span className="flex-1 text-xs font-medium text-slate-900 truncate">
                     {vip.nombre || `VIP ${idx + 1}`}
                 </span>
                 <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onRemove(idx); }}
-                    className="p-1 rounded-lg text-gray-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                    className="p-1 rounded-lg text-slate-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                 >
                     <Trash2 size={12} />
                 </button>
-                <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-gray-900">
+                <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-slate-900">
                     <ChevronDown size={13} />
                 </motion.div>
             </div>
@@ -175,7 +175,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                         transition={{ duration: 0.22, ease: "easeInOut" }}
                         className="overflow-hidden"
                     >
-                        <div className="p-4 border-t border-gray-300 flex gap-4">
+                        <div className="p-4 border-t border-slate-200 flex gap-4">
                             {/* Photo upload */}
                             <VipPhotoUpload
                                 vip={vip}
@@ -186,7 +186,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                             {/* Fields */}
                             <div className="flex-1 grid grid-cols-1 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-semibold text-gray-900 mb-1 block uppercase tracking-wide">
+                                    <label className="text-[10px] font-semibold text-slate-900 mb-1 block uppercase tracking-wide">
                                         Nombre / Artista / Personalidad <span className="text-[#208DCA]">*</span>
                                     </label>
                                     <Input
@@ -197,7 +197,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
-                                        <label className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide">
+                                        <label className="text-[10px] font-semibold text-slate-900 uppercase tracking-wide">
                                             Perfil y consideraciones de seguridad
                                         </label>
                                         <button
@@ -279,7 +279,7 @@ export default function Seccion6({ plan, section }) {
                     <select
                         value={form.perfil_publico}
                         onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-gray-300 bg-gray-200 px-3 py-1 text-sm text-gray-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
+                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_PUBLICO.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -302,7 +302,7 @@ export default function Seccion6({ plan, section }) {
                 <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium">Artistas / VIPs / Personalidades</label>
                     {vips.length > 0 && (
-                        <span className="text-xs text-gray-900">{vips.length} registrado{vips.length !== 1 ? "s" : ""}</span>
+                        <span className="text-xs text-slate-900">{vips.length} registrado{vips.length !== 1 ? "s" : ""}</span>
                     )}
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -330,7 +330,7 @@ export default function Seccion6({ plan, section }) {
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={addVip}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-300 text-gray-900 hover:text-gray-900 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-slate-200 text-slate-900 hover:text-slate-900 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
                     >
                         <Plus size={13} />
                         Añadir artista / VIP

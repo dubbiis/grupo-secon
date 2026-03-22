@@ -6,13 +6,13 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-gray-200 text-gray-900 border border-gray-300 shadow hover:bg-gray-200 hover:border-gray-300",
+                default: "bg-slate-200 text-slate-900 border border-slate-200 shadow hover:bg-slate-200 hover:border-slate-200",
                 destructive: "bg-red-500/20 text-red-400 border border-red-500/20 hover:bg-red-500/30",
-                outline: "border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-200 hover:text-gray-900 hover:border-white/25",
-                secondary: "bg-gray-200 text-gray-900 border border-gray-300 hover:bg-white/12",
-                ghost: "text-gray-900 hover:bg-gray-200 hover:text-gray-900",
+                outline: "border border-slate-200 bg-transparent text-slate-900 hover:bg-slate-200 hover:text-slate-900 hover:border-white/25",
+                secondary: "bg-slate-200 text-slate-900 border border-slate-200 hover:bg-white/12",
+                ghost: "text-slate-900 hover:bg-slate-200 hover:text-slate-900",
                 link: "text-[#208DCA] underline-offset-4 hover:underline",
-                secon: "bg-[#273887] text-gray-900 shadow-lg shadow-[#273887]/25 hover:bg-[#273887]/90 hover:shadow-[#273887]/40",
+                secon: "bg-[#273887] text-slate-900 shadow-lg shadow-[#273887]/25 hover:bg-[#273887]/90 hover:shadow-[#273887]/40",
                 "secon-gradient": "bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 shadow-lg shadow-[#273887]/25 hover:shadow-[#273887]/40 hover:opacity-90",
                 "secon-outline": "border border-[#273887]/50 text-[#208DCA] bg-transparent hover:bg-[#273887]/10 hover:border-[#273887]",
             },

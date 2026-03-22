@@ -27,7 +27,7 @@ export default function Seccion11({ plan, section, files = [] }) {
                             onClick={() => setForm((prev) => ({ ...prev, tipo_run_of_show: opt.value }))}
                             className={`flex-1 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                                 form.tipo_run_of_show === opt.value
-                                    ? "bg-[#273887] text-gray-900 border-[#273887]"
+                                    ? "bg-[#273887] text-slate-900 border-[#273887]"
                                     : "bg-transparent text-muted-foreground border-input hover:border-[#208DCA]"
                             }`}
                         >

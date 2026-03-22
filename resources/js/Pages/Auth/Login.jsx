@@ -60,42 +60,42 @@ export default function Login() {
                             transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                         />
                     </h1>
-                    <p className="text-sm text-gray-500 mt-1">Planes de Seguridad Privada</p>
+                    <p className="text-sm text-slate-500 mt-1">Planes de Seguridad Privada</p>
                 </motion.div>
 
                 {/* Card */}
                 <motion.div
-                    className="bg-white border border-gray-300 backdrop-blur-xl rounded-2xl p-6 shadow-xl shadow-gray-200/60"
+                    className="bg-white border border-slate-200 backdrop-blur-xl rounded-2xl p-6 shadow-xl shadow-slate-200/60"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Iniciar sesión</h2>
-                    <p className="text-sm text-gray-500 mb-6">Accede a tu cuenta</p>
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">Iniciar sesión</h2>
+                    <p className="text-sm text-slate-500 mb-6">Accede a tu cuenta</p>
 
                     <form onSubmit={submit} className="space-y-4">
                         <div>
-                            <label className="text-xs font-medium text-gray-900 mb-1.5 block uppercase tracking-wide">Email</label>
+                            <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">Email</label>
                             <Input
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData("email", e.target.value)}
                                 placeholder="tu@email.com"
                                 autoComplete="email"
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
                             {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium text-gray-900 mb-1.5 block uppercase tracking-wide">Contraseña</label>
+                            <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">Contraseña</label>
                             <Input
                                 type="password"
                                 value={data.password}
                                 onChange={(e) => setData("password", e.target.value)}
                                 placeholder="••••••••"
                                 autoComplete="current-password"
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
                             {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
                         </div>
@@ -106,9 +106,9 @@ export default function Login() {
                                 id="remember"
                                 checked={data.remember}
                                 onChange={(e) => setData("remember", e.target.checked)}
-                                className="rounded border-gray-300 bg-gray-200"
+                                className="rounded border-slate-200 bg-slate-200"
                             />
-                            <label htmlFor="remember" className="text-sm text-gray-900">Recordarme</label>
+                            <label htmlFor="remember" className="text-sm text-slate-900">Recordarme</label>
                         </div>
 
                         <button
@@ -121,7 +121,7 @@ export default function Login() {
                     </form>
                 </motion.div>
 
-                <p className="text-center text-sm text-gray-500 mt-5">
+                <p className="text-center text-sm text-slate-500 mt-5">
                     ¿No tienes cuenta?{" "}
                     <Link href="/register" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
                         Registrarse

@@ -118,14 +118,14 @@ export default function PlacesPanel({ uuid, type, onResult }) {
     const totalItems = groups.reduce((sum, { key }) => sum + (data?.[key]?.length ?? 0), 0);
 
     return (
-        <div className="rounded-xl border border-gray-300 bg-gray-200 overflow-hidden">
+        <div className="rounded-xl border border-slate-200 bg-slate-200 overflow-hidden">
             {/* ── Header ── */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="flex items-center gap-2 min-w-0">
                     <MapPin size={13} className="text-[#208DCA] flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">Búsqueda automática</span>
+                    <span className="text-sm font-medium text-slate-900">Búsqueda automática</span>
                     {addressUsed && (
-                        <span className="text-xs text-gray-900 truncate hidden sm:block">· {addressUsed}</span>
+                        <span className="text-xs text-slate-900 truncate hidden sm:block">· {addressUsed}</span>
                     )}
                 </div>
 
@@ -138,14 +138,14 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                         Buscar cerca del evento
                     </button>
                 ) : status === "loading" ? (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-900">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-900">
                         <Loader2 size={12} className="animate-spin" />
                         Buscando…
                     </div>
                 ) : (
                     <button
                         onClick={search}
-                        className="flex items-center gap-1 text-xs text-gray-900 hover:text-gray-900 transition-colors"
+                        className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
                     >
                         <RefreshCw size={11} />
                         Volver a buscar
@@ -181,10 +181,10 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                             if (items.length === 0) return null;
                             return (
                                 <div key={key} className="p-3">
-                                    <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <p className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                         <span>{emoji}</span>
                                         {label}
-                                        <span className="text-gray-900 font-normal">{items.length} encontrados</span>
+                                        <span className="text-slate-900 font-normal">{items.length} encontrados</span>
                                     </p>
                                     <div className="space-y-0.5">
                                         {items.map((item, i) => {
@@ -193,16 +193,16 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                                                 <button
                                                     key={i}
                                                     onClick={() => toggleItem(key, i)}
-                                                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-200 transition-colors text-left group"
+                                                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-slate-200 transition-colors text-left group"
                                                 >
                                                     <div className="flex-shrink-0 mt-0.5">
                                                         {isChecked
                                                             ? <CheckSquare size={13} className="text-[#208DCA]" />
-                                                            : <Square size={13} className="text-white/15 group-hover:text-gray-900 transition-colors" />
+                                                            : <Square size={13} className="text-white/15 group-hover:text-slate-900 transition-colors" />
                                                         }
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={`text-xs font-medium leading-tight transition-colors ${isChecked ? "text-white" : "text-gray-900"}`}>
+                                                        <p className={`text-xs font-medium leading-tight transition-colors ${isChecked ? "text-white" : "text-slate-900"}`}>
                                                             {item.name}
                                                             {item.distance_text && (
                                                                 <span className="ml-1.5 text-[#208DCA]/60 font-normal text-[11px]">
@@ -226,7 +226,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                         })}
 
                         {totalItems === 0 && (
-                            <p className="px-4 py-3 text-xs text-gray-900 text-center">
+                            <p className="px-4 py-3 text-xs text-slate-900 text-center">
                                 No se encontraron lugares en este radio. Introduce los datos manualmente.
                             </p>
                         )}

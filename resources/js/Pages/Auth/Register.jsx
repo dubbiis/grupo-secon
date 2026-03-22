@@ -28,13 +28,13 @@ export default function Register() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#273887] to-[#208DCA] shadow-lg shadow-[#273887]/40 mb-4">
                         <Shield size={28} className="text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Grupo Secon</h1>
-                    <p className="text-sm text-gray-900 mt-1">Planes de Seguridad Privada</p>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Grupo Secon</h1>
+                    <p className="text-sm text-slate-900 mt-1">Planes de Seguridad Privada</p>
                 </div>
 
-                <div className="bg-gray-200 border border-gray-300 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Crear cuenta</h2>
-                    <p className="text-sm text-gray-900 mb-6">Regístrate para acceder</p>
+                <div className="bg-slate-200 border border-slate-200 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">Crear cuenta</h2>
+                    <p className="text-sm text-slate-900 mb-6">Regístrate para acceder</p>
 
                     <form onSubmit={submit} className="space-y-4">
                         {[
@@ -44,13 +44,13 @@ export default function Register() {
                             { key: "password_confirmation", label: "Confirmar contraseña", type: "password", placeholder: "Repite la contraseña" },
                         ].map(({ key, label, type, placeholder }) => (
                             <div key={key}>
-                                <label className="text-xs font-medium text-gray-900 mb-1.5 block uppercase tracking-wide">{label}</label>
+                                <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">{label}</label>
                                 <Input
                                     type={type}
                                     value={data[key]}
                                     onChange={(e) => setData(key, e.target.value)}
                                     placeholder={placeholder}
-                                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                    className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                                 />
                                 {errors[key] && <p className="text-red-400 text-xs mt-1">{errors[key]}</p>}
                             </div>
@@ -66,7 +66,7 @@ export default function Register() {
                     </form>
                 </div>
 
-                <p className="text-center text-sm text-gray-900 mt-5">
+                <p className="text-center text-sm text-slate-900 mt-5">
                     ¿Ya tienes cuenta?{" "}
                     <Link href="/login" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
                         Iniciar sesión

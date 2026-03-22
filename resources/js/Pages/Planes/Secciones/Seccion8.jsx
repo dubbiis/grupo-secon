@@ -21,7 +21,7 @@ export default function Seccion8({ plan, section, files = [] }) {
                 </div>
                 <div>
                     <p className="text-sm font-semibold text-[#208DCA] mb-0.5">Planos del dispositivo de seguridad</p>
-                    <p className="text-sm text-gray-900 leading-relaxed">
+                    <p className="text-sm text-slate-900 leading-relaxed">
                         Sube los planos del recinto con la distribución del personal de seguridad,
                         accesos controlados, puestos de control y zonas diferenciadas.
                         Puedes usar el editor para anotar directamente sobre imágenes del recinto.
@@ -36,7 +36,7 @@ export default function Seccion8({ plan, section, files = [] }) {
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all ${
                         !showMapEditor
                             ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                            : "bg-white border-gray-300 text-gray-900 hover:text-gray-900"
+                            : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
                     }`}
                 >
                     <Upload size={12} />
@@ -47,7 +47,7 @@ export default function Seccion8({ plan, section, files = [] }) {
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all ${
                         showMapEditor
                             ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                            : "bg-white border-gray-300 text-gray-900 hover:text-gray-900"
+                            : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
                     }`}
                 >
                     <Map size={12} />

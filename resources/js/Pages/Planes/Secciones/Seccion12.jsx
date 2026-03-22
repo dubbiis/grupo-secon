@@ -36,7 +36,7 @@ export default function Seccion12({ plan, section }) {
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all ${
                         view === "lista"
                             ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                            : "bg-white border-gray-300 text-gray-900 hover:text-gray-900"
+                            : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
                     }`}
                 >
                     <List size={12} />
@@ -47,7 +47,7 @@ export default function Seccion12({ plan, section }) {
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all ${
                         view === "disenador"
                             ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                            : "bg-white border-gray-300 text-gray-900 hover:text-gray-900"
+                            : "bg-white border-slate-200 text-slate-900 hover:text-slate-900"
                     }`}
                 >
                     <CreditCard size={12} />

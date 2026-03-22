@@ -38,23 +38,23 @@
 /* ── Light theme (only theme) ── */
 :root {
     --background:             #F8FAFC;
-    --foreground:             #1F2937;
+    --foreground:             #1e293b;
     --card:                   #FFFFFF;
-    --card-foreground:        #1F2937;
+    --card-foreground:        #1e293b;
     --popover:                #FFFFFF;
-    --popover-foreground:     #1F2937;
+    --popover-foreground:     #1e293b;
     --primary:                #273887;
     --primary-foreground:     #FFFFFF;
-    --secondary:              #F1F5F9;
-    --secondary-foreground:   #1F2937;
-    --muted:                  #F1F5F9;
-    --muted-foreground:       #6B7280;
-    --accent:                 #F1F5F9;
-    --accent-foreground:      #1F2937;
+    --secondary:              #f1f5f9;
+    --secondary-foreground:   #1e293b;
+    --muted:                  #f1f5f9;
+    --muted-foreground:       #64748b;
+    --accent:                 #f1f5f9;
+    --accent-foreground:      #1e293b;
     --destructive:            #EF4444;
     --destructive-foreground: #FFFFFF;
-    --border:                 #E5E7EB;
-    --input:                  #E5E7EB;
+    --border:                 #e2e8f0;
+    --input:                  #e2e8f0;
     --ring:                   #208DCA;
     --radius:                 0.625rem;
 }
@@ -63,19 +63,19 @@
     * { @apply border-border; }
 
     html, body {
-        background-color: #F8FAFC;
-        color: #1F2937;
+        background-color: #f8fafc;
+        color: #1e293b;
     }
 
     /* Native selects */
     select {
         background-color: #FFFFFF;
-        color: #1F2937;
-        border-color: #E5E7EB;
+        color: #1e293b;
+        border-color: #e2e8f0;
     }
     select option {
         background-color: #FFFFFF;
-        color: #1F2937;
+        color: #1e293b;
     }
 
     /* Custom scrollbar */
