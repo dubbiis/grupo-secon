@@ -838,17 +838,17 @@ export default function MapEditor({
             </div>
 
             {/* ── Canvas + Map ── */}
-            <div className="flex gap-3 min-h-[560px]">
+            <div className="min-h-[560px]">
 
-                {/* Map panel */}
+                {/* Map panel — full width, replaces canvas when active */}
                 <AnimatePresence>
                     {showMap && (
                         <motion.div
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 360 }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="flex-shrink-0 flex flex-col gap-2 overflow-hidden w-[360px]"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex flex-col gap-2 w-full"
                         >
                             {/* Mode toggle */}
                             <div className="flex gap-1 bg-white/4 rounded-xl p-1">
@@ -920,15 +920,15 @@ export default function MapEditor({
                             )}
 
                             {/* Leaflet map */}
-                            <div className="flex-1 rounded-xl overflow-hidden border border-white/10" style={{ minHeight: 480 }}>
+                            <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: 520 }}>
                                 <LeafletMap command={mapCommand} onStatus={setMapStatus} />
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* Canvas area */}
-                <div ref={containerRef} className="flex-1 relative flex flex-col items-center justify-center overflow-auto">
+                {/* Canvas area — hidden when map is active */}
+                <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto min-h-[560px] ${showMap ? "hidden" : ""}`}>
                     {!hasBg ? (
                         <div
                             className="w-full h-full flex flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed border-white/15 bg-white/2 cursor-pointer transition-colors hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3"
