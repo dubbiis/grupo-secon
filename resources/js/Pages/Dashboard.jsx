@@ -22,6 +22,7 @@ const STATUS_CONFIG = {
 };
 
 export default function Dashboard({ plans, auth }) {
+    const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
     const [planToDelete, setPlanToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
