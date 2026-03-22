@@ -46,32 +46,12 @@ export default function Login() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
                     {/* Logo */}
-                    <div className="relative inline-block mb-5">
-                        <img
-                            src="/images/logo-blanco.png"
-                            alt="Grupo Secon"
-                            className="h-20 w-auto object-contain"
-                            onError={(e) => { e.target.style.display = "none"; }}
-                        />
-                        <motion.div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                                background: "linear-gradient(90deg, transparent 0%, rgba(32,141,202,0.85) 45%, rgba(255,255,255,1) 50%, rgba(32,141,202,0.85) 55%, transparent 100%)",
-                                backgroundSize: "300% 100%",
-                                WebkitMaskImage: "url('/images/logo-blanco.png')",
-                                maskImage: "url('/images/logo-blanco.png')",
-                                WebkitMaskSize: "contain",
-                                maskSize: "contain",
-                                WebkitMaskRepeat: "no-repeat",
-                                maskRepeat: "no-repeat",
-                                WebkitMaskPosition: "center",
-                                maskPosition: "center",
-                            }}
-                            initial={{ backgroundPosition: "-150% 0%" }}
-                            animate={{ backgroundPosition: "350% 0%" }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
-                        />
-                    </div>
+                    <img
+                        src="/images/logo-blanco.png"
+                        alt="Grupo Secon"
+                        className="h-20 w-auto object-contain mb-5"
+                        onError={(e) => { e.target.style.display = "none"; }}
+                    />
                     <h1 className="text-3xl font-bold tracking-tight">
                         <GradientText
                             text="Grupo Secon"
