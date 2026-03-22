@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 
 function LogoShimmer() {
     return (
@@ -142,13 +143,15 @@ export default function AppLayout({ children, title, subtitle }) {
                             </span>
                         )}
                     </div>
-                    <button
-                        onClick={() => router.post("/logout")}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/30 hover:text-red-400 hover:bg-red-400/8 transition-all"
-                    >
-                        <LogOut size={15} />
-                        Cerrar sesión
-                    </button>
+                    <div className="flex items-center justify-between">
+                        <LanguageSelector />
+                        <button
+                            onClick={() => router.post("/logout")}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/30 hover:text-red-400 hover:bg-red-400/8 transition-all"
+                        >
+                            <LogOut size={15} />
+                        </button>
+                    </div>
                 </div>
             </aside>
 

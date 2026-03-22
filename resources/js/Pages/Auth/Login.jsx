@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
 import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
+import LanguageSelector from "@/components/LanguageSelector";
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
@@ -127,6 +128,11 @@ export default function Login() {
                     </Link>
                 </p>
             </motion.div>
+
+            {/* Language selector */}
+            <div className="fixed bottom-4 right-4 z-20">
+                <LanguageSelector compact />
+            </div>
         </div>
     );
 }
