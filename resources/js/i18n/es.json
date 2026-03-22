@@ -32,7 +32,6 @@
     "hours": "Horas",
     "admin": "Admin"
   },
-
   "auth": {
     "login": "Iniciar sesión",
     "login_subtitle": "Accede a tu cuenta",
@@ -47,7 +46,6 @@
     "logout": "Cerrar sesión",
     "app_subtitle": "Planes de Seguridad Privada"
   },
-
   "dashboard": {
     "welcome": "Bienvenido, {{name}}",
     "my_plans": "Mis Planes",
@@ -70,7 +68,6 @@
     "delete_confirm_btn": "Sí, eliminar",
     "deleting": "Eliminando..."
   },
-
   "plan": {
     "back_to_dashboard": "Volver al dashboard",
     "dashboard": "Dashboard",
@@ -79,7 +76,6 @@
     "plan_progress": "Progreso del plan",
     "sections_completed": "secciones completadas"
   },
-
   "ai": {
     "generator": "Generador IA",
     "generate": "Generar con IA",
@@ -92,13 +88,11 @@
     "apply_changes": "Aplicar cambios",
     "text_placeholder": "El texto generado aparecerá aquí."
   },
-
   "files": {
     "uploading": "Subiendo...",
     "click_or_drag": "Haz clic o arrastra un archivo",
     "upload_file": "Subir archivo"
   },
-
   "questions": {
     "add_custom": "Añadir pregunta personalizada",
     "add_question": "Añadir pregunta",
@@ -110,7 +104,6 @@
     "no_previous": "No hay preguntas anteriores",
     "create_new": "Crear: \"{{text}}\""
   },
-
   "nav": {
     "my_plans": "Mis Planes",
     "map_editor": "Editor de Mapas",
@@ -120,7 +113,6 @@
     "ai_prompts": "Prompts IA",
     "ai_stats": "Estadísticas IA"
   },
-
   "map_editor": {
     "custom_color": "Color personalizado",
     "fill": "Relleno",
@@ -157,7 +149,6 @@
     "show_labels": "Mostrar etiqueta bajo el icono",
     "labels_short": "Etiq."
   },
-
   "section7": {
     "banner_title": "Análisis de riesgos en 2 pasos",
     "banner_description": "Primero se identifican los riesgos relevantes para el evento, luego se analiza cada uno con evaluación cuantitativa. Asegúrate de completar las secciones 1-6 antes de comenzar.",
@@ -176,7 +167,6 @@
     "request_changes_analysis": "Solicitar cambios al análisis",
     "changes_placeholder": "Ej: Sube la probabilidad del riesgo de incendio, añade una medida sobre drones..."
   },
-
   "section9": {
     "title": "Planificación del personal de seguridad",
     "description": "Importa un Excel o crea la planificación directamente. Arrastra filas para reordenar. Las horas se calculan automáticamente.",
@@ -203,7 +193,6 @@
     "insert_row_below": "Insertar fila debajo",
     "duplicate_row": "Duplicar fila"
   },
-
   "section15": {
     "pdf_title_label": "Título del plan en el PDF",
     "pdf_title_placeholder": "Plan de Seguridad — Evento...",
@@ -219,7 +208,6 @@
     "palette_nature": "Naturaleza",
     "palette_modern": "Moderno"
   },
-
   "stats": {
     "title": "Estadísticas de uso IA",
     "subtitle": "Consumo de tokens y coste por modelo y sección",
@@ -245,5 +233,41 @@
     "changes": "Cambios",
     "no_generations": "Aún no hay generaciones registradas.",
     "no_generations_desc": "Los datos aparecen aquí después de generar texto en cualquier sección."
+  },
+  "forms": {
+    "event_name": "Nombre del evento",
+    "organizer": "Organizador",
+    "address": "Dirección del evento",
+    "event_type": "Tipo de evento",
+    "space_name": "Nombre del espacio/recinto",
+    "space_type": "Tipo de espacio",
+    "plan_writer": "Redactor del plan",
+    "license_number": "Nº de habilitación",
+    "select": "Seleccionar...",
+    "other": "Otro",
+    "specify_other": "Especifica...",
+    "description": "Descripción general",
+    "event_objective": "Objetivo del evento",
+    "start_date": "Fecha inicio",
+    "end_date": "Fecha fin",
+    "opening_time": "Hora apertura",
+    "closing_time": "Hora cierre",
+    "setup_date": "Fecha montaje",
+    "teardown_date": "Fecha desmontaje",
+    "attendees": "Número de asistentes",
+    "has_vip": "¿Zona VIP?",
+    "vip_attendees": "Asistentes VIP",
+    "public_type": "Tipo de público",
+    "age_range": "Rango de edad estimado",
+    "geographic_scope": "Ámbito geográfico",
+    "total_capacity": "Aforo total",
+    "num_accesses": "Número de accesos",
+    "producer": "Productora",
+    "required": "*"
+  },
+  "sections": {
+    "progress": "Progreso del plan",
+    "completed": "secciones completadas",
+    "of": "de"
   }
 }

@@ -16,7 +16,7 @@ class OpenAIService
         $this->client = OpenAI::client(config('openai.api_key'));
     }
 
-    public function streamGenerate(PromptTemplate $template, array $variables, callable $onChunk): ?array
+    public function streamGenerate(PromptTemplate $template, array $variables, callable $onChunk, string $lang = 'es'): ?array
     {
         $userPrompt = $template->buildUserPrompt($variables);
 
@@ -39,12 +39,18 @@ class OpenAIService
             $userPrompt .= "\n\n---\n**Texto de ejemplo como referencia de estilo y formato** (no lo copies literalmente, úsalo solo como guía de estructura, extensión y tono):\n\n" . $template->example_output;
         }
 
+        $systemPrompt = $template->system_prompt;
+        if ($lang !== 'es') {
+            $langName = match($lang) { 'en' => 'English', default => 'Spanish' };
+            $systemPrompt .= "\n\nIMPORTANT: Respond entirely in {$langName}.";
+        }
+
         $stream = $this->client->chat()->createStreamed([
             'model' => $template->model,
             'max_tokens' => $template->max_tokens,
             'stream_options' => ['include_usage' => true],
             'messages' => [
-                ['role' => 'system', 'content' => $template->system_prompt],
+                ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user', 'content' => $userPrompt],
             ],
         ]);
@@ -67,8 +73,14 @@ class OpenAIService
         return $usage;
     }
 
-    public function streamCambios(string $textoAnterior, string $instrucciones, callable $onChunk): ?array
+    public function streamCambios(string $textoAnterior, string $instrucciones, callable $onChunk, string $lang = 'es'): ?array
     {
+        $sysPrompt = 'Eres un redactor experto en Planes de Seguridad Privada. Tu tarea es aplicar las correcciones solicitadas al texto existente, manteniendo el estilo profesional y técnico. Solo modifica lo que se te pide. No añadas ni elimines contenido no relacionado con las instrucciones. Responde únicamente con el texto corregido, sin explicaciones.';
+        if ($lang !== 'es') {
+            $langName = match($lang) { 'en' => 'English', default => 'Spanish' };
+            $sysPrompt .= "\n\nIMPORTANT: Respond entirely in {$langName}.";
+        }
+
         $stream = $this->client->chat()->createStreamed([
             'model' => config('openai.model', 'gpt-4o-mini'),
             'max_tokens' => 6000,
@@ -76,7 +88,7 @@ class OpenAIService
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => 'Eres un redactor experto en Planes de Seguridad Privada. Tu tarea es aplicar las correcciones solicitadas al texto existente, manteniendo el estilo profesional y técnico. Solo modifica lo que se te pide. No añadas ni elimines contenido no relacionado con las instrucciones. Responde únicamente con el texto corregido, sin explicaciones.',
+                    'content' => $sysPrompt,
                 ],
                 [
                     'role' => 'user',

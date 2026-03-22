@@ -90,13 +90,14 @@ class PlanSectionController extends Controller
         $planSection->update(['status' => 'generando']);
 
         $openAI = new OpenAIService();
+        $lang = $request->input('lang', 'es');
         $context = $openAI->buildContext($plan, $section);
         $variables = array_merge(
             $planSection->form_data ?? [],
             $context
         );
 
-        return response()->stream(function () use ($openAI, $template, $variables, $planSection, $plan) {
+        return response()->stream(function () use ($openAI, $template, $variables, $planSection, $plan, $lang) {
             $fullText = '';
 
             $usage = $openAI->streamGenerate(
@@ -107,7 +108,8 @@ class PlanSectionController extends Controller
                     echo "data: " . json_encode(['text' => $chunk]) . "\n\n";
                     if (ob_get_level() > 0) ob_flush();
                     flush();
-                }
+                },
+                $lang
             );
 
             // Guardar texto completo
@@ -201,8 +203,9 @@ class PlanSectionController extends Controller
         $model = config('openai.model', 'gpt-4o-mini');
 
         $currentText = $request->input('texto_actual', $planSection->generated_text);
+        $lang = $request->input('lang', 'es');
 
-        return response()->stream(function () use ($openAI, $planSection, $plan, $section, $request, $model, $currentText) {
+        return response()->stream(function () use ($openAI, $planSection, $plan, $section, $request, $model, $currentText, $lang) {
             $fullText = '';
 
             $usage = $openAI->streamCambios(
@@ -213,7 +216,8 @@ class PlanSectionController extends Controller
                     echo "data: " . json_encode(['text' => $chunk]) . "\n\n";
                     if (ob_get_level() > 0) ob_flush();
                     flush();
-                }
+                },
+                $lang
             );
 
             $planSection->update([

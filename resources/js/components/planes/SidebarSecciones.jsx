@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Check, Pencil, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
+import { useTranslation } from "@/i18n";
 
 function StatusDot({ status }) {
     if (status === "listo") return (
@@ -22,6 +23,7 @@ function StatusDot({ status }) {
 }
 
 export default function SidebarSecciones({ uuid, sections, currentSection, progress }) {
+    const { t } = useTranslation();
     const doneSections = sections.filter((s) => s.status === "listo" || s.status === "editado").length;
 
     return (
@@ -30,7 +32,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
             {/* Progress header */}
             <div className="px-4 py-4 border-b border-slate-200">
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Progreso del plan</span>
+                    <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">{t("sections.progress")}</span>
                     <span className="text-xs font-bold text-[#208DCA]"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
                 <div className="h-1 rounded-full bg-slate-200 overflow-hidden">
@@ -42,7 +44,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                     />
                 </div>
                 <p className="text-[10px] text-slate-900 mt-2">
-                    {doneSections} de 15 secciones completadas
+                    {doneSections} {t("sections.of")} 15 {t("sections.completed")}
                 </p>
             </div>
 

@@ -32,7 +32,6 @@
     "hours": "Hours",
     "admin": "Admin"
   },
-
   "auth": {
     "login": "Log in",
     "login_subtitle": "Access your account",
@@ -47,7 +46,6 @@
     "logout": "Log out",
     "app_subtitle": "Private Security Plans"
   },
-
   "dashboard": {
     "welcome": "Welcome, {{name}}",
     "my_plans": "My Plans",
@@ -70,7 +68,6 @@
     "delete_confirm_btn": "Yes, delete",
     "deleting": "Deleting..."
   },
-
   "plan": {
     "back_to_dashboard": "Back to dashboard",
     "dashboard": "Dashboard",
@@ -79,7 +76,6 @@
     "plan_progress": "Plan progress",
     "sections_completed": "sections completed"
   },
-
   "ai": {
     "generator": "AI Generator",
     "generate": "Generate with AI",
@@ -92,13 +88,11 @@
     "apply_changes": "Apply changes",
     "text_placeholder": "Generated text will appear here."
   },
-
   "files": {
     "uploading": "Uploading...",
     "click_or_drag": "Click or drag a file",
     "upload_file": "Upload file"
   },
-
   "questions": {
     "add_custom": "Add custom question",
     "add_question": "Add question",
@@ -110,7 +104,6 @@
     "no_previous": "No previous questions",
     "create_new": "Create: \"{{text}}\""
   },
-
   "nav": {
     "my_plans": "My Plans",
     "map_editor": "Map Editor",
@@ -120,7 +113,6 @@
     "ai_prompts": "AI Prompts",
     "ai_stats": "AI Stats"
   },
-
   "map_editor": {
     "custom_color": "Custom color",
     "fill": "Fill",
@@ -157,7 +149,6 @@
     "show_labels": "Show label below icon",
     "labels_short": "Lbl."
   },
-
   "section7": {
     "banner_title": "Risk analysis in 2 steps",
     "banner_description": "First, relevant risks are identified for the event, then each is analyzed with quantitative evaluation. Make sure to complete sections 1-6 before starting.",
@@ -176,7 +167,6 @@
     "request_changes_analysis": "Request changes to analysis",
     "changes_placeholder": "E.g.: Increase the fire risk probability, add a measure about drones..."
   },
-
   "section9": {
     "title": "Security staff planning",
     "description": "Import an Excel or create the planning directly. Drag rows to reorder. Hours are calculated automatically.",
@@ -203,7 +193,6 @@
     "insert_row_below": "Insert row below",
     "duplicate_row": "Duplicate row"
   },
-
   "section15": {
     "pdf_title_label": "Plan title in the PDF",
     "pdf_title_placeholder": "Security Plan — Event...",
@@ -219,7 +208,6 @@
     "palette_nature": "Nature",
     "palette_modern": "Modern"
   },
-
   "stats": {
     "title": "AI Usage Statistics",
     "subtitle": "Token consumption and cost by model and section",
@@ -245,5 +233,41 @@
     "changes": "Changes",
     "no_generations": "No generations recorded yet.",
     "no_generations_desc": "Data will appear here after generating text in any section."
+  },
+  "forms": {
+    "event_name": "Event name",
+    "organizer": "Organizer",
+    "address": "Event address",
+    "event_type": "Event type",
+    "space_name": "Space/venue name",
+    "space_type": "Space type",
+    "plan_writer": "Plan writer",
+    "license_number": "License number",
+    "select": "Select...",
+    "other": "Other",
+    "specify_other": "Specify...",
+    "description": "General description",
+    "event_objective": "Event objective",
+    "start_date": "Start date",
+    "end_date": "End date",
+    "opening_time": "Opening time",
+    "closing_time": "Closing time",
+    "setup_date": "Setup date",
+    "teardown_date": "Teardown date",
+    "attendees": "Number of attendees",
+    "has_vip": "VIP zone?",
+    "vip_attendees": "VIP attendees",
+    "public_type": "Public type",
+    "age_range": "Estimated age range",
+    "geographic_scope": "Geographic scope",
+    "total_capacity": "Total capacity",
+    "num_accesses": "Number of accesses",
+    "producer": "Producer",
+    "required": "*"
+  },
+  "sections": {
+    "progress": "Plan progress",
+    "completed": "sections completed",
+    "of": "of"
   }
 }

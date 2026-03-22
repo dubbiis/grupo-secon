@@ -18,7 +18,7 @@ function renderMarkdown(raw) {
 }
 
 export default function GeneradorIA({ uuid, section, formData, initialText, onTextChange, onStatusChange }) {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [text, setText] = useState(initialText ?? "");
     const [generating, setGenerating] = useState(false);
     const [showCambios, setShowCambios] = useState(false);
@@ -78,7 +78,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
         setEditMode(false);
         streamSSE(
             `/planes/${uuid}/seccion/${section}/generar`,
-            { form_data: formData ?? {} },
+            { form_data: formData ?? {}, lang },
             () => setGenerating(true),
             () => setGenerating(false)
         );
@@ -89,7 +89,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
         setEditMode(false);
         streamSSE(
             `/planes/${uuid}/seccion/${section}/cambios`,
-            { instrucciones, texto_actual: text },
+            { instrucciones, texto_actual: text, lang },
             () => setApplyingCambios(true),
             () => { setApplyingCambios(false); setInstrucciones(""); setShowCambios(false); }
         );
