@@ -103,7 +103,7 @@ export default function AppLayout({ children, title, subtitle }) {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: -4, scale: 0.97 }}
                                         transition={{ duration: 0.15 }}
-                                        className="absolute left-full top-0 ml-2 z-50 bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden w-48"
+                                        className="absolute left-full bottom-0 ml-2 z-50 bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden w-48"
                                     >
                                         <div className="px-3 py-2 border-b border-white/6">
                                             <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider">Administración</p>
