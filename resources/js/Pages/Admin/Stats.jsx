@@ -22,16 +22,16 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-[#208DCA]", del
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.3 }}
-            className="rounded-2xl bg-white border border-gray-200 p-5"
+            className="rounded-2xl bg-white border border-gray-300 p-5"
         >
             <div className="flex items-start justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100 border border-gray-200`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gray-200 border border-gray-300`}>
                     <Icon size={16} className={color} />
                 </div>
             </div>
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="text-xs font-medium text-gray-500 mt-0.5">{label}</p>
-            {sub && <p className="text-[10px] text-gray-400 mt-1">{sub}</p>}
+            <p className="text-xs font-medium text-gray-900 mt-0.5">{label}</p>
+            {sub && <p className="text-[10px] text-gray-900 mt-1">{sub}</p>}
         </motion.div>
     );
 }
@@ -75,23 +75,23 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                 {/* Por modelo */}
                 {byModel?.length > 0 && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                        className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                        className="rounded-2xl bg-white border border-gray-300 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-300 flex items-center gap-2">
                             <BarChart2 size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-gray-600">Consumo por modelo</h3>
+                            <h3 className="text-sm font-semibold text-gray-900">Consumo por modelo</h3>
                         </div>
                         <div className="divide-y divide-white/5">
                             {byModel.map((m) => (
                                 <div key={m.model} className="px-5 py-4 flex items-center gap-4">
-                                    <span className={`text-xs font-mono px-2 py-0.5 rounded-md border ${MODEL_COLORS[m.model] ?? "text-gray-500 bg-gray-100 border-gray-200"}`}>
+                                    <span className={`text-xs font-mono px-2 py-0.5 rounded-md border ${MODEL_COLORS[m.model] ?? "text-gray-900 bg-gray-200 border-gray-300"}`}>
                                         {m.model}
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between text-xs mb-1">
-                                            <span className="text-gray-500">{formatNumber(m.total_tokens)} tokens</span>
-                                            <span className="text-gray-400">{m.calls} llamadas</span>
+                                            <span className="text-gray-900">{formatNumber(m.total_tokens)} tokens</span>
+                                            <span className="text-gray-900">{m.calls} llamadas</span>
                                         </div>
-                                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                        <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden">
                                             <motion.div
                                                 className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
                                                 initial={{ width: 0 }}
@@ -110,10 +110,10 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                 {/* Por sección */}
                 {bySection?.length > 0 && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
-                        className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                        className="rounded-2xl bg-white border border-gray-300 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-300 flex items-center gap-2">
                             <Hash size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-gray-600">Tokens por sección</h3>
+                            <h3 className="text-sm font-semibold text-gray-900">Tokens por sección</h3>
                         </div>
                         <div className="p-5 space-y-3">
                             {bySection.map((s) => {
@@ -123,10 +123,10 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                         <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#273887]/30 to-[#208DCA]/30 border border-[#208DCA]/20 flex items-center justify-center text-[10px] font-bold text-[#208DCA] flex-shrink-0">
                                             {s.section_number}
                                         </span>
-                                        <span className="text-xs text-gray-500 w-36 flex-shrink-0 truncate">
+                                        <span className="text-xs text-gray-900 w-36 flex-shrink-0 truncate">
                                             {SECTION_NAMES[s.section_number] ?? `Sección ${s.section_number}`}
                                         </span>
-                                        <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                        <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
                                             <motion.div
                                                 className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
                                                 initial={{ width: 0 }}
@@ -134,7 +134,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                                 transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
                                             />
                                         </div>
-                                        <span className="text-xs text-gray-400 w-20 text-right flex-shrink-0 font-mono">{formatNumber(s.total_tokens)}</span>
+                                        <span className="text-xs text-gray-900 w-20 text-right flex-shrink-0 font-mono">{formatNumber(s.total_tokens)}</span>
                                         <span className="text-[10px] text-amber-400/70 w-16 text-right flex-shrink-0 font-mono">{formatCost(s.cost)}</span>
                                     </div>
                                 );
@@ -146,15 +146,15 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                 {/* Últimas generaciones */}
                 {recent?.length > 0 && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                        className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                        className="rounded-2xl bg-white border border-gray-300 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-300 flex items-center gap-2">
                             <Clock size={14} className="text-[#208DCA]" />
-                            <h3 className="text-sm font-semibold text-gray-600">Últimas generaciones</h3>
+                            <h3 className="text-sm font-semibold text-gray-900">Últimas generaciones</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">
                                 <thead>
-                                    <tr className="border-b border-gray-100 text-gray-400 uppercase tracking-wide">
+                                    <tr className="border-b border-gray-300 text-gray-900 uppercase tracking-wide">
                                         <th className="px-5 py-3 text-left font-medium">Plan</th>
                                         <th className="px-3 py-3 text-left font-medium">§</th>
                                         <th className="px-3 py-3 text-left font-medium">Modelo</th>
@@ -166,15 +166,15 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                 </thead>
                                 <tbody className="divide-y divide-white/4">
                                     {recent.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-5 py-3 text-gray-700 truncate max-w-[180px]">{log.plan_title}</td>
+                                        <tr key={log.id} className="hover:bg-gray-200 transition-colors">
+                                            <td className="px-5 py-3 text-gray-900 truncate max-w-[180px]">{log.plan_title}</td>
                                             <td className="px-3 py-3">
                                                 <span className="w-5 h-5 rounded bg-[#208DCA]/10 border border-[#208DCA]/20 inline-flex items-center justify-center text-[10px] font-bold text-[#208DCA]">
                                                     {log.section_number}
                                                 </span>
                                             </td>
                                             <td className="px-3 py-3">
-                                                <span className={`font-mono px-1.5 py-0.5 rounded text-[10px] border ${MODEL_COLORS[log.model] ?? "text-gray-500 bg-gray-100 border-gray-200"}`}>
+                                                <span className={`font-mono px-1.5 py-0.5 rounded text-[10px] border ${MODEL_COLORS[log.model] ?? "text-gray-900 bg-gray-200 border-gray-300"}`}>
                                                     {log.model}
                                                 </span>
                                             </td>
@@ -183,9 +183,9 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                                     {log.type === 'generate' ? 'Generar' : 'Cambios'}
                                                 </span>
                                             </td>
-                                            <td className="px-3 py-3 text-right font-mono text-gray-500">{formatNumber(log.total_tokens)}</td>
+                                            <td className="px-3 py-3 text-right font-mono text-gray-900">{formatNumber(log.total_tokens)}</td>
                                             <td className="px-3 py-3 text-right font-mono text-amber-400/80">{formatCost(log.cost_usd)}</td>
-                                            <td className="px-5 py-3 text-right text-gray-400">{log.created_at}</td>
+                                            <td className="px-5 py-3 text-right text-gray-900">{log.created_at}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -196,7 +196,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
 
                 {/* Estado vacío */}
                 {!recent?.length && (
-                    <div className="text-center py-20 text-gray-400">
+                    <div className="text-center py-20 text-gray-900">
                         <BarChart2 size={32} className="mx-auto mb-3 opacity-30" />
                         <p className="text-sm">Aún no hay generaciones registradas.</p>
                         <p className="text-xs mt-1">Los datos aparecen aquí después de generar texto en cualquier sección.</p>

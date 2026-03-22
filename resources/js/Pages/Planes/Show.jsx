@@ -40,11 +40,11 @@ export default function Show({ plan, sections, currentSection, files }) {
         <div className="h-screen flex flex-col bg-[#F8FAFC] text-gray-900 overflow-hidden">
 
             {/* ── Header ── */}
-            <header className="h-14 flex-shrink-0 border-b border-gray-200 bg-gray-50 backdrop-blur-md flex items-center px-4 gap-3 z-20">
+            <header className="h-14 flex-shrink-0 border-b border-gray-300 bg-gray-200 backdrop-blur-md flex items-center px-4 gap-3 z-20">
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                    className="p-1.5 rounded-lg text-gray-900 hover:text-gray-900 hover:bg-gray-200 transition-colors"
                 >
                     <AnimatePresence mode="wait" initial={false}>
                         {sidebarOpen
@@ -56,12 +56,12 @@ export default function Show({ plan, sections, currentSection, files }) {
 
                 <Link href="/" className="flex items-center gap-2 flex-shrink-0" title="Volver al dashboard">
                     <img src="/images/logo-secon.svg" alt="Grupo Secon" className="h-7 w-auto object-contain" />
-                    <span className="hidden lg:flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors ml-1">
+                    <span className="hidden lg:flex items-center gap-1 text-xs text-gray-900 hover:text-gray-900 transition-colors ml-1">
                         <LayoutDashboard size={11} /> Dashboard
                     </span>
                 </Link>
 
-                <div className="h-4 w-px bg-gray-100 mx-0.5" />
+                <div className="h-4 w-px bg-gray-200 mx-0.5" />
 
                 <div className="flex-1 min-w-0">
                     <h1 className="text-sm font-semibold text-gray-900 truncate leading-tight">{plan.title}</h1>
@@ -70,7 +70,7 @@ export default function Show({ plan, sections, currentSection, files }) {
 
                 {/* Progress mini bar */}
                 <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
-                    <div className="w-28 h-1 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="w-28 h-1 rounded-full bg-gray-200 overflow-hidden">
                         <motion.div
                             className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
                             initial={{ width: 0 }}
@@ -78,7 +78,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                             transition={{ duration: 0.6, ease: "easeOut" }}
                         />
                     </div>
-                    <span className="text-xs text-gray-400 w-8 text-right"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
+                    <span className="text-xs text-gray-900 w-8 text-right"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -96,7 +96,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => router.post("/logout")}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-900 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                     >
                         <LogOut size={15} />
                     </motion.button>
@@ -144,7 +144,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center h-full gap-3 text-gray-300"
+                                className="flex flex-col items-center justify-center h-full gap-3 text-gray-900"
                             >
                                 <Shield size={32} className="opacity-30" />
                                 <p className="text-sm">Selecciona una sección</p>

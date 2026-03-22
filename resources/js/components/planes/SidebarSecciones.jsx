@@ -25,15 +25,15 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
     const doneSections = sections.filter((s) => s.status === "listo" || s.status === "editado").length;
 
     return (
-        <aside className="w-[260px] flex flex-col border-r border-gray-100 bg-[#F8FAFC] h-full">
+        <aside className="w-[260px] flex flex-col border-r border-gray-300 bg-[#F8FAFC] h-full">
 
             {/* Progress header */}
-            <div className="px-4 py-4 border-b border-gray-100">
+            <div className="px-4 py-4 border-b border-gray-300">
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Progreso del plan</span>
+                    <span className="text-[10px] font-bold text-gray-900 uppercase tracking-widest">Progreso del plan</span>
                     <span className="text-xs font-bold text-[#208DCA]"><SlidingNumber number={progress} inView={true} initiallyStable={true} />%</span>
                 </div>
-                <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+                <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
                     <motion.div
                         className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA] shadow-sm shadow-[#208DCA]/30"
                         initial={{ width: 0 }}
@@ -41,7 +41,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                         transition={{ duration: 0.7, ease: "easeOut" }}
                     />
                 </div>
-                <p className="text-[10px] text-gray-300 mt-2">
+                <p className="text-[10px] text-gray-900 mt-2">
                     {doneSections} de 15 secciones completadas
                 </p>
             </div>
@@ -64,8 +64,8 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                 className={cn(
                                     "relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all group mb-0.5",
                                     isActive
-                                        ? "bg-gray-100 shadow-inner shadow-gray-200/50"
-                                        : "hover:bg-gray-50"
+                                        ? "bg-gray-200 shadow-inner shadow-gray-200/50"
+                                        : "hover:bg-gray-200"
                                 )}
                             >
                                 {/* Active left glow bar */}
@@ -84,7 +84,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                         ? "bg-gradient-to-br from-[#273887] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/20"
                                         : isDone
                                             ? "bg-green-500/15 text-green-400 border border-green-500/20"
-                                            : "bg-gray-100 text-gray-400 border border-gray-200 group-hover:border-gray-200 group-hover:text-gray-500"
+                                            : "bg-gray-200 text-gray-900 border border-gray-300 group-hover:border-gray-300 group-hover:text-gray-900"
                                 )}>
                                     {isDone && !isActive ? <Check size={9} strokeWidth={3} /> : section.section_number}
                                 </span>
@@ -92,7 +92,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                 {/* Section name */}
                                 <span className={cn(
                                     "flex-1 leading-snug line-clamp-2 transition-colors",
-                                    isActive ? "text-gray-900 font-medium" : "text-gray-500 group-hover:text-white/65"
+                                    isActive ? "text-gray-900 font-medium" : "text-gray-900 group-hover:text-white/65"
                                 )}>
                                     {section.section_name}
                                 </span>

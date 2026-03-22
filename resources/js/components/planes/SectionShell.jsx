@@ -44,7 +44,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-100 border border-gray-200 text-gray-500 uppercase tracking-wide">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-200 border border-gray-300 text-gray-900 uppercase tracking-wide">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
                             Sección {section.section_number}
                         </span>
@@ -69,7 +69,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                     <button
                         onClick={() => save(formData, generatedText, section.status)}
                         disabled={saving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-300 disabled:opacity-50"
                     >
                         {saving
                             ? <RefreshCw size={13} className="animate-spin" />
@@ -89,7 +89,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             </div>
 
             {/* Form card */}
-            <div className="rounded-2xl bg-white border border-gray-200 p-6 space-y-5 shadow-xl shadow-gray-200/50">
+            <div className="rounded-2xl bg-white border border-gray-300 p-6 space-y-5 shadow-xl shadow-gray-200/50">
                 {children}
 
                 {/* Custom questions — only for sections with IA */}
@@ -104,7 +104,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
 
             {/* AI generator */}
             {showIA && (
-                <div className="rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
+                <div className="rounded-2xl bg-gray-200 border border-gray-300 overflow-hidden">
                     <div className="px-6 pt-5 pb-5">
                         <GeneradorIA
                             uuid={plan.uuid}

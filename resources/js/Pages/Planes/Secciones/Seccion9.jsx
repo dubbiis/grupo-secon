@@ -155,12 +155,12 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
             whileDrag={{ scale: 1.02, zIndex: 50, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", backgroundColor: "rgba(32,141,202,0.08)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
         >
-            <div className="grid border-b border-gray-100 hover:bg-white transition-colors group/row items-center px-1"
+            <div className="grid border-b border-gray-300 hover:bg-white transition-colors group/row items-center px-1"
                 style={{ gridTemplateColumns: "32px 1fr 80px 80px 40px 1fr 60px 56px" }}>
                 {/* Drag handle */}
                 <div className="flex flex-col items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
                     <div onPointerDown={(e) => dragControls.start(e)}
-                        className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-[#208DCA] touch-none">
+                        className="cursor-grab active:cursor-grabbing text-gray-900 hover:text-[#208DCA] touch-none">
                         <GripVertical size={13} />
                     </div>
                 </div>
@@ -168,13 +168,13 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                 {/* Name */}
                 <div className="px-0.5">
                     <input type="text" value={row.nombre ?? ""} onChange={(e) => onUpdate("nombre", e.target.value)}
-                        className="w-full bg-transparent text-gray-700 text-[11px] px-1 py-1.5 rounded focus:outline-none focus:bg-gray-100 focus:ring-1 focus:ring-[#208DCA]/30 truncate" />
+                        className="w-full bg-transparent text-gray-900 text-[11px] px-1 py-1.5 rounded focus:outline-none focus:bg-gray-200 focus:ring-1 focus:ring-[#208DCA]/30 truncate" />
                 </div>
 
                 {/* Start time */}
                 <div className="px-0.5">
                     <select value={row.inicio ?? ""} onChange={(e) => onUpdate("inicio", e.target.value)}
-                        className="w-full bg-transparent text-gray-700 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-100 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
+                        className="w-full bg-transparent text-gray-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">--:--</option>
                         {TIME_OPTIONS.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
                     </select>
@@ -183,7 +183,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                 {/* End time */}
                 <div className="px-0.5">
                     <select value={row.fin ?? ""} onChange={(e) => onUpdate("fin", e.target.value)}
-                        className="w-full bg-transparent text-gray-700 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-100 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
+                        className="w-full bg-transparent text-gray-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">--:--</option>
                         {TIME_OPTIONS.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
                     </select>
@@ -192,28 +192,28 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                 {/* Number */}
                 <div className="px-0.5">
                     <input type="number" min="1" value={row.cantidad ?? ""} onChange={(e) => onUpdate("cantidad", e.target.value)}
-                        className="w-full bg-transparent text-gray-700 text-[11px] px-1 py-1.5 rounded focus:outline-none focus:bg-gray-100 focus:ring-1 focus:ring-[#208DCA]/30 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
+                        className="w-full bg-transparent text-gray-900 text-[11px] px-1 py-1.5 rounded focus:outline-none focus:bg-gray-200 focus:ring-1 focus:ring-[#208DCA]/30 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
                 </div>
 
                 {/* Category */}
                 <div className="px-0.5">
                     <select value={row.categoria ?? ""} onChange={(e) => onUpdate("categoria", e.target.value)}
-                        className="w-full bg-transparent text-gray-700 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-100 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
+                        className="w-full bg-transparent text-gray-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-gray-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">Seleccionar...</option>
                         {GUARD_TYPES.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
                     </select>
                 </div>
 
                 {/* Total hours (auto-calculated) */}
-                <div className="px-1 text-[11px] text-gray-500 text-right font-mono tabular-nums">
+                <div className="px-1 text-[11px] text-gray-900 text-right font-mono tabular-nums">
                     {row.horas ? `${row.horas}h` : "—"}
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-0 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                    <button onClick={onDuplicate} title="Duplicar fila" className="text-gray-300 hover:text-[#208DCA] p-1"><Copy size={11} /></button>
-                    <button onClick={onInsert} title="Insertar fila debajo" className="text-gray-300 hover:text-[#208DCA] p-1"><Plus size={11} /></button>
-                    <button onClick={onRemove} className="text-gray-300 hover:text-red-400 p-1"><X size={11} /></button>
+                    <button onClick={onDuplicate} title="Duplicar fila" className="text-gray-900 hover:text-[#208DCA] p-1"><Copy size={11} /></button>
+                    <button onClick={onInsert} title="Insertar fila debajo" className="text-gray-900 hover:text-[#208DCA] p-1"><Plus size={11} /></button>
+                    <button onClick={onRemove} className="text-gray-900 hover:text-red-400 p-1"><X size={11} /></button>
                 </div>
             </div>
         </Reorder.Item>
@@ -314,7 +314,7 @@ export default function Seccion9({ plan, section, files = [] }) {
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-100 border border-gray-200 text-gray-500 uppercase tracking-wide">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-gray-200 border border-gray-300 text-gray-900 uppercase tracking-wide">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" /> Sección 9
                         </span>
                         <AnimatePresence>
@@ -336,7 +336,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                         </button>
                     )}
                     <button onClick={() => save(section.status)} disabled={saving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-200 disabled:opacity-50">
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-300 disabled:opacity-50">
                         {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
                         <span className="hidden sm:inline">{saving ? "..." : "Guardar"}</span>
                     </button>
@@ -355,7 +355,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                 </div>
                 <div>
                     <p className="text-sm font-semibold text-green-400 mb-0.5">Planificación del personal de seguridad</p>
-                    <p className="text-sm text-gray-500 leading-relaxed">
+                    <p className="text-sm text-gray-900 leading-relaxed">
                         Importa un Excel o crea la planificación directamente. Arrastra filas para reordenar.
                         Las horas se calculan automáticamente.
                     </p>
@@ -370,29 +370,29 @@ export default function Seccion9({ plan, section, files = [] }) {
                     onDragLeave={() => setDragOver(false)}
                     onDrop={handleDrop}
                     className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-2xl px-4 py-5 cursor-pointer transition-all group ${
-                        dragOver ? "border-green-400/50 bg-green-400/6" : "border-gray-200 hover:border-green-400/40 hover:bg-green-400/4"
+                        dragOver ? "border-green-400/50 bg-green-400/6" : "border-gray-300 hover:border-green-400/40 hover:bg-green-400/4"
                     }`}
                 >
-                    <CloudUpload size={20} className={`${dragOver ? "text-green-400" : "text-gray-400 group-hover:text-green-400"} transition-colors`} />
+                    <CloudUpload size={20} className={`${dragOver ? "text-green-400" : "text-gray-900 group-hover:text-green-400"} transition-colors`} />
                     <div className="text-center">
-                        <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">{rows.length > 0 ? "Reimportar Excel" : "Importar Excel"}</p>
-                        <p className="text-[10px] text-gray-300 mt-0.5">{uploading ? "Procesando..." : ".xlsx, .xls o .csv"}</p>
+                        <p className="text-xs font-medium text-gray-900 group-hover:text-gray-900">{rows.length > 0 ? "Reimportar Excel" : "Importar Excel"}</p>
+                        <p className="text-[10px] text-gray-900 mt-0.5">{uploading ? "Procesando..." : ".xlsx, .xls o .csv"}</p>
                     </div>
                 </div>
                 <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleInputChange} />
 
                 <button onClick={addRow}
-                    className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-2xl px-4 py-5 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4 transition-all group cursor-pointer">
-                    <Plus size={20} className="text-gray-400 group-hover:text-[#208DCA] transition-colors" />
+                    className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-2xl px-4 py-5 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/4 transition-all group cursor-pointer">
+                    <Plus size={20} className="text-gray-900 group-hover:text-[#208DCA] transition-colors" />
                     <div className="text-center">
-                        <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">Crear manualmente</p>
-                        <p className="text-[10px] text-gray-300 mt-0.5">Añadir filas una a una</p>
+                        <p className="text-xs font-medium text-gray-900 group-hover:text-gray-900">Crear manualmente</p>
+                        <p className="text-[10px] text-gray-900 mt-0.5">Añadir filas una a una</p>
                     </div>
                 </button>
             </div>
 
             {excelFiles.length > 0 && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 -mt-3">
+                <div className="flex items-center gap-2 text-xs text-gray-900 -mt-3">
                     <CheckCircle2 size={12} className="text-green-400" />
                     <span>Archivo: {excelFiles[0].original_name}</span>
                 </div>
@@ -400,12 +400,12 @@ export default function Seccion9({ plan, section, files = [] }) {
 
             {/* Planning table */}
             {rows.length > 0 && (
-                <div className="rounded-2xl bg-white border border-gray-200 shadow-xl shadow-gray-200/50 overflow-hidden">
+                <div className="rounded-2xl bg-white border border-gray-300 shadow-xl shadow-gray-200/50 overflow-hidden">
                     {/* Toolbar */}
-                    <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                    <div className="px-4 py-3 border-b border-gray-300 flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2">
                             <Table2 size={14} className="text-[#208DCA]" />
-                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            <span className="text-xs font-semibold text-gray-900 uppercase tracking-wide">
                                 {rows.length} registros
                             </span>
                         </div>
@@ -414,7 +414,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                             <div className="flex items-center gap-1">
                                 <input type="text" placeholder="Nombre del día..." value={newDayName} onChange={(e) => setNewDayName(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && addDayHeader()}
-                                    className="bg-gray-100 border border-gray-200 rounded-lg px-2 py-1 text-[11px] text-gray-600 placeholder:text-gray-400 w-32 focus:outline-none focus:border-[#208DCA]/40" />
+                                    className="bg-gray-200 border border-gray-300 rounded-lg px-2 py-1 text-[11px] text-gray-900 placeholder:text-gray-400 w-32 focus:outline-none focus:border-[#208DCA]/40" />
                                 <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                                     <button onClick={addDayHeader}
                                         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium bg-purple-500/15 text-purple-400 border border-purple-500/25 hover:bg-purple-500/25">
@@ -433,7 +433,7 @@ export default function Seccion9({ plan, section, files = [] }) {
 
                     <div className="overflow-x-auto">
                         {/* Column headers */}
-                        <div className="grid min-w-[750px] text-[10px] font-medium uppercase tracking-wide text-gray-500 border-b border-gray-200 px-1"
+                        <div className="grid min-w-[750px] text-[10px] font-medium uppercase tracking-wide text-gray-900 border-b border-gray-300 px-1"
                             style={{ gridTemplateColumns: "32px 1fr 80px 80px 40px 1fr 60px 56px" }}>
                             <div />
                             <div className="px-1.5 py-2">Nombre / Posición</div>
@@ -474,7 +474,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     </div>
 
                     {/* Summary footer */}
-                    <div className="px-4 py-2.5 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
+                    <div className="px-4 py-2.5 border-t border-gray-300 flex items-center justify-between text-[11px] text-gray-900">
                         <span>{rows.length} filas</span>
                         <span className="font-medium font-mono">
                             Total: {rows.reduce((sum, r) => sum + (parseFloat(r.horas) || 0), 0).toFixed(1)}h
@@ -485,34 +485,34 @@ export default function Seccion9({ plan, section, files = [] }) {
 
             {/* Staff summary (auto-calculated) */}
             {staff.length > 0 && (
-                <div className="rounded-2xl bg-white border border-gray-200 shadow-xl shadow-gray-200/50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-2">
+                <div className="rounded-2xl bg-white border border-gray-300 shadow-xl shadow-gray-200/50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-300 flex items-center gap-2">
                         <Users size={14} className="text-purple-400" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                        <span className="text-xs font-semibold text-gray-900 uppercase tracking-wide">
                             Resumen de personal — {staff.length} trabajadores
                         </span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-[11px]">
                             <thead>
-                                <tr className="border-b border-gray-200">
-                                    <th className="px-3 py-2 text-left text-gray-500 font-medium uppercase tracking-wide text-[10px]">Nombre / Posición</th>
-                                    <th className="px-3 py-2 text-left text-gray-500 font-medium uppercase tracking-wide text-[10px] w-32">Categoría</th>
-                                    <th className="px-3 py-2 text-right text-gray-500 font-medium uppercase tracking-wide text-[10px] w-24">Total horas</th>
+                                <tr className="border-b border-gray-300">
+                                    <th className="px-3 py-2 text-left text-gray-900 font-medium uppercase tracking-wide text-[10px]">Nombre / Posición</th>
+                                    <th className="px-3 py-2 text-left text-gray-900 font-medium uppercase tracking-wide text-[10px] w-32">Categoría</th>
+                                    <th className="px-3 py-2 text-right text-gray-900 font-medium uppercase tracking-wide text-[10px] w-24">Total horas</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {staff.map((s, idx) => (
-                                    <tr key={idx} className="border-b border-gray-100">
-                                        <td className="px-3 py-1.5 text-gray-700">{s.nombre}</td>
-                                        <td className="px-3 py-1.5 text-gray-500">{s.categoria}</td>
-                                        <td className="px-3 py-1.5 text-gray-700 text-right font-mono">{s.horas}h</td>
+                                    <tr key={idx} className="border-b border-gray-300">
+                                        <td className="px-3 py-1.5 text-gray-900">{s.nombre}</td>
+                                        <td className="px-3 py-1.5 text-gray-900">{s.categoria}</td>
+                                        <td className="px-3 py-1.5 text-gray-900 text-right font-mono">{s.horas}h</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                    <div className="px-4 py-2.5 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
+                    <div className="px-4 py-2.5 border-t border-gray-300 flex items-center justify-between text-[11px] text-gray-900">
                         <span>{staff.length} trabajadores</span>
                         <span className="font-medium font-mono">
                             Total: {staff.reduce((sum, s) => sum + (parseFloat(s.horas) || 0), 0).toFixed(1)}h

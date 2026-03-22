@@ -65,7 +65,7 @@ export default function Login() {
 
                 {/* Card */}
                 <motion.div
-                    className="bg-white border border-gray-200 backdrop-blur-xl rounded-2xl p-6 shadow-xl shadow-gray-200/60"
+                    className="bg-white border border-gray-300 backdrop-blur-xl rounded-2xl p-6 shadow-xl shadow-gray-200/60"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
@@ -75,27 +75,27 @@ export default function Login() {
 
                     <form onSubmit={submit} className="space-y-4">
                         <div>
-                            <label className="text-xs font-medium text-gray-600 mb-1.5 block uppercase tracking-wide">Email</label>
+                            <label className="text-xs font-medium text-gray-900 mb-1.5 block uppercase tracking-wide">Email</label>
                             <Input
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData("email", e.target.value)}
                                 placeholder="tu@email.com"
                                 autoComplete="email"
-                                className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
                             {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium text-gray-600 mb-1.5 block uppercase tracking-wide">Contraseña</label>
+                            <label className="text-xs font-medium text-gray-900 mb-1.5 block uppercase tracking-wide">Contraseña</label>
                             <Input
                                 type="password"
                                 value={data.password}
                                 onChange={(e) => setData("password", e.target.value)}
                                 placeholder="••••••••"
                                 autoComplete="current-password"
-                                className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/50"
                             />
                             {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
                         </div>
@@ -106,9 +106,9 @@ export default function Login() {
                                 id="remember"
                                 checked={data.remember}
                                 onChange={(e) => setData("remember", e.target.checked)}
-                                className="rounded border-gray-200 bg-gray-100"
+                                className="rounded border-gray-300 bg-gray-200"
                             />
-                            <label htmlFor="remember" className="text-sm text-gray-500">Recordarme</label>
+                            <label htmlFor="remember" className="text-sm text-gray-900">Recordarme</label>
                         </div>
 
                         <button
@@ -121,7 +121,7 @@ export default function Login() {
                     </form>
                 </motion.div>
 
-                <p className="text-center text-sm text-gray-400 mt-5">
+                <p className="text-center text-sm text-gray-500 mt-5">
                     ¿No tienes cuenta?{" "}
                     <Link href="/register" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
                         Registrarse

@@ -51,7 +51,7 @@ export default function Seccion1({ plan, section }) {
                     <select
                         value={form.tipo_evento}
                         onChange={(e) => setForm((prev) => ({ ...prev, tipo_evento: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-1 text-sm text-gray-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                        className="flex h-9 w-full rounded-lg border border-gray-300 bg-gray-200 px-3 py-1 text-sm text-gray-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_EVENTO.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -68,7 +68,7 @@ export default function Seccion1({ plan, section }) {
                     <select
                         value={form.tipo_espacio ?? ""}
                         onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-1 text-sm text-gray-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                        className="flex h-9 w-full rounded-lg border border-gray-300 bg-gray-200 px-3 py-1 text-sm text-gray-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
                         {TIPOS_ESPACIO.map((t) => <option key={t} value={t}>{t}</option>)}

@@ -40,21 +40,21 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A√
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.96, y: -5 }}
                             transition={{ duration: 0.2 }}
-                            className="rounded-xl border border-gray-200 overflow-hidden bg-white"
+                            className="rounded-xl border border-gray-300 overflow-hidden bg-white"
                         >
                             {/* Header row */}
                             <div
-                                className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-gray-100" : "hover:bg-gray-100"}`}
+                                className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-gray-200" : "hover:bg-gray-200"}`}
                                 onClick={() => setExpanded(isOpen ? null : i)}
                             >
-                                <GripVertical size={13} className="text-gray-300 flex-shrink-0" />
+                                <GripVertical size={13} className="text-gray-900 flex-shrink-0" />
 
                                 {/* Status dot */}
-                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${filled ? "bg-[#208DCA]/20 border-[#208DCA]/40" : "border-gray-200"}`}>
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${filled ? "bg-[#208DCA]/20 border-[#208DCA]/40" : "border-gray-300"}`}>
                                     {filled && <Check size={8} className="text-[#208DCA]" strokeWidth={3} />}
                                 </div>
 
-                                <span className="flex-1 text-xs font-medium text-gray-700 truncate">
+                                <span className="flex-1 text-xs font-medium text-gray-900 truncate">
                                     {itemLabel ? itemLabel(item, i) : `√çtem ${i + 1}`}
                                 </span>
 
@@ -63,7 +63,7 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A√
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={(e) => { e.stopPropagation(); removeItem(i); }}
-                                    className="p-1 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-400/10 transition-colors flex-shrink-0"
+                                    className="p-1 rounded-lg text-gray-900 hover:text-red-400 hover:bg-red-400/10 transition-colors flex-shrink-0"
                                 >
                                     <Trash2 size={12} />
                                 </motion.button>
@@ -71,7 +71,7 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A√
                                 <motion.div
                                     animate={{ rotate: isOpen ? 180 : 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="text-gray-400 flex-shrink-0"
+                                    className="text-gray-900 flex-shrink-0"
                                 >
                                     <ChevronDown size={13} />
                                 </motion.div>
@@ -87,10 +87,10 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A√
                                         transition={{ duration: 0.22, ease: "easeInOut" }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-gray-100">
+                                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-gray-300">
                                             {fields.map((f) => (
                                                 <div key={f.key} className={f.wide ? "md:col-span-2" : ""}>
-                                                    <label className="text-[10px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-gray-900 mb-1.5 block uppercase tracking-wide">
                                                         {f.label}{f.required && <span className="text-[#208DCA] ml-0.5">*</span>}
                                                     </label>
                                                     {f.type === "textarea" ? (
@@ -125,7 +125,7 @@ export default function LoopItems({ items = [], onChange, fields, addLabel = "A√
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={addItem}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-200 text-gray-500 hover:text-gray-700 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-300 text-gray-900 hover:text-gray-900 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
             >
                 <Plus size={13} />
                 {addLabel}

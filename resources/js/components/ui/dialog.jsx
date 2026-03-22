@@ -26,7 +26,7 @@ export function Dialog({ open, onClose, children }) {
                     onClick={(e) => e.target === overlayRef.current && onClose?.()}
                 >
                     <motion.div
-                        className="relative w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-2xl shadow-black/60"
+                        className="relative w-full max-w-md bg-white border border-gray-300 rounded-2xl shadow-2xl shadow-black/60"
                         initial={{ scale: 0.95, y: 8, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.95, y: 8, opacity: 0 }}

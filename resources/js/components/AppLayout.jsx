@@ -59,10 +59,10 @@ export default function AppLayout({ children, title, subtitle }) {
         <div className="h-screen flex bg-[#F8FAFC] text-gray-900 overflow-hidden">
 
             {/* ── Sidebar ── */}
-            <aside className="w-56 flex-shrink-0 flex flex-col border-r border-gray-200 bg-[#F8FAFC]">
+            <aside className="w-56 flex-shrink-0 flex flex-col border-r border-gray-300 bg-[#F8FAFC]">
 
                 {/* Logo */}
-                <div className="py-6 border-b border-gray-100 flex justify-center">
+                <div className="py-6 border-b border-gray-300 flex justify-center">
                     <Link href="/">
                         <LogoShimmer />
                     </Link>
@@ -77,7 +77,7 @@ export default function AppLayout({ children, title, subtitle }) {
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
                                 active
                                     ? "bg-[#208DCA]/10 text-[#273887] font-semibold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                    : "text-gray-900 hover:text-gray-900 hover:bg-gray-200"
                             }`}
                         >
                             {active && (
@@ -86,7 +86,7 @@ export default function AppLayout({ children, title, subtitle }) {
                                     className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[#208DCA]"
                                 />
                             )}
-                            <Icon size={16} className={active ? "text-[#208DCA]" : "text-gray-400 group-hover:text-gray-600 transition-colors"} />
+                            <Icon size={16} className={active ? "text-[#208DCA]" : "text-gray-900 group-hover:text-gray-900 transition-colors"} />
                             {label}
                             {active && <ChevronRight size={12} className="ml-auto text-[#208DCA]/50" />}
                         </Link>
@@ -102,7 +102,7 @@ export default function AppLayout({ children, title, subtitle }) {
                             <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-default relative ${
                                 isAdminActive
                                     ? "bg-[#273887]/10 text-[#273887] font-semibold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                    : "text-gray-900 hover:text-gray-900 hover:bg-gray-200"
                             }`}>
                                 {isAdminActive && (
                                     <motion.div
@@ -110,16 +110,16 @@ export default function AppLayout({ children, title, subtitle }) {
                                         className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[#208DCA]"
                                     />
                                 )}
-                                <Shield size={16} className={isAdminActive ? "text-[#208DCA]" : "text-gray-400"} />
+                                <Shield size={16} className={isAdminActive ? "text-[#208DCA]" : "text-gray-900"} />
                                 Panel Admin
-                                <ChevronRight size={12} className={`ml-auto transition-transform duration-200 ${adminHover ? "rotate-90" : ""} ${isAdminActive ? "text-[#208DCA]/50" : "text-gray-300"}`} />
+                                <ChevronRight size={12} className={`ml-auto transition-transform duration-200 ${adminHover ? "rotate-90" : ""} ${isAdminActive ? "text-[#208DCA]/50" : "text-gray-900"}`} />
                             </div>
                         </div>
                     )}
                 </nav>
 
                 {/* User + logout */}
-                <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+                <div className="px-3 py-4 border-t border-gray-300 space-y-1">
                     <div className="px-3 py-2.5 rounded-xl bg-white">
                         <p className="text-xs font-medium text-gray-900 truncate">{auth?.user?.name}</p>
                         <p className="text-[10px] text-gray-400 truncate mt-0.5">{auth?.user?.email}</p>
@@ -133,7 +133,7 @@ export default function AppLayout({ children, title, subtitle }) {
                         <LanguageSelector />
                         <button
                             onClick={() => router.post("/logout")}
-                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-400 hover:text-red-400 hover:bg-red-400/8 transition-all"
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-900 hover:text-red-400 hover:bg-red-400/8 transition-all"
                         >
                             <LogOut size={15} />
                         </button>
@@ -150,23 +150,23 @@ export default function AppLayout({ children, title, subtitle }) {
                         exit={{ opacity: 0, x: -6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
                         style={{ position: "fixed", top: submenuPos.top, left: submenuPos.left }}
-                        className="z-[9999] bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden w-48"
+                        className="z-[9999] bg-white border border-gray-300 rounded-xl shadow-2xl overflow-hidden w-48"
                         onMouseEnter={() => setAdminHover(true)}
                         onMouseLeave={() => setAdminHover(false)}
                     >
-                        <div className="px-3 py-2 border-b border-gray-100">
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Administración</p>
+                        <div className="px-3 py-2 border-b border-gray-300">
+                            <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wider">Administración</p>
                         </div>
                         <Link
                             href="/admin/prompts"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-100 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-gray-500 hover:text-gray-900"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-200 ${currentUrl.startsWith("/admin/prompts") ? "text-[#273887] font-medium" : "text-gray-900 hover:text-gray-900"}`}
                         >
                             <Settings size={14} className="text-[#208DCA]" />
                             Prompts IA
                         </Link>
                         <Link
                             href="/admin/stats"
-                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-100 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-gray-500 hover:text-gray-900"}`}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-200 ${currentUrl === "/admin/stats" ? "text-[#273887] font-medium" : "text-gray-900 hover:text-gray-900"}`}
                         >
                             <TrendingUp size={14} className="text-[#208DCA]" />
                             Estadísticas IA
@@ -180,9 +180,9 @@ export default function AppLayout({ children, title, subtitle }) {
 
                 {/* Top bar */}
                 {(title || subtitle) && (
-                    <header className="flex-shrink-0 px-8 py-5 border-b border-gray-100 bg-white">
+                    <header className="flex-shrink-0 px-8 py-5 border-b border-gray-300 bg-white">
                         {title && <h1 className="text-xl font-bold text-gray-900 leading-tight">{title}</h1>}
-                        {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
+                        {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
                     </header>
                 )}
 
