@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
 import {
@@ -483,32 +483,55 @@ export default function Seccion9({ plan, section, files = [] }) {
                             <div />
                         </div>
 
-                        {/* Reorderable rows */}
-                        <Reorder.Group axis="y" values={rows} onReorder={setRows} className="min-w-[750px]">
-                            {rows.map((row, idx) => {
-                                const prevDay = idx > 0 ? rows[idx - 1].dia : null;
-                                const showDayHeader = row.dia && row.dia !== prevDay;
-                                return (
-                                    <div key={row._id}>
-                                        {showDayHeader && (
-                                            <div className="bg-[#208DCA]/10 border-b border-[#208DCA]/20 px-3 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide flex items-center justify-between">
-                                                <span>{row.dia}</span>
-                                                <span className="text-[10px] font-normal text-[#208DCA]/60">
-                                                    {rows.filter((r) => r.dia === row.dia).length} filas
-                                                </span>
-                                            </div>
-                                        )}
-                                        <DraggableRow
-                                            row={row}
-                                            onUpdate={(field, val) => updateCell(row._id, field, val)}
-                                            onRemove={() => removeRow(row._id)}
-                                            onInsert={() => insertRowAfter(row._id)}
-                                            onDuplicate={() => duplicateRow(row._id)}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </Reorder.Group>
+                        {/* Rows grouped by day — headers outside Reorder */}
+                        {(() => {
+                            const groups = [];
+                            let currentDay = null;
+                            let currentGroup = [];
+
+                            rows.forEach((row) => {
+                                if (row.dia && row.dia !== currentDay) {
+                                    if (currentGroup.length > 0) groups.push({ day: currentDay, rows: currentGroup });
+                                    currentDay = row.dia;
+                                    currentGroup = [row];
+                                } else {
+                                    currentGroup.push(row);
+                                }
+                            });
+                            if (currentGroup.length > 0) groups.push({ day: currentDay, rows: currentGroup });
+
+                            // If no days at all, single group
+                            if (groups.length === 0 && rows.length > 0) groups.push({ day: null, rows });
+
+                            return (
+                                <Reorder.Group axis="y" values={rows} onReorder={setRows} className="min-w-[750px]">
+                                    {rows.map((row) => {
+                                        const idx = rows.indexOf(row);
+                                        const prevDay = idx > 0 ? rows[idx - 1].dia : null;
+                                        const showDayHeader = row.dia && row.dia !== prevDay;
+                                        return (
+                                            <React.Fragment key={row._id}>
+                                                {showDayHeader && (
+                                                    <div className="bg-[#208DCA]/8 border-y border-[#208DCA]/15 px-3 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide flex items-center justify-between pointer-events-none">
+                                                        <span>{row.dia}</span>
+                                                        <span className="text-[10px] font-normal text-[#208DCA]/50">
+                                                            {rows.filter((r) => r.dia === row.dia).length} {t("common.rows")}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <DraggableRow
+                                                    row={row}
+                                                    onUpdate={(field, val) => updateCell(row._id, field, val)}
+                                                    onRemove={() => removeRow(row._id)}
+                                                    onInsert={() => insertRowAfter(row._id)}
+                                                    onDuplicate={() => duplicateRow(row._id)}
+                                                />
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </Reorder.Group>
+                            );
+                        })()}
                     </div>
 
                     {/* Summary footer */}
