@@ -46,19 +46,26 @@ export default function Login() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
                     {/* Logo */}
-                    <div className="relative overflow-hidden inline-block mb-5">
+                    <div className="relative inline-block mb-5">
                         <img
                             src="/images/logo-blanco.png"
                             alt="Grupo Secon"
-                            className="h-20 w-auto object-contain relative z-10"
+                            className="h-20 w-auto object-contain"
                             onError={(e) => { e.target.style.display = "none"; }}
                         />
                         <motion.div
-                            className="absolute inset-0 z-20 pointer-events-none"
+                            className="absolute inset-0 pointer-events-none"
                             style={{
-                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
+                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)",
                                 backgroundSize: "300% 100%",
-                                mixBlendMode: "overlay",
+                                WebkitMaskImage: "url('/images/logo-blanco.png')",
+                                maskImage: "url('/images/logo-blanco.png')",
+                                WebkitMaskSize: "contain",
+                                maskSize: "contain",
+                                WebkitMaskRepeat: "no-repeat",
+                                maskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                                maskPosition: "center",
                             }}
                             initial={{ backgroundPosition: "-150% 0%" }}
                             animate={{ backgroundPosition: "350% 0%" }}
