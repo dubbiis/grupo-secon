@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, File, ImageIcon, FileText, CheckCircle2, CloudUpload } from "lucide-react";
 
@@ -10,12 +11,20 @@ export default function FileUpload({
     description,
 }) {
     const [uploading, setUploading] = useState(false);
-    const [uploaded, setUploaded] = useState([]);
+    const [optimistic, setOptimistic] = useState([]);
     const [deletedIds, setDeletedIds] = useState([]);
     const [dragOver, setDragOver] = useState(false);
     const inputRef = useRef(null);
 
-    const allFiles = [...existingFiles.filter((f) => !deletedIds.includes(f.id)), ...uploaded].filter(Boolean);
+    // When server data refreshes, clear optimistic items (they're now in existingFiles)
+    useEffect(() => {
+        setOptimistic([]);
+    }, [existingFiles]);
+
+    const visible = [
+        ...existingFiles.filter((f) => f && !deletedIds.includes(f.id)),
+        ...optimistic,
+    ].filter(Boolean);
 
     const uploadFiles = async (fileList) => {
         if (fileList.length === 0) return;
@@ -23,6 +32,11 @@ export default function FileUpload({
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
 
         for (const file of fileList) {
+            // Optimistic entry shown immediately
+            const tempId = `tmp-${Date.now()}-${Math.random()}`;
+            const optimisticEntry = { id: tempId, original_name: file.name, mime_type: file.type, _optimistic: true };
+            setOptimistic((prev) => [...prev, optimisticEntry]);
+
             const fd = new FormData();
             fd.append("file", file);
             fd.append("file_category", category);
@@ -33,10 +47,16 @@ export default function FileUpload({
                     body: fd,
                 });
                 if (res.ok) {
-                    const data = await res.json();
-                    setUploaded((prev) => [...prev, data]);
+                    // Remove optimistic, reload files from server
+                    setOptimistic((prev) => prev.filter((f) => f.id !== tempId));
+                    router.reload({ only: ["files"], preserveScroll: true });
+                } else {
+                    // Remove optimistic on failure
+                    setOptimistic((prev) => prev.filter((f) => f.id !== tempId));
                 }
-            } catch {}
+            } catch {
+                setOptimistic((prev) => prev.filter((f) => f.id !== tempId));
+            }
         }
         setUploading(false);
         if (inputRef.current) inputRef.current.value = "";
@@ -51,13 +71,12 @@ export default function FileUpload({
     };
 
     const deleteFile = async (fileId) => {
+        setDeletedIds((prev) => [...prev, fileId]);
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         await fetch(`/planes/${uuid}/archivos/${fileId}`, {
             method: "DELETE",
             headers: { "X-CSRF-TOKEN": csrfToken, "Accept": "application/json" },
         });
-        setDeletedIds((prev) => [...prev, fileId]);
-        setUploaded((prev) => prev.filter((f) => f.id !== fileId));
     };
 
     const getIcon = (mime) => {
@@ -70,24 +89,29 @@ export default function FileUpload({
         <div className="space-y-2">
             {/* File list */}
             <AnimatePresence>
-                {allFiles.map((f) => (
+                {visible.map((f) => (
                     <motion.div
                         key={f.id}
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex items-center gap-2.5 px-3 py-2 bg-white/4 border border-white/8 rounded-xl text-xs"
+                        className={`flex items-center gap-2.5 px-3 py-2 bg-white/4 border border-white/8 rounded-xl text-xs ${f._optimistic ? "opacity-60" : ""}`}
                     >
                         {getIcon(f.mime_type)}
                         <span className="flex-1 truncate text-white/70">{f.original_name}</span>
-                        <CheckCircle2 size={12} className="text-green-400 flex-shrink-0" />
-                        <button
-                            type="button"
-                            onClick={() => deleteFile(f.id)}
-                            className="text-white/20 hover:text-red-400 transition-colors ml-1 flex-shrink-0"
-                        >
-                            <X size={12} />
-                        </button>
+                        {f._optimistic
+                            ? <CloudUpload size={12} className="text-[#208DCA] animate-pulse flex-shrink-0" />
+                            : <CheckCircle2 size={12} className="text-green-400 flex-shrink-0" />
+                        }
+                        {!f._optimistic && (
+                            <button
+                                type="button"
+                                onClick={() => deleteFile(f.id)}
+                                className="text-white/20 hover:text-red-400 transition-colors ml-1 flex-shrink-0"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
                     </motion.div>
                 ))}
             </AnimatePresence>
