@@ -2,7 +2,6 @@ import { useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
-import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
 import { Input } from "@/components/ui/input";
 
 export default function Login() {
