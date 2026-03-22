@@ -6,7 +6,7 @@ import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Setting
 function LogoShimmer() {
     return (
         <div className="relative overflow-hidden inline-block">
-            <img src="/images/logo.png" alt="Grupo Secon" className="h-14 w-auto object-contain relative z-10" style={{ mixBlendMode: "screen" }} />
+            <img src="/images/logo-blanco.png" alt="Grupo Secon" className="h-10 w-auto object-contain relative z-10" />
             <motion.div
                 className="absolute inset-0 z-20 pointer-events-none"
                 style={{

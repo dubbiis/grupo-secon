@@ -46,11 +46,11 @@ export default function Login() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                 >
                     <div className="relative inline-block mb-4 overflow-hidden">
-                        <img src="/images/logo.png" alt="Grupo Secon" className="h-20 w-auto object-contain" style={{ mixBlendMode: "screen" }} />
+                        <img src="/images/logo-blanco.png" alt="Grupo Secon" className="h-16 w-auto object-contain relative z-10" />
                         <motion.div
-                            className="absolute inset-0 pointer-events-none"
+                            className="absolute inset-0 z-20 pointer-events-none"
                             style={{
-                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)",
+                                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
                                 backgroundSize: "300% 100%",
                                 mixBlendMode: "overlay",
                             }}
@@ -59,14 +59,7 @@ export default function Login() {
                             transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
                         />
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">
-                        <GradientText
-                            text="Grupo Secon"
-                            gradient="linear-gradient(90deg, #ffffff 0%, #208DCA 30%, #253C87 60%, #208DCA 80%, #ffffff 100%)"
-                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                        />
-                    </h1>
-                    <p className="text-sm text-white/50 mt-1">Planes de Seguridad Privada</p>
+                    <p className="text-sm text-white/50 mt-2">Planes de Seguridad Privada</p>
                 </motion.div>
 
                 {/* Card */}
