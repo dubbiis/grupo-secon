@@ -121,9 +121,9 @@ export default function Seccion15({ plan, section, files = [] }) {
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">Tipografía</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {TIPOGRAFIAS.map((t) => (
+                        {TIPOGRAFIAS.map((tip) => (
                             <button
-                                key={t.id}
+                                key={tip.id}
                                 type="button"
                                 onClick={() => setForm((prev) => ({ ...prev, tipografia: t.id }))}
                                 className={`px-4 py-2.5 rounded-lg border text-sm transition-all text-left ${
@@ -132,7 +132,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                                         : "border-input text-muted-foreground hover:border-muted-foreground"
                                 }`}
                             >
-                                {t.label}
+                                {tip.label}
                             </button>
                         ))}
                     </div>

@@ -176,7 +176,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                     <select value={row.inicio ?? ""} onChange={(e) => onUpdate("inicio", e.target.value)}
                         className="w-full bg-transparent text-slate-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-slate-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">--:--</option>
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
+                        {TIME_OPTIONS.map((tm) => <option key={tm} value={tm} className="bg-white">{tm}</option>)}
                     </select>
                 </div>
 
@@ -185,7 +185,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                     <select value={row.fin ?? ""} onChange={(e) => onUpdate("fin", e.target.value)}
                         className="w-full bg-transparent text-slate-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-slate-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">--:--</option>
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
+                        {TIME_OPTIONS.map((tm) => <option key={tm} value={tm} className="bg-white">{tm}</option>)}
                     </select>
                 </div>
 
@@ -200,7 +200,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                     <select value={row.categoria ?? ""} onChange={(e) => onUpdate("categoria", e.target.value)}
                         className="w-full bg-transparent text-slate-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-slate-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
                         <option value="" className="bg-white">Seleccionar...</option>
-                        {GUARD_TYPES.map((t) => <option key={t} value={t} className="bg-white">{t}</option>)}
+                        {GUARD_TYPES.map((gt) => <option key={tm} value={tm} className="bg-white">{tm}</option>)}
                     </select>
                 </div>
 

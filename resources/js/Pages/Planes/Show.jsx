@@ -56,9 +56,6 @@ export default function Show({ plan, sections, currentSection, files }) {
 
                 <Link href="/" className="flex items-center gap-2 flex-shrink-0" title="Volver al dashboard">
                     <img src="/images/logo-secon.svg" alt="Grupo Secon" className="h-7 w-auto object-contain" />
-                    <span className="hidden lg:flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors ml-1">
-                        <LayoutDashboard size={11} /> Dashboard
-                    </span>
                 </Link>
 
                 <div className="h-4 w-px bg-slate-200 mx-0.5" />

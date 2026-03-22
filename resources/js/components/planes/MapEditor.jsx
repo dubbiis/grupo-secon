@@ -628,18 +628,18 @@ export default function MapEditor({
 
                 {/* Tools */}
                 <div className="flex items-center gap-0.5 pr-3 border-r border-slate-200">
-                    {TOOLS.map((t) => (
+                    {TOOLS.map((tl) => (
                         <button
-                            key={t.id}
-                            onClick={() => setTool(t.id)}
-                            title={`${t.label} (${t.shortcut})`}
+                            key={tl.id}
+                            onClick={() => setTool(tl.id)}
+                            title={`${tl.label} (${tl.shortcut})`}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                tool === t.id
-                                    ? "bg-[#208DCA] text-slate-900 shadow-md shadow-[#208DCA]/30"
-                                    : "text-slate-900 hover:text-slate-900 hover:bg-slate-200"
+                                tool === tl.id
+                                    ? "bg-[#208DCA] text-white shadow-md shadow-[#208DCA]/30"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                             }`}
                         >
-                            <t.icon size={14} />
+                            <tl.icon size={14} />
                         </button>
                     ))}
                 </div>

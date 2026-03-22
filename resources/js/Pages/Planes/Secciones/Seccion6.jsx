@@ -282,7 +282,7 @@ export default function Seccion6({ plan, section }) {
                         className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
                     >
                         <option value="">Seleccionar...</option>
-                        {TIPOS_PUBLICO.map((t) => <option key={t} value={t}>{t}</option>)}
+                        {TIPOS_PUBLICO.map((tipo) => <option key={t} value={t}>{t}</option>)}
                     </select>
                 </div>
 

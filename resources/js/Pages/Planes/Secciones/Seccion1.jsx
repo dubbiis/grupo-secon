@@ -54,7 +54,7 @@ export default function Seccion1({ plan, section }) {
                         className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
-                        {TIPOS_EVENTO.map((t) => <option key={t} value={t}>{t}</option>)}
+                        {TIPOS_EVENTO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                     </select>
                 </div>
 
@@ -71,7 +71,7 @@ export default function Seccion1({ plan, section }) {
                         className="flex h-9 w-full rounded-lg border border-slate-200 bg-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">Seleccionar...</option>
-                        {TIPOS_ESPACIO.map((t) => <option key={t} value={t}>{t}</option>)}
+                        {TIPOS_ESPACIO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                     </select>
                 </div>
 
