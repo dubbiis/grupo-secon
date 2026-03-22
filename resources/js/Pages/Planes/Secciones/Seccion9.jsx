@@ -100,12 +100,10 @@ function parseExcel(file) {
                     }
                     emptyStreak = 0;
 
-                    // Check if any cell in key columns matches summary keywords
-                    const checkCols = [colMap.dia, colMap.nombre, colMap.categoria].filter((c) => c != null);
-                    const isSummary = checkCols.some((c) => {
-                        const v = String(row[c] ?? "").trim();
-                        return v && STOP_WORDS.test(v);
-                    });
+                    // Check only the DAY column for summary keywords
+                    // (categoria column has valid values like "Guard", "CPO" in data rows)
+                    const dayVal = colMap.dia != null ? String(row[colMap.dia] ?? "").trim() : "";
+                    const isSummary = dayVal && STOP_WORDS.test(dayVal);
                     if (isSummary) break;
 
                     const entry = {};
