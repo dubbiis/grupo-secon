@@ -15,6 +15,13 @@ const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fi
 
 const GUARD_TYPES = ["Guard", "Guard*", "CPO", "CPO*", "Team Leader", "Team Leader*", "SSIAP1", "SSIAP2", "SSIAP3", "Transport"];
 
+/** Match imported category to GUARD_TYPES (case-insensitive) */
+function matchCategory(val) {
+    if (!val) return "";
+    const lower = String(val).toLowerCase().trim();
+    return GUARD_TYPES.find((g) => g.toLowerCase() === lower) ?? String(val);
+}
+
 // Generate time options every 30 min
 const TIME_OPTIONS = [];
 for (let h = 0; h < 24; h++) {
@@ -141,6 +148,8 @@ function parseExcel(file) {
                         let val = row[colIdx] ?? "";
                         if (field === "dia") val = formatDay(val);
                         else if (field === "inicio" || field === "fin") val = formatTime(val);
+                        else if (field === "categoria") val = matchCategory(val);
+                        else if (field === "horas") val = (val === "" || val === 0) ? "" : String(Math.round(parseFloat(val) * 10) / 10);
                         else val = val === "" || val === 0 ? "" : String(val);
                         entry[field] = val;
                         if (val !== "" && val !== "0") hasData = true;
