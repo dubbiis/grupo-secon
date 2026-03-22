@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
 import {
     Table2, Upload, Plus, X, ChevronRight, Save, CheckCircle2,
-    RefreshCw, CloudUpload, Users, ChevronUp, ChevronDown,
+    RefreshCw, CloudUpload, Users, GripVertical,
 } from "lucide-react";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
@@ -153,12 +153,70 @@ function parseExcel(file) {
     });
 }
 
+let rowIdCounter = 0;
 function emptyRow() {
-    return FIELDS.reduce((acc, f) => ({ ...acc, [f]: "" }), {});
+    return { _id: `r-${Date.now()}-${rowIdCounter++}`, ...FIELDS.reduce((acc, f) => ({ ...acc, [f]: "" }), {}) };
+}
+function ensureIds(rows) {
+    return rows.map((r) => r._id ? r : { ...r, _id: `r-${Date.now()}-${rowIdCounter++}` });
+}
+
+function DraggableRow({ row, showDayHeader, onUpdate, onRemove, onInsert }) {
+    const dragControls = useDragControls();
+    return (
+        <Reorder.Item
+            value={row}
+            dragListener={false}
+            dragControls={dragControls}
+            className="list-none"
+            whileDrag={{ scale: 1.01, zIndex: 50, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        >
+            {showDayHeader && (
+                <div className="bg-[#208DCA]/10 border-b border-[#208DCA]/20 px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
+                    {row.dia}
+                </div>
+            )}
+            <div className="grid border-b border-white/5 hover:bg-white/3 transition-colors group/row items-center px-1"
+                style={{ gridTemplateColumns: "28px 1fr 70px 70px 40px 1fr 60px 28px" }}>
+                {/* Drag handle + insert */}
+                <div className="flex flex-col items-center justify-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                    <div
+                        onPointerDown={(e) => dragControls.start(e)}
+                        className="cursor-grab active:cursor-grabbing text-white/20 hover:text-[#208DCA] touch-none"
+                    >
+                        <GripVertical size={13} />
+                    </div>
+                    <button onClick={onInsert} title="Insertar fila debajo"
+                        className="text-white/20 hover:text-[#208DCA]"><Plus size={10} /></button>
+                </div>
+
+                {/* Data cells */}
+                {FIELDS.filter((f) => f !== "dia").map((f) => (
+                    <div key={f} className="px-0.5">
+                        <input
+                            type="text"
+                            value={row[f] ?? ""}
+                            onChange={(e) => onUpdate(f, e.target.value)}
+                            className="w-full bg-transparent text-white/70 text-[11px] px-1 py-1 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors truncate"
+                        />
+                    </div>
+                ))}
+
+                {/* Delete */}
+                <div className="flex items-center justify-center">
+                    <button onClick={onRemove}
+                        className="text-white/0 group-hover/row:text-white/20 hover:!text-red-400 transition-colors p-0.5">
+                        <X size={11} />
+                    </button>
+                </div>
+            </div>
+        </Reorder.Item>
+    );
 }
 
 export default function Seccion9({ plan, section, files = [] }) {
-    const [rows, setRows] = useState(section.form_data?.filas ?? []);
+    const [rows, setRows] = useState(() => ensureIds(section.form_data?.filas ?? []));
     const [staff, setStaff] = useState(section.form_data?.staff ?? []);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -184,7 +242,7 @@ export default function Seccion9({ plan, section, files = [] }) {
         if (!file) return;
         setUploading(true);
         const { planning, staff: staffData } = await parseExcel(file);
-        if (planning.length > 0) setRows(planning);
+        if (planning.length > 0) setRows(ensureIds(planning));
         if (staffData.length > 0) setStaff(staffData);
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
@@ -215,21 +273,16 @@ export default function Seccion9({ plan, section, files = [] }) {
         if (inputRef.current) inputRef.current.value = "";
     };
 
-    const updateCell = (idx, field, value) => {
-        setRows((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+    const updateCell = (id, field, value) => {
+        setRows((prev) => prev.map((r) => r._id === id ? { ...r, [field]: value } : r));
     };
-    const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
+    const removeRow = (id) => setRows((prev) => prev.filter((r) => r._id !== id));
     const addRow = () => setRows((prev) => [...prev, emptyRow()]);
-    const insertRowAfter = (idx) => {
-        setRows((prev) => [...prev.slice(0, idx + 1), emptyRow(), ...prev.slice(idx + 1)]);
-    };
-    const moveRow = (idx, dir) => {
+    const insertRowAfter = (id) => {
         setRows((prev) => {
-            const next = [...prev];
-            const target = idx + dir;
-            if (target < 0 || target >= next.length) return prev;
-            [next[idx], next[target]] = [next[target], next[idx]];
-            return next;
+            const idx = prev.findIndex((r) => r._id === id);
+            if (idx === -1) return [...prev, emptyRow()];
+            return [...prev.slice(0, idx + 1), emptyRow(), ...prev.slice(idx + 1)];
         });
     };
 
@@ -375,74 +428,36 @@ export default function Seccion9({ plan, section, files = [] }) {
                         </Shine>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-[11px] table-fixed min-w-[700px]">
-                            <colgroup>
-                                <col className="w-[50px]" />
-                                <col className="w-[26%]" />
-                                <col className="w-[10%]" />
-                                <col className="w-[10%]" />
-                                <col className="w-[6%]" />
-                                <col className="w-[20%]" />
-                                <col className="w-[9%]" />
-                                <col className="w-[30px]" />
-                            </colgroup>
-                            <thead>
-                                <tr className="border-b border-white/8">
-                                    <th className="w-[50px]" />
-                                    {FIELDS.filter((f) => f !== "dia").map((f) => (
-                                        <th key={f} className="px-2 py-2 text-left text-white/40 font-medium uppercase tracking-wide text-[10px]">
-                                            {LABELS[f]}
-                                        </th>
-                                    ))}
-                                    <th className="w-[30px]" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {grouped.map((item, gIdx) => {
-                                    if (item.type === "header") {
-                                        return (
-                                            <tr key={`day-${gIdx}`} className="bg-[#208DCA]/10 border-b border-[#208DCA]/20">
-                                                <td colSpan={8} className="px-2 py-1.5 text-[11px] font-bold text-[#208DCA] uppercase tracking-wide">
-                                                    {item.day}
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
-                                    return (
-                                        <tr key={item.idx} className="border-b border-white/5 hover:bg-white/3 transition-colors group/row">
-                                            <td className="px-0 py-0 w-[50px]">
-                                                <div className="flex items-center justify-center gap-0 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                                    <button onClick={() => moveRow(item.idx, -1)} title="Subir"
-                                                        className="text-white/25 hover:text-white p-0.5"><ChevronUp size={12} /></button>
-                                                    <button onClick={() => moveRow(item.idx, 1)} title="Bajar"
-                                                        className="text-white/25 hover:text-white p-0.5"><ChevronDown size={12} /></button>
-                                                    <button onClick={() => insertRowAfter(item.idx)} title="Insertar fila debajo"
-                                                        className="text-white/25 hover:text-[#208DCA] p-0.5"><Plus size={12} /></button>
-                                                </div>
-                                            </td>
-                                            {FIELDS.filter((f) => f !== "dia").map((f) => (
-                                                <td key={f} className="px-1 py-0">
-                                                    <input
-                                                        type="text"
-                                                        value={item.row[f] ?? ""}
-                                                        onChange={(e) => updateCell(item.idx, f, e.target.value)}
-                                                        className="w-full bg-transparent text-white/70 text-[11px] px-1 py-1 rounded focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors truncate"
-                                                    />
-                                                </td>
-                                            ))}
-                                            <td className="px-0 py-0 w-[30px]">
-                                                <button onClick={() => removeRow(item.idx)}
-                                                    className="text-white/0 group-hover/row:text-white/20 hover:!text-red-400 transition-colors p-1">
-                                                    <X size={11} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                    {/* Header */}
+                    <div className="grid min-w-[700px] text-[10px] font-medium uppercase tracking-wide text-white/40 border-b border-white/8 px-1"
+                        style={{ gridTemplateColumns: "28px 1fr 70px 70px 40px 1fr 60px 28px" }}>
+                        <div />
+                        {FIELDS.filter((f) => f !== "dia").map((f) => (
+                            <div key={f} className="px-1.5 py-2">{LABELS[f]}</div>
+                        ))}
+                        <div />
                     </div>
+
+                    {/* Reorderable rows */}
+                    <Reorder.Group axis="y" values={rows} onReorder={setRows} className="min-w-[700px]">
+                        {rows.map((row) => {
+                            // Day header: check if this row starts a new day group
+                            const idx = rows.indexOf(row);
+                            const prevDay = idx > 0 ? rows[idx - 1].dia : null;
+                            const showDayHeader = row.dia && row.dia !== prevDay;
+
+                            return (
+                                <DraggableRow
+                                    key={row._id}
+                                    row={row}
+                                    showDayHeader={showDayHeader}
+                                    onUpdate={(field, val) => updateCell(row._id, field, val)}
+                                    onRemove={() => removeRow(row._id)}
+                                    onInsert={() => insertRowAfter(row._id)}
+                                />
+                            );
+                        })}
+                    </Reorder.Group>
 
                     <div className="px-4 py-2.5 border-t border-white/8 flex items-center justify-between text-[11px] text-white/40">
                         <span>{rows.length} filas</span>
