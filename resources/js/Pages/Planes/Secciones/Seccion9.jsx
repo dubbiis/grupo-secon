@@ -35,16 +35,42 @@ const PLANNING_PATTERNS = {
 
 function formatTime(val) {
     if (val == null || val === "") return "";
+    // Excel stores times as fractions of a day (0.0 = 00:00, 0.5 = 12:00)
     if (typeof val === "number" && val >= 0 && val <= 1) {
         const totalMinutes = Math.round(val * 24 * 60);
         const h = Math.floor(totalMinutes / 60) % 24;
         const m = totalMinutes % 60;
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
+    // Date object from SheetJS
+    if (val instanceof Date) {
+        const h = val.getHours();
+        const m = val.getMinutes();
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
     const s = String(val);
     const timeMatch = s.match(/(\d{1,2}):(\d{2})/);
     if (timeMatch) return `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}`;
     return s;
+}
+
+/** Format Excel serial date or Date object to readable day string */
+function formatDay(val) {
+    if (val == null || val === "" || val === 0) return "";
+    // Excel serial date number (days since 1899-12-30)
+    if (typeof val === "number" && val > 1) {
+        const date = new Date((val - 25569) * 86400000);
+        if (!isNaN(date.getTime())) {
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            return `${days[date.getUTCDay()]} ${String(date.getUTCDate()).padStart(2, "0")}/${String(date.getUTCMonth() + 1).padStart(2, "0")}/${date.getUTCFullYear()}`;
+        }
+    }
+    // Date object
+    if (val instanceof Date && !isNaN(val.getTime())) {
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        return `${days[val.getDay()]} ${String(val.getDate()).padStart(2, "0")}/${String(val.getMonth() + 1).padStart(2, "0")}/${val.getFullYear()}`;
+    }
+    return String(val);
 }
 
 /** Calculate total hours: (finish - start + overnight correction) * number */
@@ -65,7 +91,7 @@ function parseExcel(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const wb = XLSX.read(e.target.result, { type: "array" });
+                const wb = XLSX.read(e.target.result, { type: "array", cellDates: true });
                 const ws = wb.Sheets["Overview Event"] ?? wb.Sheets[wb.SheetNames[0]];
                 if (!ws) { resolve([]); return; }
                 const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
@@ -113,7 +139,8 @@ function parseExcel(file) {
                         const colIdx = colMap[field];
                         if (colIdx == null) { entry[field] = ""; continue; }
                         let val = row[colIdx] ?? "";
-                        if (field === "inicio" || field === "fin") val = formatTime(val);
+                        if (field === "dia") val = formatDay(val);
+                        else if (field === "inicio" || field === "fin") val = formatTime(val);
                         else val = val === "" || val === 0 ? "" : String(val);
                         entry[field] = val;
                         if (val !== "" && val !== "0") hasData = true;
