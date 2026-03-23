@@ -639,133 +639,150 @@ export default function MapEditor({
     return (
         <div className={`flex flex-col gap-2 w-full h-full overflow-hidden ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
 
-            {/* ── Toolbar row 1: tools + colors + stroke ── */}
-            <div className={`flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 ${fullscreen ? "" : "sticky top-0 z-40 backdrop-blur-xl bg-[#F8FAFC]/90"}`}>
-
-                {/* Tools */}
-                <div className="flex items-center gap-0.5 pr-3 border-r border-slate-200">
+            {/* ── Toolbar — Glass Card ── */}
+            <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex flex-wrap items-center gap-1.5 p-2 rounded-2xl backdrop-blur-xl bg-white/70 border border-slate-200/60 shadow-lg shadow-slate-200/40 ${fullscreen ? "" : "sticky top-0 z-40"}`}
+            >
+                {/* Tools — glass pill */}
+                <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
                     {TOOLS.map((tl) => (
-                        <button
+                        <motion.button
                             key={tl.id}
                             onClick={() => setTool(tl.id)}
                             title={`${tl.label} (${tl.shortcut})`}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
                                 tool === tl.id
-                                    ? "bg-[#208DCA] text-white shadow-md shadow-[#208DCA]/30"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                    ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
+                                    : "text-slate-500 hover:text-slate-800 hover:bg-white/80"
                             }`}
                         >
-                            <tl.icon size={14} />
-                        </button>
+                            <tl.icon size={15} />
+                        </motion.button>
                     ))}
                 </div>
 
-                {/* Colors */}
-                <div className="flex items-center gap-1 pr-3 border-r border-slate-200 flex-wrap">
+                {/* Colors — glass pill */}
+                <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm">
                     {QUICK_COLORS.map((c) => (
-                        <button
+                        <motion.button
                             key={c}
                             onClick={() => setColor(c)}
-                            className={`w-5 h-5 rounded-full border-2 transition-all flex-shrink-0 ${
-                                color === c ? "border-white scale-125" : "border-transparent hover:scale-110"
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.85 }}
+                            className={`w-5 h-5 rounded-full transition-all flex-shrink-0 ${
+                                color === c ? "ring-2 ring-[#208DCA] ring-offset-1 scale-110" : ""
                             }`}
-                            style={{ backgroundColor: c, boxShadow: c === "#FFFFFF" ? "inset 0 0 0 1px rgba(255,255,255,0.3)" : undefined }}
+                            style={{ backgroundColor: c, boxShadow: c === "#FFFFFF" ? "inset 0 0 0 1px #e2e8f0" : `0 2px 4px ${c}40` }}
                         />
                     ))}
                     <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
                         className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent" title="Color personalizado" />
                 </div>
 
-                {/* Stroke widths */}
-                <div className="flex items-center gap-1 pr-3 border-r border-slate-200">
+                {/* Stroke widths — glass pill */}
+                <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
                     {STROKE_WIDTHS.map((w) => (
                         <button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
-                            className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-slate-200" : "hover:bg-slate-200"}`}
+                            className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-white shadow-sm" : "hover:bg-white/60"}`}
                         >
-                            <span className="rounded-full bg-white" style={{ width: Math.min(w + 2, 14), height: Math.min(w + 2, 14) }} />
+                            <span className="rounded-full bg-slate-700" style={{ width: Math.min(w + 2, 14), height: Math.min(w + 2, 14) }} />
                         </button>
                     ))}
                 </div>
 
                 {/* Fill toggle (rect/circle) */}
                 {["rect", "circle"].includes(tool) && (
-                    <button
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         onClick={() => setUseFill((v) => !v)}
                         title="Relleno"
-                        className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                            useFill ? "bg-[#208DCA]/20 border-[#208DCA]/40 text-[#208DCA]" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                        className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl transition-all ${
+                            useFill ? "bg-[#208DCA]/15 text-[#208DCA] shadow-sm" : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
                         }`}
                     >
                         <div className="w-3 h-3 rounded-sm border border-current" style={{ background: useFill ? color + "60" : "transparent" }} />
                         Relleno
-                    </button>
+                    </motion.button>
                 )}
 
                 {/* Text size (text tool) */}
                 {tool === "text" && (
-                    <div className="flex items-center gap-1 pr-3 border-r border-slate-200">
+                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
                         {TEXT_SIZES.map((s) => (
                             <button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
-                                className={`text-xs px-1.5 py-0.5 rounded transition-all ${textSize === s ? "bg-slate-200 text-slate-800" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
+                                className={`text-xs px-1.5 py-0.5 rounded-lg transition-all ${textSize === s ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-800"}`}
                                 style={{ fontSize: 10 + (TEXT_SIZES.indexOf(s)) }}
                             >A</button>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
 
-                {/* Opacity */}
-                <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
-                    <span className="text-[10px] text-slate-500">Opacidad</span>
+                {/* Opacity — compact */}
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm">
+                    <span className="text-[10px] text-slate-400 font-medium">Op</span>
                     <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
                         onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
-                        className="w-16 h-1 accent-[#208DCA] cursor-pointer"
+                        className="w-14 h-1 accent-[#208DCA] cursor-pointer"
                     />
-                    <span className="text-[10px] text-slate-500 w-6">{Math.round(opacity * 100)}%</span>
+                    <span className="text-[10px] text-slate-500 font-mono w-5">{Math.round(opacity * 100)}%</span>
                 </div>
 
                 {/* Icons dropdown */}
-                <div className="relative pr-3 border-r border-slate-200">
-                    <button
+                <div className="relative">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setOpenIconCat(openIconCat ? null : "emergencia")}
-                        className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 px-2 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                        className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-xl transition-all ${
+                            openIconCat ? "bg-[#208DCA]/15 text-[#208DCA]" : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
+                        }`}
                     >
                         <Layers size={13} />
                         Iconos
-                        <ChevronDown size={11} className={`transition-transform ${openIconCat ? "rotate-180" : ""}`} />
-                    </button>
+                        <ChevronDown size={10} className={`transition-transform ${openIconCat ? "rotate-180" : ""}`} />
+                    </motion.button>
                     <AnimatePresence>
                         {openIconCat && (
                             <motion.div
-                                initial={{ opacity: 0, y: 4, scale: 0.97 }}
+                                initial={{ opacity: 0, y: 6, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
+                                exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 backdrop-blur-xl bg-white/90 border border-slate-200/60 rounded-2xl shadow-2xl shadow-slate-300/30 overflow-hidden"
                                 style={{ width: 340 }}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                {/* Tabs — single row, no wrap */}
-                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-slate-200">
+                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-slate-200/50">
                                     <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
                                         {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
                                             <button key={key} onClick={() => setOpenIconCat(key)}
-                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ${openIconCat === key ? "text-[#273887] bg-[#273887]/10 font-semibold" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
+                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${openIconCat === key ? "text-[#253C87] bg-[#253C87]/10 font-semibold shadow-sm" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
                                             >{cat.label}</button>
                                         ))}
                                     </div>
                                     <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-colors ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
-                                        title="Mostrar etiqueta bajo el icono"
-                                    >Etiq.</button>
+                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-all ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
+                                        title="Mostrar etiqueta"
+                                    >Aa</button>
                                 </div>
-                                {/* Icons grid */}
                                 <div className="grid grid-cols-5 gap-1 p-2">
                                     {ICON_CATEGORIES[openIconCat]?.icons.map((ic) => (
-                                        <button key={ic.emoji} onClick={() => addEmoji(ic.emoji, ic.label)}
-                                            className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-slate-200 transition-colors group"
+                                        <motion.button key={ic.emoji}
+                                            onClick={() => addEmoji(ic.emoji, ic.label)}
+                                            whileHover={{ scale: 1.15 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-[#208DCA]/8 transition-colors group"
                                         >
                                             <span className="text-xl leading-none">{ic.emoji}</span>
-                                            {showIconLabels && <span className="text-[9px] text-slate-400 group-hover:text-slate-700 truncate w-full text-center mt-0.5">{ic.label}</span>}
-                                        </button>
+                                            {showIconLabels && <span className="text-[8px] text-slate-400 group-hover:text-[#208DCA] truncate w-full text-center mt-0.5">{ic.label}</span>}
+                                        </motion.button>
                                     ))}
                                 </div>
                             </motion.div>
@@ -773,90 +790,95 @@ export default function MapEditor({
                     </AnimatePresence>
                 </div>
 
-                {/* Undo / Redo / Clear */}
-                <div className="flex items-center gap-0.5 pr-3 border-r border-slate-200">
-                    <button onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 transition-all">
+                {/* Undo / Redo / Clear — glass pill */}
+                <div className="flex items-center gap-0.5 px-1 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/80 disabled:opacity-20 transition-all">
                         <Undo2 size={13} />
-                    </button>
-                    <button onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 transition-all">
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/80 disabled:opacity-20 transition-all">
                         <Redo2 size={13} />
-                    </button>
+                    </motion.button>
                     {selectedIdx !== null && (
-                        <button onClick={deleteSelected} title="Eliminar seleccionado (Del)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                        <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={deleteSelected} title="Eliminar (Del)"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-all">
                             <Trash2 size={13} />
-                        </button>
+                        </motion.button>
                     )}
-                    <button onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-900 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 transition-all">
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-50 disabled:opacity-20 transition-all">
                         <X size={13} />
-                    </button>
+                    </motion.button>
                 </div>
 
-                {/* View controls */}
-                <div className="flex items-center gap-1 pr-3 border-r border-slate-200">
+                {/* View controls — glass pill */}
+                <div className="flex items-center gap-0.5 px-1 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
                     <button onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-slate-400 hover:text-slate-700 hover:bg-white/80"}`}>
                         <Grid size={13} />
                     </button>
                     <button onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all">
                         <ZoomOut size={13} />
                     </button>
                     <button onClick={() => setZoom(1)} title="Zoom 100%"
-                        className="text-[10px] text-slate-900 hover:text-slate-900 px-1 transition-colors">
+                        className="text-[10px] text-slate-600 font-mono px-1 hover:text-slate-900 transition-colors">
                         {Math.round(zoom * 100)}%
                     </button>
                     <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all">
                         <ZoomIn size={13} />
                     </button>
                 </div>
 
                 {/* Map toggle */}
-                <button onClick={() => setShowMap((v) => !v)}
-                    className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        showMap ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowMap((v) => !v)}
+                    className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl transition-all ${
+                        showMap
+                            ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/30"
+                            : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
                     }`}
                 >
                     <Map size={12} />
                     Mapa
-                </button>
+                </motion.button>
 
                 {/* Fullscreen toggle */}
-                <button onClick={() => setFullscreen((v) => !v)}
-                    title={fullscreen ? "Salir de pantalla completa (Esc)" : "Pantalla completa"}
-                    className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                        fullscreen ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={() => setFullscreen((v) => !v)}
+                    title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                        fullscreen ? "bg-purple-500/15 text-purple-500" : "bg-slate-100/80 text-slate-400 hover:text-slate-700"
                     }`}
                 >
-                    {fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-                </button>
+                    {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                </motion.button>
 
                 {/* Save / Export */}
                 <div className="ml-auto flex items-center gap-2">
                     {hasBg && (
                         <>
                             {mode === "standalone" && (
-                                <div className="flex items-center gap-1 text-xs">
+                                <div className="flex items-center text-xs rounded-xl overflow-hidden border border-slate-200/60">
                                     <button onClick={() => setExportFormat("png")}
-                                        className={`px-2 py-1 rounded-l-lg border border-slate-200 transition-colors ${exportFormat === "png" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}>
+                                        className={`px-2.5 py-1.5 transition-all ${exportFormat === "png" ? "bg-[#208DCA]/10 text-[#208DCA] font-medium" : "text-slate-400 hover:text-slate-700 bg-white/60"}`}>
                                         PNG
                                     </button>
                                     <button onClick={() => setExportFormat("jpeg")}
-                                        className={`px-2 py-1 rounded-r-lg border border-slate-200 transition-colors ${exportFormat === "jpeg" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}>
+                                        className={`px-2.5 py-1.5 transition-all ${exportFormat === "jpeg" ? "bg-[#208DCA]/10 text-[#208DCA] font-medium" : "text-slate-400 hover:text-slate-700 bg-white/60"}`}>
                                         JPG
                                     </button>
                                 </div>
                             )}
-                            <button onClick={copyToClipboard} title="Copiar al portapapeles"
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${copiedMsg ? "bg-green-600/20 border-green-500/30 text-green-400" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
-                                {copiedMsg ? <Check size={13} /> : <Copy size={13} />}
-                            </button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                onClick={copyToClipboard} title="Copiar al portapapeles"
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600" : "bg-slate-100/80 text-slate-400 hover:text-slate-700 hover:bg-white"}`}>
+                                {copiedMsg ? <Check size={14} /> : <Copy size={14} />}
+                            </motion.button>
                             <RippleButton size="sm" onClick={handleSave} disabled={saving}
-                                className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#273887] to-[#208DCA]"} text-white`}>
+                                className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#273887] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/20`}>
                                 {saved ? <><Check size={12} /> Guardado</>
                                     : saving ? "Guardando..."
                                     : mode === "standalone" ? <><Download size={12} /> Descargar</>
@@ -865,7 +887,7 @@ export default function MapEditor({
                         </>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {/* ── Canvas + Map ── */}
             <div className="flex-1 min-h-0">
