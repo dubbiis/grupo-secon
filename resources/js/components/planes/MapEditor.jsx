@@ -189,10 +189,6 @@ const MapEditor = forwardRef(function MapEditor({
     const [iconDropPos, setIconDropPos] = useState({ top: 0, left: 0 });
     const containerRef = useRef(null);
     const mapContainerRef = useRef(null);
-    const [captureMode, setCaptureMode] = useState(false);
-    const [captureRect, setCaptureRect] = useState(null);
-    const captureStartRef = useRef(null);
-    const captureRectRef = useRef(null);
 
     // Drawing refs (avoid re-render during draw)
     const isDrawingRef = useRef(false);
@@ -579,52 +575,8 @@ const MapEditor = forwardRef(function MapEditor({
 
 
     // ── Map capture ──────────────────────────────────────────────
-    const startCapture = () => {
-        setCaptureMode(true);
-        setCaptureRect(null);
-        captureRectRef.current = null;
-        setShowMap(true);
-    };
-
-    const cancelCapture = () => {
-        setCaptureMode(false);
-        setCaptureRect(null);
-        captureRectRef.current = null;
-    };
-
-    useImperativeHandle(ref, () => ({ startCapture, cancelCapture, captureMode }), [captureMode]);
-
-    const handleCaptureMouseDown = (e) => {
-        if (!captureMode) return;
-        const rect = mapContainerRef.current.getBoundingClientRect();
-        captureStartRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        setCaptureRect(null);
-    };
-
-    const handleCaptureMouseMove = (e) => {
-        if (!captureMode || !captureStartRef.current) return;
-        const rect = mapContainerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const r = {
-            startX: Math.min(captureStartRef.current.x, x),
-            startY: Math.min(captureStartRef.current.y, y),
-            endX: Math.max(captureStartRef.current.x, x),
-            endY: Math.max(captureStartRef.current.y, y),
-        };
-        captureRectRef.current = r;
-        setCaptureRect(r);
-    };
-
-    const handleCaptureMouseUp = async () => {
-        const r = captureRectRef.current || captureRect;
-        if (!captureMode || !r) return;
-        captureStartRef.current = null;
-
-        const { startX, startY, endX, endY } = r;
-        const w = endX - startX;
-        const h = endY - startY;
-        if (w < 20 || h < 20) { setCaptureRect(null); return; }
+    const startCapture = async () => {
+        if (!mapContainerRef.current) return;
 
         try {
             const mapEl = mapContainerRef.current.querySelector(".leaflet-container") || mapContainerRef.current;
@@ -671,13 +623,6 @@ const MapEditor = forwardRef(function MapEditor({
                 URL.revokeObjectURL(url);
             }
 
-            // Crop to selection
-            const crop = document.createElement("canvas");
-            crop.width = w * dpr;
-            crop.height = h * dpr;
-            const cropCtx = crop.getContext("2d");
-            cropCtx.drawImage(composite, startX * dpr, startY * dpr, w * dpr, h * dpr, 0, 0, w * dpr, h * dpr);
-
             // Load into editor canvas
             const img = new Image();
             img.onload = () => {
@@ -690,19 +635,16 @@ const MapEditor = forwardRef(function MapEditor({
                 bgRef.current = bgImg;
                 setHasBg(true);
                 setShowMap(false);
-                setCaptureMode(false);
-                setCaptureRect(null);
                 setElements([]);
                 setHistory([[]]);
                 setHistoryStep(0);
                 requestAnimationFrame(() => drawElements([]));
             };
-            img.src = crop.toDataURL("image/png");
-        } catch {
-            setCaptureMode(false);
-            setCaptureRect(null);
-        }
+            img.src = composite.toDataURL("image/png");
+        } catch {}
     };
+
+    useImperativeHandle(ref, () => ({ startCapture }), []);
 
     // ── Context menu ─────────────────────────────────────────────
     const onContextMenu = (e) => {
@@ -773,36 +715,6 @@ const MapEditor = forwardRef(function MapEditor({
 
     return (
         <div className={`flex flex-col gap-2 w-full h-full ${openIconCat ? "" : "overflow-hidden"} ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
-
-            {/* ── Capture mode overlay ── */}
-            <AnimatePresence>
-                {captureMode && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9990] pointer-events-none"
-                        style={{ backdropFilter: "blur(0px)" }}
-                    >
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white px-6 py-3 rounded-2xl shadow-2xl shadow-[#208DCA]/40 flex items-center gap-3 pointer-events-auto z-[9999]"
-                        >
-                            <motion.div
-                                animate={{ scale: [1, 1.2, 1] }}
-                                transition={{ repeat: Infinity, duration: 1.5 }}
-                            >
-                                <Crosshair size={18} />
-                            </motion.div>
-                            <div>
-                                <div className="text-sm font-bold">Dibuja un rectángulo sobre el mapa</div>
-                                <div className="text-xs text-white/70">Haz clic y arrastra para seleccionar la zona a capturar</div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* ── Toolbar — Glass Card with Shine ── */}
             <Shine enable loop duration={3000} loopDelay={5000} color="#208DCA" opacity={0.08} asChild>
@@ -1164,18 +1076,6 @@ const MapEditor = forwardRef(function MapEditor({
                         )}
                     </AnimatePresence>
 
-                    {/* Capture cancel (small) - only in toolbar when active */}
-                    {captureMode && (
-                        <motion.button
-                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                            onClick={() => { setCaptureMode(false); setCaptureRect(null); }}
-                            className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30"
-                        >
-                            <X size={13} /> Cancelar
-                        </motion.button>
-                    )}
-
                     {/* Fullscreen toggle */}
                     <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
                         onClick={() => setFullscreen((v) => !v)}
@@ -1242,29 +1142,13 @@ const MapEditor = forwardRef(function MapEditor({
                             <div className="flex gap-2 flex-1 min-h-0" style={{ height: "100%" }}>
                                 <div
                                     ref={mapContainerRef}
-                                    className={`rounded-xl overflow-hidden border transition-all relative ${captureMode ? "border-[#208DCA] border-2 shadow-lg shadow-[#208DCA]/20" : "border-slate-200"} ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`}
-                                    style={{ height: "100%", cursor: captureMode ? "crosshair" : undefined }}
-                                    onMouseDown={handleCaptureMouseDown}
-                                    onMouseMove={handleCaptureMouseMove}
-                                    onMouseUp={handleCaptureMouseUp}
+                                    className={`rounded-xl overflow-hidden border border-slate-200 transition-all ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`}
+                                    style={{ height: "100%" }}
                                 >
-                                    {/* Capture selection rectangle */}
-                                    {captureMode && captureRect && (
-                                        <div
-                                            className="absolute border-2 border-[#208DCA] bg-[#208DCA]/10 rounded-sm pointer-events-none z-[999]"
-                                            style={{
-                                                left: captureRect.startX,
-                                                top: captureRect.startY,
-                                                width: captureRect.endX - captureRect.startX,
-                                                height: captureRect.endY - captureRect.startY,
-                                            }}
-                                        />
-                                    )}
                                 <LeafletMap
                                     command={mapCommand}
                                     onStatus={setMapStatus}
                                     onRouteData={setRouteData}
-                                    interactionDisabled={captureMode}
                                     onMarkerDrag={(place) => {
                                         if (mapMode === "search") {
                                             setMapQuery(place.displayName);
