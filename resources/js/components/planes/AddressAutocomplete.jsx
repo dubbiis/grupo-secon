@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
 
@@ -32,10 +33,19 @@ export default function AddressAutocomplete({
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [activeIdx, setActiveIdx] = useState(-1);
+    const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
     const abortRef = useRef(null);
     const timerRef = useRef(null);
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
+
+    // Update dropdown position when opening
+    useEffect(() => {
+        if (open && inputRef.current) {
+            const rect = inputRef.current.getBoundingClientRect();
+            setDropPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+        }
+    }, [open]);
 
     const search = useCallback(
         async (query) => {
@@ -167,46 +177,45 @@ export default function AddressAutocomplete({
                 </div>
             </div>
 
-            <AnimatePresence>
-                {open && results.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
-                        style={{ zIndex: 9999, marginLeft: label ? "2.25rem" : 0 }}
-                    >
-                        {results.map((item, i) => {
-                            const Icon = TYPE_ICONS[item.type] || MapPin;
-                            return (
-                                <motion.button
-                                    key={`${item.lat}-${item.lng}-${i}`}
-                                    type="button"
-                                    onClick={() => handleSelect(item)}
-                                    onMouseEnter={() => setActiveIdx(i)}
-                                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                                        i === activeIdx ? "bg-[#208DCA]/8" : "hover:bg-slate-50"
-                                    }`}
-                                    initial={{ opacity: 0, x: -8 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.03 }}
-                                >
-                                    <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-                                        <Icon size={14} className="text-[#208DCA]" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-medium text-slate-900 truncate">{item.name}</div>
-                                        {item.subtitle && (
-                                            <div className="text-[10px] text-slate-500 truncate">{item.subtitle}</div>
-                                        )}
-                                    </div>
-                                </motion.button>
-                            );
-                        })}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {open && results.length > 0 && createPortal(
+                <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden"
+                    style={{ zIndex: 99999, top: dropPos.top, left: dropPos.left, width: dropPos.width, minWidth: 280 }}
+                >
+                    {results.map((item, i) => {
+                        const Icon = TYPE_ICONS[item.type] || MapPin;
+                        return (
+                            <motion.button
+                                key={`${item.lat}-${item.lng}-${i}`}
+                                type="button"
+                                onClick={() => handleSelect(item)}
+                                onMouseEnter={() => setActiveIdx(i)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                                    i === activeIdx ? "bg-[#208DCA]/8" : "hover:bg-slate-50"
+                                }`}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.03 }}
+                            >
+                                <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                                    <Icon size={14} className="text-[#208DCA]" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-medium text-slate-900 truncate">{item.name}</div>
+                                    {item.subtitle && (
+                                        <div className="text-[10px] text-slate-500 truncate">{item.subtitle}</div>
+                                    )}
+                                </div>
+                            </motion.button>
+                        );
+                    })}
+                </motion.div>,
+                document.body
+            )}
         </div>
     );
 }
