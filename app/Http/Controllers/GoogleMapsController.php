@@ -95,7 +95,40 @@ class GoogleMapsController extends Controller
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        // Try Nominatim (more reliable from Docker servers)
+        // Try structured search first if query looks like "street number, city"
+        if (preg_match('/^(.+?)\s+(\d+)\s*[,.]?\s*(.+)$/u', $q, $m)) {
+            try {
+                $structParams = [
+                    'street' => trim($m[2] . ' ' . $m[1]),
+                    'city' => trim($m[3]),
+                    'country' => 'Spain',
+                    'format' => 'json',
+                    'limit' => 3,
+                    'addressdetails' => 1,
+                ];
+                $structResponse = Http::withHeaders([
+                    'User-Agent' => 'GrupoSecon/1.0',
+                    'Accept-Language' => 'es',
+                ])->timeout(4)->get('https://nominatim.openstreetmap.org/search', $structParams);
+
+                if ($structResponse->successful()) {
+                    $structData = $structResponse->json() ?? [];
+                    if (!empty($structData)) {
+                        $results = collect($structData)->map(fn($r) => [
+                            'lat' => (float) $r['lat'],
+                            'lng' => (float) $r['lon'],
+                            'name' => explode(',', $r['display_name'])[0],
+                            'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
+                            'displayName' => $r['display_name'],
+                        ])->values()->toArray();
+                        Cache::put($cacheKey, $results, 3600);
+                        return response()->json($results);
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // Fallback: free-form Nominatim search
         try {
             $params = ['q' => $q, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
             if ($lat && $lng) {
