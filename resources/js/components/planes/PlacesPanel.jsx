@@ -69,78 +69,65 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
     const groups = GROUPS[type] ?? [];
 
-    const search = async (skipCache = false) => {
+    const search = async () => {
         setStatus("loading");
         setErrorMsg("");
         setData(null);
         setChecked({});
 
-        try {
-            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-            const headers = { "X-CSRF-TOKEN": csrf, "Content-Type": "application/json", "Accept": "application/json" };
-            const body = JSON.stringify({ no_cache: skipCache });
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+        const headers = { "X-CSRF-TOKEN": csrf, "Content-Type": "application/json", "Accept": "application/json" };
+        const body = JSON.stringify({});
 
+        const autoCheck = (merged) => {
+            const c = {};
+            groups.forEach(({ key }) => { (merged[key] ?? []).forEach((_, i) => { c[`${key}_${i}`] = true; }); });
+            return c;
+        };
+
+        try {
             if (type === "transporte") {
-                // Two sequential requests — transit first, then parking
                 let merged = {};
                 let addr = "";
 
-                // 1. Transit (metro + bus)
+                // 1. Transit (metro + bus) — lighter query
                 try {
-                    const res1 = await fetch(`/planes/${uuid}/maps/transit`, { method: "POST", headers, body });
-                    if (res1.ok) {
-                        const json1 = await res1.json();
-                        addr = json1.address_used ?? "";
-                        merged = { ...merged, ...json1 };
-                        // Show partial results immediately
+                    const r1 = await fetch(`/planes/${uuid}/maps/transit`, { method: "POST", headers, body });
+                    if (r1.ok) {
+                        const j1 = await r1.json();
+                        addr = j1.address_used ?? "";
+                        merged = { ...j1 };
                         setData({ ...merged });
                         setAddressUsed(addr);
-                        const partial = {};
-                        groups.forEach(({ key }) => {
-                            (merged[key] ?? []).forEach((_, i) => { partial[`${key}_${i}`] = true; });
-                        });
-                        setChecked(partial);
+                        setChecked(autoCheck(merged));
                         setStatus("results");
                     }
                 } catch {}
 
-                // 2. Parking
+                // 2. Parking — separate query
                 try {
-                    const res2 = await fetch(`/planes/${uuid}/maps/parking`, { method: "POST", headers, body });
-                    if (res2.ok) {
-                        const json2 = await res2.json();
-                        merged = { ...merged, ...json2 };
+                    const r2 = await fetch(`/planes/${uuid}/maps/parking`, { method: "POST", headers, body });
+                    if (r2.ok) {
+                        const j2 = await r2.json();
+                        merged = { ...merged, ...j2 };
                         setData({ ...merged, address_used: addr });
-                        const allChecked = {};
-                        groups.forEach(({ key }) => {
-                            (merged[key] ?? []).forEach((_, i) => { allChecked[`${key}_${i}`] = true; });
-                        });
-                        setChecked(allChecked);
+                        setChecked(autoCheck(merged));
+                        setStatus("results");
                     }
                 } catch {}
 
-                if (!Object.keys(merged).some((k) => k !== "address_used")) {
-                    setErrorMsg("No se encontraron datos de transporte.");
+                if (!merged.metro_tren?.length && !merged.autobus?.length && !merged.parking?.length) {
+                    setErrorMsg("No se encontraron datos de transporte en esta zona.");
                     setStatus("error");
-                } else {
-                    setStatus("results");
                 }
             } else {
-                // Single request for emergencia
+                // Emergencia — single request
                 const res = await fetch(`/planes/${uuid}/maps/${type}`, { method: "POST", headers, body });
                 const json = await res.json();
-                if (!res.ok) {
-                    setErrorMsg(json.error || "Error al buscar datos.");
-                    setStatus("error");
-                    return;
-                }
+                if (!res.ok) { setErrorMsg(json.error || "Error al buscar datos."); setStatus("error"); return; }
                 setData(json);
                 setAddressUsed(json.address_used ?? "");
-                const allChecked = {};
-                groups.forEach(({ key }) => {
-                    (json[key] ?? []).forEach((_, i) => { allChecked[`${key}_${i}`] = true; });
-                });
-                setChecked(allChecked);
+                setChecked(autoCheck(json));
                 setStatus("results");
             }
         } catch {
@@ -187,8 +174,8 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     </div>
                 ) : (
                     <button
-                        onClick={() => search(true)}
-                        className="flex items-center gap-1 text-xs text-[#208DCA] hover:text-[#253C87] font-medium transition-colors"
+                        onClick={search}
+                        className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
                     >
                         <RefreshCw size={11} />
                         Volver a buscar

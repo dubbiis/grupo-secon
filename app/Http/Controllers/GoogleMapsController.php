@@ -53,10 +53,6 @@ class GoogleMapsController extends Controller
 
     public function transporte(Request $request, string $uuid)
     {
-        if ($request->boolean('no_cache')) {
-            $this->clearTransportCache($request, $uuid);
-        }
-
         $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
         $coords = $this->resolveCoords($request, $plan);
 
@@ -73,54 +69,40 @@ class GoogleMapsController extends Controller
 
     public function transit(Request $request, string $uuid)
     {
-        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $plan = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
         $coords = $this->resolveCoords($request, $plan);
         if (!$coords) return response()->json(['error' => 'Dirección no encontrada'], 422);
 
-        $data = $this->maps->getTransitData($coords['lat'], $coords['lng']);
+        $lat = $coords['lat'];
+        $lng = $coords['lng'];
+        $key = 'maps.transit.' . md5(round($lat, 2) . ',' . round($lng, 2));
+
+        $data = Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
+            return $this->maps->getTransitOnly($lat, $lng);
+        });
+
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
     }
 
     public function parking(Request $request, string $uuid)
     {
-        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $plan = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
         $coords = $this->resolveCoords($request, $plan);
         if (!$coords) return response()->json(['error' => 'Dirección no encontrada'], 422);
 
-        $data = $this->maps->getParkingData($coords['lat'], $coords['lng']);
+        $lat = $coords['lat'];
+        $lng = $coords['lng'];
+        $key = 'maps.parking_only.' . md5(round($lat, 2) . ',' . round($lng, 2));
+
+        $data = Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
+            return $this->maps->getParkingOnly($lat, $lng);
+        });
+
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
-    }
-
-    private function clearTransportCache(Request $request, string $uuid): void
-    {
-        $plan = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
-        $sec1 = $plan->getSectionByNumber(1);
-        $address = $sec1?->form_data['direccion_evento'] ?? '';
-        if ($address) {
-            // Clear geocode cache for all address variants
-            Cache::forget('maps.geocode.' . md5($address));
-            $simplified = preg_replace('/\b(s\/n|S\/N)\b/', '', $address);
-            $simplified = preg_replace('/\b\d{5}\b/', '', $simplified);
-            $simplified = preg_replace('/\s+/', ' ', trim($simplified));
-            Cache::forget('maps.geocode.' . md5($simplified));
-
-            // Clear transport/emergency data cache (rounded coords)
-            $coords = $this->maps->geocode($address) ?? $this->maps->geocode($simplified);
-            if ($coords) {
-                $gridLat = round($coords['lat'], 2);
-                $gridLng = round($coords['lng'], 2);
-                Cache::forget('maps.transport.' . md5($gridLat . ',' . $gridLng));
-                Cache::forget('maps.emergency.' . md5($gridLat . ',' . $gridLng));
-            }
-        }
     }
 
     public function emergencia(Request $request, string $uuid)
     {
-        if ($request->boolean('no_cache')) {
-            $this->clearTransportCache($request, $uuid);
-        }
-
         $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
         $coords = $this->resolveCoords($request, $plan);
 

@@ -28,7 +28,7 @@ class GoogleMapsService
             ]);
 
             $data = $response->json();
-            if (empty($data)) return null; // Don't cache null
+            if (empty($data)) return null;
 
             $result = [
                 'lat'          => (float) $data[0]['lat'],
@@ -202,6 +202,44 @@ class GoogleMapsService
 
     // ── Public API ───────────────────────────────────────────────
 
+    public function getTransitOnly(float $lat, float $lng): array
+    {
+        $origin = ['lat' => $lat, 'lng' => $lng];
+        $transitRaw = $this->queryTransit($lat, $lng);
+        $busRaw = $this->queryBus($lat, $lng);
+
+        $seen = [];
+        $transit = [];
+        foreach ($transitRaw as $el) {
+            $name = $el['tags']['name'] ?? null;
+            if ($name && !isset($seen[$name])) { $seen[$name] = true; $transit[] = $el; }
+        }
+        $transit = array_slice($transit, 0, 10);
+        $busStops = array_slice($busRaw, 0, 8);
+
+        $all = array_merge($transit, $busStops);
+        $coords = array_map([$this, 'getCoords'], $all);
+        $distances = $this->getDistances($origin, $coords);
+
+        return [
+            'metro_tren' => $this->buildPlaceList($transit, 0, $distances),
+            'autobus' => $this->buildPlaceList($busStops, count($transit), $distances),
+        ];
+    }
+
+    public function getParkingOnly(float $lat, float $lng): array
+    {
+        $origin = ['lat' => $lat, 'lng' => $lng];
+        $parkingRaw = $this->queryParking($lat, $lng);
+        $parkings = array_slice($parkingRaw, 0, 8);
+        $coords = array_map([$this, 'getCoords'], $parkings);
+        $distances = $this->getDistances($origin, $coords);
+
+        return [
+            'parking' => $this->buildPlaceList($parkings, 0, $distances),
+        ];
+    }
+
     /**
      * Transport data for section 4:
      * metro_tren, autobus, parking
@@ -261,68 +299,42 @@ class GoogleMapsService
         });
     }
 
-    /**
-     * Transit only (metro + bus) — lighter query
-     */
-    public function getTransitData(float $lat, float $lng): array
+    public function getTransportData(float $lat, float $lng): array
     {
-        $key = 'maps.transit.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        $key = 'maps.transport.' . md5(round($lat, 2) . ',' . round($lng, 2));
         return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
             $origin = ['lat' => $lat, 'lng' => $lng];
 
             $transitRaw = $this->queryTransit($lat, $lng);
             $busRaw     = $this->queryBus($lat, $lng);
+            $parkingRaw = $this->queryParking($lat, $lng);
 
-            $seen = [];
+            // Deduplicate transit by name
+            $seen    = [];
             $transit = [];
             foreach ($transitRaw as $el) {
                 $name = $el['tags']['name'] ?? null;
                 if ($name && !isset($seen[$name])) {
                     $seen[$name] = true;
-                    $transit[] = $el;
+                    $transit[]   = $el;
                 }
             }
-            $transit  = array_slice($transit, 0, 10);
-            $busStops = array_slice($busRaw, 0, 8);
+            $transit    = array_slice($transit, 0, 10);
+            $busStops   = array_slice($busRaw, 0, 8);
+            $parkings   = array_slice($parkingRaw, 0, 8);
 
-            $allElements = array_merge($transit, $busStops);
-            $coords = array_map([$this, 'getCoords'], $allElements);
-            $distances = $this->getDistances($origin, $coords);
+            // Batch distance request
+            $allElements = array_merge($transit, $busStops, $parkings);
+            $coords      = array_map([$this, 'getCoords'], $allElements);
+            $distances   = $this->getDistances($origin, $coords);
+
+            $tCount = count($transit);
+            $bCount = count($busStops);
 
             return [
                 'metro_tren' => $this->buildPlaceList($transit, 0, $distances),
-                'autobus'    => $this->buildPlaceList($busStops, count($transit), $distances),
-            ];
-        });
-    }
-
-    /**
-     * Parking only — separate query
-     */
-    public function getParkingData(float $lat, float $lng): array
-    {
-        $key = 'maps.parking.' . md5(round($lat, 2) . ',' . round($lng, 2));
-        return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
-            $origin = ['lat' => $lat, 'lng' => $lng];
-            $parkingRaw = $this->queryParking($lat, $lng);
-            $parkings = array_slice($parkingRaw, 0, 8);
-            $coords = array_map([$this, 'getCoords'], $parkings);
-            $distances = $this->getDistances($origin, $coords);
-
-            return [
-                'parking' => $this->buildPlaceList($parkings, 0, $distances),
-            ];
-        });
-    }
-
-    /**
-     * Full transport data (backward compat)
-     */
-    public function getTransportData(float $lat, float $lng): array
-    {
-        $transit = $this->getTransitData($lat, $lng);
-        $parking = $this->getParkingData($lat, $lng);
-        return array_merge($transit, $parking, [
+                'autobus'    => $this->buildPlaceList($busStops, $tCount, $distances),
+                'parking'    => $this->buildPlaceList($parkings, $tCount + $bCount, $distances),
             ];
         });
     }
