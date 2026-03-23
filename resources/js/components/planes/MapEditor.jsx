@@ -190,8 +190,9 @@ export default function MapEditor({
     const containerRef = useRef(null);
     const mapContainerRef = useRef(null);
     const [captureMode, setCaptureMode] = useState(false);
-    const [captureRect, setCaptureRect] = useState(null); // { startX, startY, endX, endY }
+    const [captureRect, setCaptureRect] = useState(null);
     const captureStartRef = useRef(null);
+    const captureRectRef = useRef(null);
 
     // Drawing refs (avoid re-render during draw)
     const isDrawingRef = useRef(false);
@@ -596,19 +597,22 @@ export default function MapEditor({
         const rect = mapContainerRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        setCaptureRect({
+        const r = {
             startX: Math.min(captureStartRef.current.x, x),
             startY: Math.min(captureStartRef.current.y, y),
             endX: Math.max(captureStartRef.current.x, x),
             endY: Math.max(captureStartRef.current.y, y),
-        });
+        };
+        captureRectRef.current = r;
+        setCaptureRect(r);
     };
 
     const handleCaptureMouseUp = async () => {
-        if (!captureMode || !captureStartRef.current || !captureRect) return;
+        const r = captureRectRef.current || captureRect;
+        if (!captureMode || !r) return;
         captureStartRef.current = null;
 
-        const { startX, startY, endX, endY } = captureRect;
+        const { startX, startY, endX, endY } = r;
         const w = endX - startX;
         const h = endY - startY;
         if (w < 20 || h < 20) { setCaptureRect(null); return; }
@@ -1261,6 +1265,7 @@ export default function MapEditor({
                                     command={mapCommand}
                                     onStatus={setMapStatus}
                                     onRouteData={setRouteData}
+                                    interactionDisabled={captureMode}
                                     onMarkerDrag={(place) => {
                                         if (mapMode === "search") {
                                             setMapQuery(place.displayName);

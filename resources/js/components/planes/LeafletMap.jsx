@@ -54,7 +54,7 @@ function poiIcon(emoji) {
  */
 const NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
 
-export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDrag }) {
+export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDrag, interactionDisabled }) {
     const containerRef   = useRef(null);
     const mapRef         = useRef(null);
     const markersRef     = useRef([]);
@@ -90,6 +90,25 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         }).addTo(mapRef.current);
         return () => { mapRef.current?.remove(); mapRef.current = null; };
     }, []);
+
+    // Disable/enable map interactions (for capture mode)
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map) return;
+        if (interactionDisabled) {
+            map.dragging.disable();
+            map.doubleClickZoom.disable();
+            map.boxZoom.disable();
+            map.keyboard.disable();
+            if (map.tap) map.tap.disable();
+        } else {
+            map.dragging.enable();
+            map.doubleClickZoom.enable();
+            map.boxZoom.enable();
+            map.keyboard.enable();
+            if (map.tap) map.tap.enable();
+        }
+    }, [interactionDisabled]);
 
     const clearRoutes = useCallback(() => {
         routeLayersRef.current.forEach((l) => l.remove());
