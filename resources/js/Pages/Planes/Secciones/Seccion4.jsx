@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
@@ -47,6 +47,17 @@ export default function Seccion4({ plan, section }) {
         value: form[key],
         onChange: (e) => setForm((prev) => ({ ...prev, [key]: e.target.value })),
     });
+
+    const transportRef = useRef(null);
+    const parkingRef = useRef(null);
+
+    // Auto-resize textareas when value changes programmatically
+    useEffect(() => {
+        [transportRef, parkingRef].forEach((ref) => {
+            const el = ref.current;
+            if (el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+        });
+    }, [form.datos_transporte_googlemaps, form.datos_parkings_googlemaps]);
 
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
@@ -109,11 +120,11 @@ export default function Seccion4({ plan, section }) {
             <div>
                 <label className="text-sm font-medium mb-1.5 block">{t("s4.public_transport")}</label>
                 <Textarea
+                    ref={transportRef}
                     {...field("datos_transporte_googlemaps")}
                     placeholder="Metro: L1 - Estación Plaza España (200m), L3 - Estación Sants (400m)&#10;Autobús: Líneas 9, 50, 56 - Parada Calle Mayor&#10;Renfe: Estación Sants (1.2km, 12min a pie)"
                     rows={2}
-                    style={{ height: "auto", minHeight: "3rem", overflow: "hidden" }}
-                    onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    style={{ minHeight: "3rem", overflow: "hidden" }}
                 />
                 <p className="text-xs text-slate-500 mt-1">
                     Rellenado automáticamente o escribe manualmente.
@@ -123,11 +134,11 @@ export default function Seccion4({ plan, section }) {
             <div>
                 <label className="text-sm font-medium mb-1.5 block">{t("s4.parking_nearby")}</label>
                 <Textarea
+                    ref={parkingRef}
                     {...field("datos_parkings_googlemaps")}
                     placeholder="Parking Arenas de Barcelona (150m, 800 plazas)&#10;Parking Pl. España (300m, 500 plazas)&#10;Zona regulada ORA en Calle de Lleida"
                     rows={2}
-                    style={{ height: "auto", minHeight: "3rem", overflow: "hidden" }}
-                    onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    style={{ minHeight: "3rem", overflow: "hidden" }}
                 />
             </div>
         </SectionShell>
