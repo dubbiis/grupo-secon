@@ -575,64 +575,63 @@ const MapEditor = forwardRef(function MapEditor({
 
 
     // ── Map capture ──────────────────────────────────────────────
-    const startCapture = async () => {
-        if (!mapContainerRef.current) return;
+    const startCaptureRef = useRef(null);
+    startCaptureRef.current = async () => {
+        if (!showMap || !mapContainerRef.current) {
+            // If map isn't visible, switch to map first and retry
+            setShowMap(true);
+            setTimeout(() => startCaptureRef.current?.(), 500);
+            return;
+        }
 
         try {
             const mapEl = mapContainerRef.current.querySelector(".leaflet-container") || mapContainerRef.current;
             const mapW = mapEl.offsetWidth;
             const mapH = mapEl.offsetHeight;
-            const dpr = window.devicePixelRatio || 1;
 
-            // Create composite canvas from all map tile images + SVG overlays
+            // Create composite canvas from map tiles
             const composite = document.createElement("canvas");
-            composite.width = mapW * dpr;
-            composite.height = mapH * dpr;
-            const compCtx = composite.getContext("2d");
-            compCtx.scale(dpr, dpr);
+            composite.width = mapW;
+            composite.height = mapH;
+            const ctx = composite.getContext("2d");
 
-            // Draw tile images
+            // Draw tile images (with CORS handling)
             const tiles = mapEl.querySelectorAll(".leaflet-tile-loaded");
+            const mapRect = mapEl.getBoundingClientRect();
             tiles.forEach((tile) => {
-                const rect = tile.getBoundingClientRect();
-                const mapRect = mapEl.getBoundingClientRect();
-                const x = rect.left - mapRect.left;
-                const y = rect.top - mapRect.top;
-                try { compCtx.drawImage(tile, x, y, rect.width, rect.height); } catch {}
+                const r = tile.getBoundingClientRect();
+                try {
+                    ctx.drawImage(tile, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+                } catch {}
             });
 
             // Draw SVG overlays (routes, markers)
             const svgs = mapEl.querySelectorAll("svg");
             for (const svg of svgs) {
-                const svgRect = svg.getBoundingClientRect();
-                const mapRect = mapEl.getBoundingClientRect();
-                const x = svgRect.left - mapRect.left;
-                const y = svgRect.top - mapRect.top;
-                const svgData = new XMLSerializer().serializeToString(svg);
-                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-                const url = URL.createObjectURL(svgBlob);
-                const svgImg = await new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = () => resolve(null);
-                    img.src = url;
-                });
-                if (svgImg) {
-                    compCtx.drawImage(svgImg, x, y, svgRect.width, svgRect.height);
-                }
-                URL.revokeObjectURL(url);
+                try {
+                    const r = svg.getBoundingClientRect();
+                    const clone = svg.cloneNode(true);
+                    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                    const data = new XMLSerializer().serializeToString(clone);
+                    const svgImg = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
+                    });
+                    if (svgImg) ctx.drawImage(svgImg, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+                } catch {}
             }
 
             // Load into editor canvas
+            const dataUrl = composite.toDataURL("image/png");
             const img = new Image();
             img.onload = () => {
                 const c = canvasRef.current;
                 if (!c) return;
                 c.width = img.width;
                 c.height = img.height;
-                const bgImg = bgRef.current || new Image();
-                bgImg.src = img.src;
-                bgRef.current = bgImg;
+                bgRef.current = img;
                 setHasBg(true);
                 setShowMap(false);
                 setElements([]);
@@ -640,11 +639,15 @@ const MapEditor = forwardRef(function MapEditor({
                 setHistoryStep(0);
                 requestAnimationFrame(() => drawElements([]));
             };
-            img.src = composite.toDataURL("image/png");
-        } catch {}
+            img.src = dataUrl;
+        } catch (err) {
+            console.error("Capture failed:", err);
+        }
     };
 
-    useImperativeHandle(ref, () => ({ startCapture }), []);
+    useImperativeHandle(ref, () => ({
+        startCapture: () => startCaptureRef.current?.(),
+    }));
 
     // ── Context menu ─────────────────────────────────────────────
     const onContextMenu = (e) => {
