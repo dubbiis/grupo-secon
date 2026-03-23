@@ -10,6 +10,7 @@ import LeafletMap from "@/components/planes/LeafletMap";
 import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 
 // ── Herramientas ──────────────────────────────────────────────
 const TOOLS = [
@@ -639,255 +640,310 @@ export default function MapEditor({
     return (
         <div className={`flex flex-col gap-2 w-full h-full overflow-hidden ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
 
-            {/* ── Toolbar — Glass Card ── */}
-            <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={`flex flex-wrap items-center gap-1.5 p-2 rounded-2xl backdrop-blur-xl bg-white/70 border border-slate-200/60 shadow-lg shadow-slate-200/40 ${fullscreen ? "" : "sticky top-0 z-40"}`}
-            >
-                {/* Tools — glass pill */}
-                <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    {TOOLS.map((tl) => (
-                        <motion.button
-                            key={tl.id}
-                            onClick={() => setTool(tl.id)}
-                            title={`${tl.label} (${tl.shortcut})`}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                tool === tl.id
-                                    ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
-                                    : "text-slate-500 hover:text-slate-800 hover:bg-white/80"
-                            }`}
-                        >
-                            <tl.icon size={15} />
-                        </motion.button>
-                    ))}
-                </div>
-
-                {/* Colors — glass pill */}
-                <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    {QUICK_COLORS.map((c) => (
-                        <motion.button
-                            key={c}
-                            onClick={() => setColor(c)}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.85 }}
-                            className={`w-5 h-5 rounded-full transition-all flex-shrink-0 ${
-                                color === c ? "ring-2 ring-[#208DCA] ring-offset-1 scale-110" : ""
-                            }`}
-                            style={{ backgroundColor: c, boxShadow: c === "#FFFFFF" ? "inset 0 0 0 1px #e2e8f0" : `0 2px 4px ${c}40` }}
-                        />
-                    ))}
-                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
-                        className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent" title="Color personalizado" />
-                </div>
-
-                {/* Stroke widths — glass pill */}
-                <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    {STROKE_WIDTHS.map((w) => (
-                        <button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
-                            className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-white shadow-sm" : "hover:bg-white/60"}`}
-                        >
-                            <span className="rounded-full bg-slate-700" style={{ width: Math.min(w + 2, 14), height: Math.min(w + 2, 14) }} />
-                        </button>
-                    ))}
-                </div>
-
-                {/* Fill toggle (rect/circle) */}
-                {["rect", "circle"].includes(tool) && (
-                    <motion.button
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        onClick={() => setUseFill((v) => !v)}
-                        title="Relleno"
-                        className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl transition-all ${
-                            useFill ? "bg-[#208DCA]/15 text-[#208DCA] shadow-sm" : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
-                        }`}
-                    >
-                        <div className="w-3 h-3 rounded-sm border border-current" style={{ background: useFill ? color + "60" : "transparent" }} />
-                        Relleno
-                    </motion.button>
-                )}
-
-                {/* Text size (text tool) */}
-                {tool === "text" && (
-                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                        {TEXT_SIZES.map((s) => (
-                            <button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
-                                className={`text-xs px-1.5 py-0.5 rounded-lg transition-all ${textSize === s ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-800"}`}
-                                style={{ fontSize: 10 + (TEXT_SIZES.indexOf(s)) }}
-                            >A</button>
-                        ))}
-                    </motion.div>
-                )}
-
-                {/* Opacity — compact */}
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    <span className="text-[10px] text-slate-400 font-medium">Op</span>
-                    <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
-                        onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
-                        className="w-14 h-1 accent-[#208DCA] cursor-pointer"
-                    />
-                    <span className="text-[10px] text-slate-500 font-mono w-5">{Math.round(opacity * 100)}%</span>
-                </div>
-
-                {/* Icons dropdown */}
-                <div className="relative">
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setOpenIconCat(openIconCat ? null : "emergencia")}
-                        className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-xl transition-all ${
-                            openIconCat ? "bg-[#208DCA]/15 text-[#208DCA]" : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
-                        }`}
-                    >
-                        <Layers size={13} />
-                        Iconos
-                        <ChevronDown size={10} className={`transition-transform ${openIconCat ? "rotate-180" : ""}`} />
-                    </motion.button>
-                    <AnimatePresence>
-                        {openIconCat && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 backdrop-blur-xl bg-white/90 border border-slate-200/60 rounded-2xl shadow-2xl shadow-slate-300/30 overflow-hidden"
-                                style={{ width: 340 }}
-                                onClick={(e) => e.stopPropagation()}
+            {/* ── Toolbar — Glass Card with Shine ── */}
+            <Shine enable loop duration={3000} loopDelay={5000} color="#208DCA" opacity={0.08} asChild>
+                <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+                    className={`flex flex-wrap items-center gap-1.5 p-2.5 rounded-2xl backdrop-blur-2xl bg-gradient-to-r from-white/80 via-slate-50/70 to-white/80 border border-slate-200/50 shadow-[0_8px_32px_rgba(32,141,202,0.08),0_2px_8px_rgba(0,0,0,0.06)] ${fullscreen ? "" : "sticky top-0 z-40"}`}
+                >
+                    {/* Tools — glass pill with gradient border */}
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                        {TOOLS.map((tl, i) => (
+                            <motion.button
+                                key={tl.id}
+                                onClick={() => setTool(tl.id)}
+                                title={`${tl.label} (${tl.shortcut})`}
+                                whileHover={{ scale: 1.15, y: -2 }}
+                                whileTap={{ scale: 0.85 }}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.03 }}
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all relative ${
+                                    tool === tl.id
+                                        ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/50"
+                                        : "text-slate-400 hover:text-slate-700 hover:bg-white"
+                                }`}
                             >
-                                <div className="flex items-center gap-0.5 px-2 pt-2 pb-1.5 border-b border-slate-200/50">
-                                    <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
-                                        {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
-                                            <button key={key} onClick={() => setOpenIconCat(key)}
-                                                className={`flex-shrink-0 text-[10px] px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${openIconCat === key ? "text-[#253C87] bg-[#253C87]/10 font-semibold shadow-sm" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
-                                            >{cat.label}</button>
-                                        ))}
-                                    </div>
-                                    <button onClick={() => setShowIconLabels((v) => !v)}
-                                        className={`flex-shrink-0 text-[10px] px-2 py-1 rounded-lg ml-1 transition-all ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
-                                        title="Mostrar etiqueta"
-                                    >Aa</button>
-                                </div>
-                                <div className="grid grid-cols-5 gap-1 p-2">
-                                    {ICON_CATEGORIES[openIconCat]?.icons.map((ic) => (
-                                        <motion.button key={ic.emoji}
-                                            onClick={() => addEmoji(ic.emoji, ic.label)}
-                                            whileHover={{ scale: 1.15 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-[#208DCA]/8 transition-colors group"
-                                        >
-                                            <span className="text-xl leading-none">{ic.emoji}</span>
-                                            {showIconLabels && <span className="text-[8px] text-slate-400 group-hover:text-[#208DCA] truncate w-full text-center mt-0.5">{ic.label}</span>}
-                                        </motion.button>
-                                    ))}
-                                </div>
+                                <tl.icon size={15} />
+                                {tool === tl.id && (
+                                    <motion.div
+                                        layoutId="tool-glow"
+                                        className="absolute inset-0 rounded-xl bg-[#208DCA]/20 blur-md -z-10"
+                                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                    />
+                                )}
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {/* Colors — glass pill with hover glow */}
+                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                        {QUICK_COLORS.map((c) => (
+                            <motion.button
+                                key={c}
+                                onClick={() => setColor(c)}
+                                whileHover={{ scale: 1.3, y: -3 }}
+                                whileTap={{ scale: 0.8 }}
+                                className={`w-5 h-5 rounded-full transition-all flex-shrink-0 ${
+                                    color === c ? "ring-2 ring-[#208DCA] ring-offset-2 scale-125" : ""
+                                }`}
+                                style={{
+                                    backgroundColor: c,
+                                    boxShadow: color === c
+                                        ? `0 0 12px ${c}80, 0 4px 8px ${c}40`
+                                        : c === "#FFFFFF" ? "inset 0 0 0 1px #e2e8f0" : `0 2px 6px ${c}30`,
+                                }}
+                            />
+                        ))}
+                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
+                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent" title="Color personalizado" />
+                    </div>
+
+                    {/* Stroke widths — glass pill */}
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                        {STROKE_WIDTHS.map((w) => (
+                            <motion.button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                className={`flex items-center justify-center w-7 h-7 rounded-lg transition-all ${strokeWidth === w ? "bg-white shadow-md" : "hover:bg-white/80"}`}
+                            >
+                                <span className="rounded-full bg-slate-700 transition-all" style={{ width: Math.min(w + 2, 14), height: Math.min(w + 2, 14), boxShadow: strokeWidth === w ? `0 0 6px rgba(0,0,0,0.3)` : 'none' }} />
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {/* Fill toggle (rect/circle) */}
+                    <AnimatePresence>
+                        {["rect", "circle"].includes(tool) && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.5, x: -10 }}
+                                onClick={() => setUseFill((v) => !v)}
+                                title="Relleno"
+                                className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-all ${
+                                    useFill ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm shadow-[#208DCA]/20" : "bg-white/80 border-slate-200/40 text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                <div className="w-3.5 h-3.5 rounded" style={{ background: useFill ? color : "transparent", border: `2px solid ${color}` }} />
+                                Relleno
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Text size (text tool) */}
+                    <AnimatePresence>
+                        {tool === "text" && (
+                            <motion.div
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: "auto" }}
+                                exit={{ opacity: 0, width: 0 }}
+                                className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40 overflow-hidden">
+                                {TEXT_SIZES.map((s) => (
+                                    <motion.button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
+                                        whileHover={{ scale: 1.15 }}
+                                        className={`text-xs px-1.5 py-0.5 rounded-lg transition-all ${textSize === s ? "bg-[#208DCA]/15 text-[#208DCA] font-bold shadow-sm" : "text-slate-400 hover:text-slate-800"}`}
+                                        style={{ fontSize: 10 + (TEXT_SIZES.indexOf(s)) }}
+                                    >A</motion.button>
+                                ))}
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
 
-                {/* Undo / Redo / Clear — glass pill */}
-                <div className="flex items-center gap-0.5 px-1 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/80 disabled:opacity-20 transition-all">
-                        <Undo2 size={13} />
-                    </motion.button>
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/80 disabled:opacity-20 transition-all">
-                        <Redo2 size={13} />
-                    </motion.button>
-                    {selectedIdx !== null && (
-                        <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={deleteSelected} title="Eliminar (Del)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-all">
-                            <Trash2 size={13} />
-                        </motion.button>
-                    )}
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-50 disabled:opacity-20 transition-all">
-                        <X size={13} />
-                    </motion.button>
-                </div>
+                    {/* Opacity — compact glass */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                        <span className="text-[10px] text-slate-400 font-semibold tracking-wide">OP</span>
+                        <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
+                            onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
+                            className="w-14 h-1.5 accent-[#208DCA] cursor-pointer rounded-full"
+                        />
+                        <span className="text-[10px] text-[#208DCA] font-bold font-mono w-6">{Math.round(opacity * 100)}%</span>
+                    </div>
 
-                {/* View controls — glass pill */}
-                <div className="flex items-center gap-0.5 px-1 py-1 rounded-xl bg-slate-100/80 backdrop-blur-sm">
-                    <button onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15" : "text-slate-400 hover:text-slate-700 hover:bg-white/80"}`}>
-                        <Grid size={13} />
-                    </button>
-                    <button onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all">
-                        <ZoomOut size={13} />
-                    </button>
-                    <button onClick={() => setZoom(1)} title="Zoom 100%"
-                        className="text-[10px] text-slate-600 font-mono px-1 hover:text-slate-900 transition-colors">
-                        {Math.round(zoom * 100)}%
-                    </button>
-                    <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all">
-                        <ZoomIn size={13} />
-                    </button>
-                </div>
-
-                {/* Map toggle */}
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowMap((v) => !v)}
-                    className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl transition-all ${
-                        showMap
-                            ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/30"
-                            : "bg-slate-100/80 text-slate-500 hover:text-slate-800"
-                    }`}
-                >
-                    <Map size={12} />
-                    Mapa
-                </motion.button>
-
-                {/* Fullscreen toggle */}
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    onClick={() => setFullscreen((v) => !v)}
-                    title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
-                        fullscreen ? "bg-purple-500/15 text-purple-500" : "bg-slate-100/80 text-slate-400 hover:text-slate-700"
-                    }`}
-                >
-                    {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                </motion.button>
-
-                {/* Save / Export */}
-                <div className="ml-auto flex items-center gap-2">
-                    {hasBg && (
-                        <>
-                            {mode === "standalone" && (
-                                <div className="flex items-center text-xs rounded-xl overflow-hidden border border-slate-200/60">
-                                    <button onClick={() => setExportFormat("png")}
-                                        className={`px-2.5 py-1.5 transition-all ${exportFormat === "png" ? "bg-[#208DCA]/10 text-[#208DCA] font-medium" : "text-slate-400 hover:text-slate-700 bg-white/60"}`}>
-                                        PNG
-                                    </button>
-                                    <button onClick={() => setExportFormat("jpeg")}
-                                        className={`px-2.5 py-1.5 transition-all ${exportFormat === "jpeg" ? "bg-[#208DCA]/10 text-[#208DCA] font-medium" : "text-slate-400 hover:text-slate-700 bg-white/60"}`}>
-                                        JPG
-                                    </button>
-                                </div>
-                            )}
-                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                onClick={copyToClipboard} title="Copiar al portapapeles"
-                                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600" : "bg-slate-100/80 text-slate-400 hover:text-slate-700 hover:bg-white"}`}>
-                                {copiedMsg ? <Check size={14} /> : <Copy size={14} />}
+                    {/* Icons dropdown */}
+                    <div className="relative">
+                        <Shine enableOnHover color="#208DCA" opacity={0.15} duration={500} asChild>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setOpenIconCat(openIconCat ? null : "emergencia")}
+                                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${
+                                    openIconCat
+                                        ? "bg-gradient-to-r from-[#253C87]/15 to-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm"
+                                        : "bg-white/80 border-slate-200/40 text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                <Layers size={13} />
+                                Iconos
+                                <motion.span animate={{ rotate: openIconCat ? 180 : 0 }} transition={{ type: "spring", stiffness: 300 }}>
+                                    <ChevronDown size={10} />
+                                </motion.span>
                             </motion.button>
-                            <RippleButton size="sm" onClick={handleSave} disabled={saving}
-                                className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#273887] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/20`}>
+                        </Shine>
+                        <AnimatePresence>
+                            {openIconCat && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 8, scale: 0.9 }}
+                                    transition={{ type: "spring", damping: 22, stiffness: 350 }}
+                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.12)] overflow-hidden"
+                                    style={{ width: 340 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="flex items-center gap-0.5 px-2 pt-2.5 pb-2 border-b border-slate-100">
+                                        <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
+                                            {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
+                                                <motion.button key={key} onClick={() => setOpenIconCat(key)}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className={`flex-shrink-0 text-[10px] px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${
+                                                        openIconCat === key
+                                                            ? "text-white bg-gradient-to-r from-[#253C87] to-[#208DCA] font-semibold shadow-md shadow-[#208DCA]/30"
+                                                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+                                                    }`}
+                                                >{cat.label}</motion.button>
+                                            ))}
+                                        </div>
+                                        <button onClick={() => setShowIconLabels((v) => !v)}
+                                            className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg ml-1 transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-300 hover:text-slate-600"}`}
+                                        >Aa</button>
+                                    </div>
+                                    <div className="grid grid-cols-5 gap-1.5 p-3">
+                                        {ICON_CATEGORIES[openIconCat]?.icons.map((ic, i) => (
+                                            <motion.button key={ic.emoji}
+                                                onClick={() => addEmoji(ic.emoji, ic.label)}
+                                                initial={{ opacity: 0, scale: 0.5 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ delay: i * 0.02, type: "spring", stiffness: 400 }}
+                                                whileHover={{ scale: 1.25, y: -4 }}
+                                                whileTap={{ scale: 0.8, rotate: 15 }}
+                                                className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-gradient-to-b hover:from-[#208DCA]/5 hover:to-[#208DCA]/10 transition-colors group cursor-pointer"
+                                            >
+                                                <span className="text-2xl leading-none drop-shadow-sm">{ic.emoji}</span>
+                                                {showIconLabels && <span className="text-[8px] text-slate-400 group-hover:text-[#208DCA] truncate w-full text-center font-medium">{ic.label}</span>}
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Undo / Redo / Clear — glass pill */}
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                        <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-15 transition-all">
+                            <Undo2 size={14} />
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-15 transition-all">
+                            <Redo2 size={14} />
+                        </motion.button>
+                        <AnimatePresence>
+                            {selectedIdx !== null && (
+                                <motion.button initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
+                                    onClick={deleteSelected} title="Eliminar (Del)"
+                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                                    <Trash2 size={14} />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                        <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-15 transition-all">
+                            <X size={14} />
+                        </motion.button>
+                    </div>
+
+                    {/* View controls — glass pill */}
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                            onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-400 hover:text-slate-700 hover:bg-white"}`}>
+                            <Grid size={14} />
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
+                            onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white transition-all">
+                            <ZoomOut size={14} />
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.1 }}
+                            onClick={() => setZoom(1)} title="Zoom 100%"
+                            className="text-[10px] text-[#208DCA] font-bold font-mono px-1.5 hover:bg-[#208DCA]/8 rounded-md transition-colors">
+                            {Math.round(zoom * 100)}%
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
+                            onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white transition-all">
+                            <ZoomIn size={14} />
+                        </motion.button>
+                    </div>
+
+                    {/* Map toggle — gradient when active */}
+                    <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
+                        <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+                            onClick={() => setShowMap((v) => !v)}
+                            className={`flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-xl transition-all ${
+                                showMap
+                                    ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/40"
+                                    : "bg-white/80 border border-slate-200/40 text-slate-500 hover:text-slate-800 hover:shadow-md"
+                            }`}
+                        >
+                            <Map size={13} />
+                            Mapa
+                        </motion.button>
+                    </Shine>
+
+                    {/* Fullscreen toggle */}
+                    <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
+                        onClick={() => setFullscreen((v) => !v)}
+                        title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                            fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white/80 border border-slate-200/40 text-slate-400 hover:text-slate-700 hover:shadow-md"
+                        }`}
+                    >
+                        {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                    </motion.button>
+
+                    {/* Save / Export */}
+                    <div className="ml-auto flex items-center gap-2">
+                        {hasBg && (
+                            <>
+                                {mode === "standalone" && (
+                                    <div className="flex items-center text-xs rounded-xl overflow-hidden border border-slate-200/50 shadow-sm">
+                                        <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
+                                            onClick={() => setExportFormat("png")}
+                                            className={`px-3 py-1.5 transition-all ${exportFormat === "png" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
+                                            PNG
+                                        </motion.button>
+                                        <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
+                                            onClick={() => setExportFormat("jpeg")}
+                                            className={`px-3 py-1.5 transition-all ${exportFormat === "jpeg" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
+                                            JPG
+                                        </motion.button>
+                                    </div>
+                                )}
+                                <motion.button whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.85 }}
+                                    onClick={copyToClipboard} title="Copiar al portapapeles"
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white/80 border border-slate-200/40 text-slate-400 hover:text-slate-700 hover:shadow-md"}`}>
+                                    {copiedMsg ? <Check size={15} /> : <Copy size={15} />}
+                                </motion.button>
+                                <Shine enableOnHover color="white" opacity={0.4} duration={500} asChild>
+                                    <RippleButton size="sm" onClick={handleSave} disabled={saving}
+                                        className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#253C87] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/30`}>
                                 {saved ? <><Check size={12} /> Guardado</>
                                     : saving ? "Guardando..."
                                     : mode === "standalone" ? <><Download size={12} /> Descargar</>
                                     : <><Save size={12} /> Guardar</>}
                             </RippleButton>
+                                </Shine>
                         </>
                     )}
                 </div>
             </motion.div>
+            </Shine>
 
             {/* ── Canvas + Map ── */}
             <div className="flex-1 min-h-0">
