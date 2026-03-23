@@ -572,10 +572,23 @@ export default function MapEditor({
     const togglePOI = (cat) => {
         setActivePOIs((prev) => {
             const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
-            // Get center from routeACoords or event coords
-            const center = routeACoords || (eventAddress ? null : null);
+            const center = routeACoords || routeBCoords;
             if (center) {
                 setMapCommand({ type: "poi", lat: center.lat, lng: center.lng, categories: next });
+            } else if (eventAddress) {
+                // Geocode event address to get coords for POI search
+                fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(eventAddress)}&format=json&limit=1`, {
+                    headers: { "User-Agent": "GrupoSecon/1.0" },
+                })
+                    .then((r) => r.json())
+                    .then((data) => {
+                        if (data[0]) {
+                            const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                            setRouteACoords(coords);
+                            setMapCommand({ type: "poi", lat: coords.lat, lng: coords.lng, categories: next });
+                        }
+                    })
+                    .catch(() => {});
             }
             return next;
         });
