@@ -40,6 +40,10 @@ class OpenAIService
         }
 
         $systemPrompt = $template->system_prompt;
+
+        // Global rules for all AI generations
+        $systemPrompt .= "\n\nREGLAS OBLIGATORIAS:\n- NO incluyas conclusión, resumen final ni párrafo de cierre a menos que se pida explícitamente.\n- NO uses encabezados markdown (###, ##, #). Usa texto corrido con párrafos y negritas (**texto**) para dar estructura.\n- NO uses emojis ni iconos.";
+
         if ($lang !== 'es') {
             $langName = match($lang) { 'en' => 'English', default => 'Spanish' };
             $systemPrompt .= "\n\nIMPORTANT: Respond entirely in {$langName}.";

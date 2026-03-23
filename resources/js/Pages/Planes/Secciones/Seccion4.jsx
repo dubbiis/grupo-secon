@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import PlacesPanel from "@/components/planes/PlacesPanel";
 import { useTranslation } from "@/i18n";
+import { motion, AnimatePresence } from "framer-motion";
+import { DoorOpen } from "lucide-react";
 
 export default function Seccion4({ plan, section }) {
     const { t } = useTranslation();
@@ -11,10 +13,36 @@ export default function Seccion4({ plan, section }) {
         aforo_total:               "",
         num_accesos:               "",
         descripcion_accesos:       "",
+        accesos_detalle:           [],
         datos_transporte_googlemaps: "",
         datos_parkings_googlemaps: "",
         ...section.form_data,
     });
+
+    const numAccesos = parseInt(form.num_accesos) || 0;
+
+    // Sync accesos_detalle array with num_accesos
+    useEffect(() => {
+        if (numAccesos <= 1) return;
+        setForm((prev) => {
+            const current = prev.accesos_detalle || [];
+            if (current.length === numAccesos) return prev;
+            const updated = Array.from({ length: numAccesos }, (_, i) =>
+                current[i] || { nombre: `Acceso ${i + 1}`, descripcion: "" }
+            );
+            return { ...prev, accesos_detalle: updated };
+        });
+    }, [numAccesos]);
+
+    const updateAcceso = (idx, key, val) => {
+        setForm((prev) => {
+            const updated = [...(prev.accesos_detalle || [])];
+            updated[idx] = { ...updated[idx], [key]: val };
+            // Also sync to descripcion_accesos as combined text for AI
+            const combined = updated.map((a) => `${a.nombre}: ${a.descripcion}`).filter((s) => s.length > 3).join("\n");
+            return { ...prev, accesos_detalle: updated, descripcion_accesos: combined };
+        });
+    };
 
     const field = (key) => ({
         value: form[key],
@@ -34,18 +62,55 @@ export default function Seccion4({ plan, section }) {
                 </div>
             </div>
 
-            <div>
-                <label className="text-sm font-medium mb-1.5 block">{t("s4.access_desc")}</label>
-                <Textarea
-                    {...field("descripcion_accesos")}
-                    placeholder="Describe cada acceso: Acceso Norte (público general), Acceso Sur (VIP), Puerta de servicio (personal)..."
-                    rows={4}
-                />
-            </div>
+            {/* Single access description or per-access detail */}
+            {numAccesos <= 1 ? (
+                <div>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s4.access_desc")}</label>
+                    <Textarea
+                        {...field("descripcion_accesos")}
+                        placeholder="Describe cada acceso: Acceso Norte (público general), Acceso Sur (VIP), Puerta de servicio (personal)..."
+                        rows={4}
+                    />
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    <label className="text-sm font-medium block">{t("s4.access_desc")}</label>
+                    <AnimatePresence>
+                        {(form.accesos_detalle || []).map((acceso, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="rounded-xl border border-slate-200 bg-white p-3 space-y-2"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-lg bg-[#208DCA]/10 flex items-center justify-center flex-shrink-0">
+                                        <DoorOpen size={14} className="text-[#208DCA]" />
+                                    </div>
+                                    <Input
+                                        value={acceso.nombre}
+                                        onChange={(e) => updateAcceso(i, "nombre", e.target.value)}
+                                        placeholder={`Nombre del acceso ${i + 1}`}
+                                        className="text-sm font-medium"
+                                    />
+                                </div>
+                                <Textarea
+                                    value={acceso.descripcion}
+                                    onChange={(e) => updateAcceso(i, "descripcion", e.target.value)}
+                                    placeholder="Ubicación, tipo de público, controles de seguridad, ancho, señalización..."
+                                    rows={2}
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            )}
 
             {/* ── Búsqueda automática de transporte ── */}
             <div className="space-y-3">
-                <label className="text-sm font-medium block">Transporte público y parkings</label>
+                <label className="text-sm font-medium block">{t("s4.transport")}</label>
                 <PlacesPanel
                     uuid={plan.uuid}
                     type="transporte"
@@ -60,7 +125,7 @@ export default function Seccion4({ plan, section }) {
                     placeholder="Metro: L1 - Estación Plaza España (200m), L3 - Estación Sants (400m)&#10;Autobús: Líneas 9, 50, 56 - Parada Calle Mayor&#10;Renfe: Estación Sants (1.2km, 12min a pie)"
                     rows={4}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                     Rellenado automáticamente o escribe manualmente.
                 </p>
             </div>
