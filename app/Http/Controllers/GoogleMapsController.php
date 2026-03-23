@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Plan;
 use App\Services\GoogleMapsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class GoogleMapsController extends Controller
 {
@@ -88,19 +90,56 @@ class GoogleMapsController extends Controller
         $lat = $request->input('lat');
         $lng = $request->input('lng');
 
-        // Try Photon first (faster for autocomplete)
+        // Cache for 1 hour — same query = instant
+        $cacheKey = 'geocode.' . md5($q . $lat . $lng);
+        $cached = Cache::get($cacheKey);
+        if ($cached) return response()->json($cached);
+
+        // Try Nominatim (more reliable from Docker servers)
+        try {
+            $params = ['q' => $q, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
+            if ($lat && $lng) {
+                $d = 0.5;
+                $params['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
+                $params['bounded'] = 0;
+            }
+
+            $response = Http::withHeaders([
+                'User-Agent' => 'GrupoSecon/1.0',
+                'Accept-Language' => 'es',
+            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', $params);
+
+            if ($response->successful()) {
+                $data = $response->json() ?? [];
+                $results = collect($data)->map(fn($r) => [
+                    'lat' => (float) $r['lat'],
+                    'lng' => (float) $r['lon'],
+                    'name' => explode(',', $r['display_name'])[0],
+                    'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
+                    'displayName' => $r['display_name'],
+                ])->values()->toArray();
+
+                if (!empty($results)) {
+                    Cache::put($cacheKey, $results, 3600);
+                    return response()->json($results);
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // Fallback: Photon
         try {
             $params = ['q' => $q, 'limit' => 5, 'lang' => 'default'];
             if ($lat && $lng) {
                 $params['lat'] = $lat;
                 $params['lon'] = $lng;
             }
-            $url = 'https://photon.komoot.io/api/?' . http_build_query($params);
-            $response = @file_get_contents($url, false, stream_context_create([
-                'http' => ['timeout' => 3, 'header' => "User-Agent: GrupoSecon/1.0\r\n"],
-            ]));
-            if ($response) {
-                $data = json_decode($response, true);
+
+            $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
+                ->timeout(4)
+                ->get('https://photon.komoot.io/api/', $params);
+
+            if ($response->successful()) {
+                $data = $response->json();
                 $results = collect($data['features'] ?? [])->map(fn($f) => [
                     'lat' => $f['geometry']['coordinates'][1] ?? 0,
                     'lng' => $f['geometry']['coordinates'][0] ?? 0,
@@ -117,35 +156,15 @@ class GoogleMapsController extends Controller
                         $f['properties']['state'] ?? null,
                         $f['properties']['country'] ?? null,
                     ])),
-                ])->values();
+                ])->values()->toArray();
 
-                if ($results->isNotEmpty()) return response()->json($results);
+                if (!empty($results)) {
+                    Cache::put($cacheKey, $results, 3600);
+                    return response()->json($results);
+                }
             }
         } catch (\Throwable $e) {}
 
-        // Fallback: Nominatim
-        try {
-            $params = ['q' => $q, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
-            if ($lat && $lng) {
-                $d = 0.5;
-                $params['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
-                $params['bounded'] = 0;
-            }
-            $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query($params);
-            $response = file_get_contents($url, false, stream_context_create([
-                'http' => ['timeout' => 5, 'header' => "User-Agent: GrupoSecon/1.0\r\nAccept-Language: es\r\n"],
-            ]));
-            $data = json_decode($response, true) ?? [];
-
-            return response()->json(collect($data)->map(fn($r) => [
-                'lat' => (float) $r['lat'],
-                'lng' => (float) $r['lon'],
-                'name' => explode(',', $r['display_name'])[0],
-                'subtitle' => implode(', ', array_slice(explode(',', $r['display_name']), 1, 2)),
-                'displayName' => $r['display_name'],
-            ])->values());
-        } catch (\Throwable $e) {
-            return response()->json([]);
-        }
+        return response()->json([]);
     }
 }
