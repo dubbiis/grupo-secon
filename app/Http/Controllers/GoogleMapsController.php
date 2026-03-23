@@ -24,7 +24,28 @@ class GoogleMapsController extends Controller
 
         if (!$address) return null;
 
+        // Try original address first
         $coords = $this->maps->geocode($address);
+
+        // If not found, try simplified versions (remove s/n, postal code, etc.)
+        if (!$coords) {
+            $simplified = preg_replace('/\b(s\/n|S\/N)\b/', '', $address);
+            $simplified = preg_replace('/\b\d{5}\b/', '', $simplified); // postal code
+            $simplified = preg_replace('/[,.\-]+\s*$/', '', trim($simplified));
+            $simplified = preg_replace('/\s+/', ' ', trim($simplified));
+            if ($simplified !== $address) {
+                $coords = $this->maps->geocode($simplified);
+            }
+        }
+
+        // Last resort: try just city name (last part after comma)
+        if (!$coords) {
+            $parts = array_map('trim', explode(',', $address));
+            if (count($parts) > 1) {
+                $coords = $this->maps->geocode(end($parts));
+            }
+        }
+
         if (!$coords) return null;
 
         return array_merge($coords, ['address_used' => $address]);
