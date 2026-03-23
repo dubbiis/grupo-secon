@@ -85,10 +85,21 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
     // Init map
     useEffect(() => {
         if (mapRef.current || !containerRef.current) return;
-        mapRef.current = L.map(containerRef.current, {
+        const map = L.map(containerRef.current, {
             zoomControl: true,
-            scrollWheelZoom: false,  // Prevent scroll hijack on laptops
+            scrollWheelZoom: false,
         }).setView([40.4168, -3.7038], 13);
+
+        // Ctrl + scroll to zoom
+        containerRef.current.addEventListener("wheel", (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -1 : 1;
+                map.zoomIn(delta);
+            }
+        }, { passive: false });
+
+        mapRef.current = map;
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
             maxZoom: 19,
