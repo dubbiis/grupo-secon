@@ -14,28 +14,32 @@ class GoogleMapsService
     public function geocode(string $address): ?array
     {
         $key = 'maps.geocode.' . md5($address);
-        return Cache::remember($key, 60 * 60 * 24 * 30, function () use ($address) {
-            try {
-                $response = Http::withHeaders([
-                    'User-Agent'      => $this->userAgent,
-                    'Accept-Language' => 'es',
-                ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
-                    'q'      => $address,
-                    'format' => 'json',
-                    'limit'  => 1,
-                ]);
+        $cached = Cache::get($key);
+        if ($cached !== null) return $cached;
 
-                $data = $response->json();
-                if (empty($data)) return null;
+        try {
+            $response = Http::withHeaders([
+                'User-Agent'      => $this->userAgent,
+                'Accept-Language' => 'es',
+            ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
+                'q'      => $address,
+                'format' => 'json',
+                'limit'  => 1,
+            ]);
 
-                return [
-                    'lat'          => (float) $data[0]['lat'],
-                    'lng'          => (float) $data[0]['lon'],
-                    'display_name' => $data[0]['display_name'],
-                ];
-            } catch (\Exception) {
-                return null;
-            }
+            $data = $response->json();
+            if (empty($data)) return null; // Don't cache null
+
+            $result = [
+                'lat'          => (float) $data[0]['lat'],
+                'lng'          => (float) $data[0]['lon'],
+                'display_name' => $data[0]['display_name'],
+            ];
+
+            Cache::put($key, $result, 60 * 60 * 24 * 30);
+            return $result;
+        } catch (\Exception) {
+            return null;
         });
     }
 
