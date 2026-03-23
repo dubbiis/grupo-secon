@@ -934,9 +934,11 @@ export default function MapEditor({
                                             setRouteA(place.displayName);
                                             const coordsA = { lat: place.lat, lng: place.lng };
                                             setRouteACoords(coordsA);
-                                            // Auto-trace if B already has coords
                                             if (routeBCoords) {
                                                 setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                            } else {
+                                                // Show A on map while user types B
+                                                setMapCommand({ type: "search", query: coordsA });
                                             }
                                         }}
                                         biasLat={routeACoords?.lat}
