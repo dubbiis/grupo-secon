@@ -87,6 +87,7 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
             maxZoom: 19,
+            crossOrigin: "anonymous",
         }).addTo(mapRef.current);
         return () => { mapRef.current?.remove(); mapRef.current = null; };
     }, []);
