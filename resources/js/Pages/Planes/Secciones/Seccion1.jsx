@@ -23,7 +23,7 @@ export default function Seccion1({ plan, section }) {
     });
 
     const TIPOS_EVENTO = ["Concierto", "Festival", "Evento deportivo", "Evento corporativo", "Feria/Exposición", "Manifestación", "Otro"];
-    const TIPOS_ESPACIO = ["Recinto cerrado", "Espacio abierto", "Mixto", "Instalación permanente"];
+    const TIPOS_ESPACIO = ["Recinto cerrado", "Espacio abierto", "Mixto", "Instalación permanente", "Otro"];
 
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
@@ -76,13 +76,21 @@ export default function Seccion1({ plan, section }) {
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">{ t("forms.space_type") }</label>
                     <select
-                        value={form.tipo_espacio ?? ""}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio: e.target.value }))}
+                        value={TIPOS_ESPACIO.includes(form.tipo_espacio) ? form.tipo_espacio : form.tipo_espacio ? "Otro" : ""}
+                        onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio: e.target.value, ...(e.target.value !== "Otro" && { tipo_espacio_otro: "" }) }))}
                         className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">{ t("forms.select") }</option>
                         {TIPOS_ESPACIO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                     </select>
+                    {form.tipo_espacio === "Otro" && (
+                        <Input
+                            value={form.tipo_espacio_otro ?? ""}
+                            onChange={(e) => setForm((prev) => ({ ...prev, tipo_espacio_otro: e.target.value }))}
+                            placeholder={t("forms.specify_other")}
+                            className="mt-2"
+                        />
+                    )}
                 </div>
 
                 <div>

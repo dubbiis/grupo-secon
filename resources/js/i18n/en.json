@@ -255,7 +255,7 @@
     "license_number": "License number",
     "select": "Select...",
     "other": "Other",
-    "specify_other": "Specify...",
+    "specify_other": "Specify the space type...",
     "description": "General description",
     "event_objective": "Event objective",
     "start_date": "Start date",
