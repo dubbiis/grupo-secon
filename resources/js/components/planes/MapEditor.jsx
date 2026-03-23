@@ -1051,44 +1051,9 @@ export default function MapEditor({
                                 </div>
                             )}
 
-                            {/* Route alternatives cards */}
-                            <AnimatePresence>
-                                {routeData?.routes?.length > 1 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="flex gap-2 overflow-x-auto"
-                                    >
-                                        {routeData.routes.map((route, i) => {
-                                            const dist = (route.distance / 1000).toFixed(1);
-                                            const mins = Math.round(route.duration / 60);
-                                            const selected = i === routeData.selectedIndex;
-                                            return (
-                                                <motion.button
-                                                    key={i}
-                                                    onClick={() => {
-                                                        setMapCommand({ type: "route", a: routeACoords || routeA, b: routeBCoords || routeB, _selectIdx: i });
-                                                    }}
-                                                    className={`flex-shrink-0 px-3 py-2 rounded-xl text-[11px] border transition-all ${
-                                                        selected
-                                                            ? "bg-[#208DCA]/10 border-[#208DCA]/30 text-[#208DCA] font-semibold"
-                                                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                                                    }`}
-                                                    whileHover={{ scale: 1.02 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    <span className="font-bold">{mins} min</span> · {dist} km
-                                                    {selected && <span className="ml-1.5">✓</span>}
-                                                </motion.button>
-                                            );
-                                        })}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {/* Leaflet map */}
-                            <div className="rounded-xl overflow-hidden border border-slate-200 flex-1" style={{ height: "100%" }}>
+                            {/* Leaflet map + route panel side by side */}
+                            <div className="flex gap-2 flex-1 min-h-0" style={{ height: "100%" }}>
+                                <div className={`rounded-xl overflow-hidden border border-slate-200 transition-all ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`} style={{ height: "100%" }}>
                                 <LeafletMap
                                     command={mapCommand}
                                     onStatus={setMapStatus}
@@ -1102,6 +1067,62 @@ export default function MapEditor({
                                         }
                                     }}
                                 />
+                                </div>
+
+                                {/* Route panel — right side */}
+                                <AnimatePresence>
+                                    {routeData?.routes?.length > 1 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, width: 0, x: 20 }}
+                                            animate={{ opacity: 1, width: 200, x: 0 }}
+                                            exit={{ opacity: 0, width: 0, x: 20 }}
+                                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                            className="flex flex-col gap-2 overflow-hidden"
+                                        >
+                                            <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-1">Rutas</div>
+                                            {routeData.routes.map((route, i) => {
+                                                const dist = (route.distance / 1000).toFixed(1);
+                                                const mins = Math.round(route.duration / 60);
+                                                const selected = i === routeData.selectedIndex;
+                                                return (
+                                                    <Shine key={i} enableOnHover color="#208DCA" opacity={0.15} duration={400} asChild>
+                                                        <motion.button
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: i * 0.08, type: "spring", stiffness: 300 }}
+                                                            onClick={() => {
+                                                                setMapCommand({ type: "route", a: routeACoords || routeA, b: routeBCoords || routeB, _selectIdx: i });
+                                                            }}
+                                                            whileHover={{ scale: 1.03, x: -2 }}
+                                                            whileTap={{ scale: 0.97 }}
+                                                            className={`w-full text-left px-3 py-3 rounded-xl border transition-all ${
+                                                                selected
+                                                                    ? "bg-gradient-to-r from-[#253C87]/10 to-[#208DCA]/10 border-[#208DCA]/30 shadow-md shadow-[#208DCA]/15"
+                                                                    : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                                                            }`}
+                                                        >
+                                                            <div className={`text-base font-bold ${selected ? "text-[#208DCA]" : "text-slate-700"}`}>
+                                                                🚗 {mins} min
+                                                            </div>
+                                                            <div className={`text-[11px] ${selected ? "text-[#208DCA]/70" : "text-slate-400"}`}>
+                                                                {dist} km
+                                                            </div>
+                                                            {selected && (
+                                                                <motion.div
+                                                                    initial={{ scale: 0 }}
+                                                                    animate={{ scale: 1 }}
+                                                                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#208DCA] flex items-center justify-center"
+                                                                >
+                                                                    <Check size={10} className="text-white" />
+                                                                </motion.div>
+                                                            )}
+                                                        </motion.button>
+                                                    </Shine>
+                                                );
+                                            })}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </motion.div>
                     )}
