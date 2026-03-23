@@ -111,7 +111,9 @@ export default function Seccion4({ plan, section }) {
                 <Textarea
                     {...field("datos_transporte_googlemaps")}
                     placeholder="Metro: L1 - Estación Plaza España (200m), L3 - Estación Sants (400m)&#10;Autobús: Líneas 9, 50, 56 - Parada Calle Mayor&#10;Renfe: Estación Sants (1.2km, 12min a pie)"
-                    rows={4}
+                    rows={2}
+                    style={{ height: "auto", minHeight: "3rem", overflow: "hidden" }}
+                    onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
                 />
                 <p className="text-xs text-slate-500 mt-1">
                     Rellenado automáticamente o escribe manualmente.
@@ -123,7 +125,9 @@ export default function Seccion4({ plan, section }) {
                 <Textarea
                     {...field("datos_parkings_googlemaps")}
                     placeholder="Parking Arenas de Barcelona (150m, 800 plazas)&#10;Parking Pl. España (300m, 500 plazas)&#10;Zona regulada ORA en Calle de Lleida"
-                    rows={3}
+                    rows={2}
+                    style={{ height: "auto", minHeight: "3rem", overflow: "hidden" }}
+                    onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
                 />
             </div>
         </SectionShell>

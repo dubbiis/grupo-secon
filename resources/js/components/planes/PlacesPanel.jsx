@@ -69,7 +69,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
     const groups = GROUPS[type] ?? [];
 
-    const search = async () => {
+    const search = async (skipCache = false) => {
         setStatus("loading");
         setErrorMsg("");
         try {
@@ -81,7 +81,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     "Content-Type":  "application/json",
                     "Accept":        "application/json",
                 },
-                body: JSON.stringify({}),
+                body: JSON.stringify({ no_cache: skipCache }),
             });
 
             const json = await res.json();
@@ -147,8 +147,8 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     </div>
                 ) : (
                     <button
-                        onClick={search}
-                        className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
+                        onClick={() => search(true)}
+                        className="flex items-center gap-1 text-xs text-[#208DCA] hover:text-[#253C87] font-medium transition-colors"
                     >
                         <RefreshCw size={11} />
                         Volver a buscar
