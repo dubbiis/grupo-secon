@@ -798,7 +798,7 @@ export default function MapEditor({
                                 exit={{ opacity: 0, y: 8, scale: 0.9 }}
                                 transition={{ type: "spring", damping: 22, stiffness: 350 }}
                                 className="fixed z-[99999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] overflow-hidden"
-                                style={{ width: 340, top: iconDropPos.top, left: iconDropPos.left }}
+                                style={{ width: 520, top: iconDropPos.top, left: Math.max(8, iconDropPos.left - 90) }}
                                 onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="flex items-center gap-0.5 px-2 pt-2.5 pb-2 border-b border-slate-100">
@@ -819,7 +819,7 @@ export default function MapEditor({
                                             className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg ml-1 transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800"}`}
                                         >Aa</button>
                                     </div>
-                                    <div className="grid grid-cols-5 gap-1.5 p-3">
+                                    <div className="grid grid-cols-8 gap-2 p-3">
                                         {ICON_CATEGORIES[openIconCat]?.icons.map((ic, i) => (
                                             <motion.button key={ic.emoji}
                                                 onClick={() => addEmoji(ic.emoji, ic.label)}
