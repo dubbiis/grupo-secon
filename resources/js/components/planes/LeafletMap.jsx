@@ -263,33 +263,56 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
             const { lat, lng, categories } = command;
             if (!lat || !lng || !categories?.length) return;
 
-            categories.forEach(async (cat) => {
+            // Build ONE Overpass query for all categories
+            const parts = [];
+            categories.forEach((cat) => {
                 const cfg = POI_QUERIES[cat];
                 if (!cfg) return;
+                parts.push(`node${cfg.query}(around:${cfg.radius},${lat},${lng})`);
+                parts.push(`way${cfg.query}(around:${cfg.radius},${lat},${lng})`);
+            });
+            if (!parts.length) return;
 
+            const query = `[out:json][timeout:15];(${parts.join(";")};);out center 30;`;
+
+            (async () => {
                 try {
-                    const query = `[out:json][timeout:10];(node${cfg.query}(around:${cfg.radius},${lat},${lng}););out center 5;`;
                     const res = await fetch(OVERPASS, {
                         method: "POST",
                         body: `data=${encodeURIComponent(query)}`,
                         headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     });
                     const data = await res.json();
-                    (data.elements || []).slice(0, 5).forEach((el) => {
+
+                    // Map each element to its category for the right emoji
+                    const catCounts = {};
+                    (data.elements || []).forEach((el) => {
                         const elLat = el.lat || el.center?.lat;
                         const elLng = el.lon || el.center?.lon;
                         if (!elLat || !elLng) return;
 
-                        const name = el.tags?.name || cat;
-                        const m = L.marker([elLat, elLng], { icon: poiIcon(cfg.emoji) })
+                        // Determine which category this element belongs to
+                        const tags = el.tags || {};
+                        let emoji = "📍";
+                        if (tags.amenity === "hospital" || tags.amenity === "clinic") emoji = "🏥";
+                        else if (tags.amenity === "police") emoji = "👮";
+                        else if (tags.amenity === "parking") emoji = "🅿️";
+                        else if (tags.railway === "station") emoji = "🚇";
+
+                        // Limit 8 per emoji type
+                        catCounts[emoji] = (catCounts[emoji] || 0) + 1;
+                        if (catCounts[emoji] > 8) return;
+
+                        const name = tags.name || tags.amenity || tags.railway || "POI";
+                        const m = L.marker([elLat, elLng], { icon: poiIcon(emoji) })
                             .bindTooltip(name, { direction: "top", offset: [0, -10] })
                             .addTo(map);
                         poiLayerRef.current.push(m);
                     });
                 } catch {
-                    // Silently ignore POI failures
+                    // Silently ignore Overpass failures
                 }
-            });
+            })();
         }
     }, [command, onStatus, onRouteData, renderRoutes, clearRoutes, clearPOIs]);
 
