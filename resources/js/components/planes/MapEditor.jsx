@@ -637,7 +637,7 @@ export default function MapEditor({
     }[tool] ?? "cursor-crosshair";
 
     return (
-        <div className={`flex flex-col gap-3 w-full ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4 overflow-y-auto" : ""}`} onClick={() => setContextMenu(null)}>
+        <div className={`flex flex-col gap-2 w-full h-full overflow-hidden ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
 
             {/* ── Toolbar row 1: tools + colors + stroke ── */}
             <div className={`flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 ${fullscreen ? "" : "sticky top-0 z-40 backdrop-blur-xl bg-[#F8FAFC]/90"}`}>
@@ -868,7 +868,7 @@ export default function MapEditor({
             </div>
 
             {/* ── Canvas + Map ── */}
-            <div className={fullscreen ? "flex-1 min-h-0" : "min-h-[560px]"}>
+            <div className="flex-1 min-h-0">
 
                 {/* Map panel — full width, replaces canvas when active */}
                 <AnimatePresence>
@@ -878,7 +878,7 @@ export default function MapEditor({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 8 }}
                             transition={{ duration: 0.2 }}
-                            className="flex flex-col gap-2 w-full"
+                            className="flex flex-col gap-2 w-full h-full"
                         >
                             {/* Mode toggle */}
                             <div className="flex gap-1 bg-slate-200 rounded-xl p-1">
@@ -1000,7 +1000,7 @@ export default function MapEditor({
                             </AnimatePresence>
 
                             {/* Leaflet map */}
-                            <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height: fullscreen ? "calc(100vh - 320px)" : 520 }}>
+                            <div className="rounded-xl overflow-hidden border border-slate-200 flex-1" style={{ height: "100%" }}>
                                 <LeafletMap
                                     command={mapCommand}
                                     onStatus={setMapStatus}
@@ -1020,7 +1020,7 @@ export default function MapEditor({
                 </AnimatePresence>
 
                 {/* Canvas area — hidden when map is active */}
-                <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto ${fullscreen ? "min-h-[calc(100vh-180px)]" : "min-h-[560px]"} ${showMap ? "hidden" : ""}`}>
+                <div ref={containerRef} className={`relative flex flex-col items-center justify-center overflow-auto h-full ${showMap ? "hidden" : ""}`}>
 
                     {/* Upload dropzone — visible only when no image loaded */}
                     {!hasBg && (

@@ -12,7 +12,7 @@ export default function EditorMapas() {
         >
             <Head title="Editor de Mapas" />
 
-            <div className="p-6 max-w-full">
+            <div className="h-[calc(100vh-3.5rem)] overflow-hidden">
                 <MapEditor mode="standalone" />
             </div>
         </AppLayout>
