@@ -13,6 +13,22 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "" 
 
     return (
         <SectionShell plan={plan} section={section} formData={{}} onFormChange={() => {}}>
+            <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 rounded-xl bg-[#208DCA]/8 border border-[#208DCA]/20 p-4"
+            >
+                <div className="w-8 h-8 rounded-lg bg-[#208DCA]/15 border border-[#208DCA]/20 flex items-center justify-center flex-shrink-0">
+                    <Map size={15} className="text-[#208DCA]" />
+                </div>
+                <div>
+                    <p className="text-sm font-semibold text-[#208DCA] mb-0.5">{t("s8.title")}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                        {t("s8.desc")}
+                    </p>
+                </div>
+            </motion.div>
+
             {/* Toggle editor / upload */}
             <div className="flex items-center gap-2">
                 <button
