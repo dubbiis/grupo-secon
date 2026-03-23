@@ -40,7 +40,7 @@ class GoogleMapsService
             return $result;
         } catch (\Exception) {
             return null;
-        });
+        }
     }
 
     // ── Overpass API (places nearby) ─────────────────────────────
