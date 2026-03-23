@@ -233,6 +233,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
 
 // ── Main section ───────────────────────────────────────────
 export default function Seccion6({ plan, section }) {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         perfil_publico: "",
         rango_edad: "",

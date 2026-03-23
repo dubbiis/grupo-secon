@@ -8,6 +8,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 function renderMarkdown(raw) {
     const escaped = raw
