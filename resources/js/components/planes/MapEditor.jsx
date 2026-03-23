@@ -801,22 +801,20 @@ export default function MapEditor({
                                 style={{ width: 520, top: iconDropPos.top, left: Math.max(8, iconDropPos.left - 90) }}
                                 onClick={(e) => e.stopPropagation()}
                                 >
-                                    <div className="flex items-center gap-0.5 px-2 pt-2.5 pb-2 border-b border-slate-100">
-                                        <div className="flex gap-1 flex-wrap">
-                                            {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
-                                                <motion.button key={key} onClick={() => setOpenIconCat(key)}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className={`flex-shrink-0 text-[10px] px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${
-                                                        openIconCat === key
-                                                            ? "text-white bg-gradient-to-r from-[#253C87] to-[#208DCA] font-semibold shadow-md shadow-[#208DCA]/30"
-                                                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                                                    }`}
-                                                >{cat.label}</motion.button>
-                                            ))}
-                                        </div>
+                                    <div className="flex items-center gap-1 px-2 pt-2.5 pb-2 border-b border-slate-100 flex-wrap">
+                                        {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
+                                            <motion.button key={key} onClick={() => setOpenIconCat(key)}
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className={`flex-shrink-0 text-[10px] px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${
+                                                    openIconCat === key
+                                                        ? "text-white bg-gradient-to-r from-[#253C87] to-[#208DCA] font-semibold shadow-md shadow-[#208DCA]/30"
+                                                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                                                }`}
+                                            >{cat.label}</motion.button>
+                                        ))}
                                         <button onClick={() => setShowIconLabels((v) => !v)}
-                                            className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg ml-1 transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800"}`}
+                                            className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800"}`}
                                         >Aa</button>
                                     </div>
                                     <div className="grid grid-cols-8 gap-2 p-3">

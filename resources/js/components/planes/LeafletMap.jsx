@@ -70,6 +70,8 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         const map = L.map(containerRef.current, {
             zoomControl: true,
             scrollWheelZoom: false,
+            zoomSnap: 0.25,
+            zoomDelta: 0.5,
         }).setView([40.4168, -3.7038], 13);
 
         // Ctrl + scroll to zoom
