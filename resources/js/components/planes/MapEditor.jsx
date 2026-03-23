@@ -649,7 +649,7 @@ export default function MapEditor({
                     className={`flex flex-wrap items-center gap-1.5 p-2.5 rounded-2xl backdrop-blur-2xl bg-gradient-to-r from-white/80 via-slate-50/70 to-white/80 border border-slate-200/50 shadow-[0_8px_32px_rgba(32,141,202,0.08),0_2px_8px_rgba(0,0,0,0.06)] ${fullscreen ? "" : "sticky top-0 z-40"}`}
                 >
                     {/* Tools — glass pill with gradient border */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
                         {TOOLS.map((tl, i) => (
                             <motion.button
                                 key={tl.id}
@@ -663,7 +663,7 @@ export default function MapEditor({
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all relative ${
                                     tool === tl.id
                                         ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/50"
-                                        : "text-slate-400 hover:text-slate-700 hover:bg-white"
+                                        : "text-slate-500 hover:text-slate-900 hover:bg-white"
                                 }`}
                             >
                                 <tl.icon size={15} />
@@ -679,7 +679,7 @@ export default function MapEditor({
                     </div>
 
                     {/* Colors — glass pill with hover glow */}
-                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
                         {QUICK_COLORS.map((c) => (
                             <motion.button
                                 key={c}
@@ -702,7 +702,7 @@ export default function MapEditor({
                     </div>
 
                     {/* Stroke widths — glass pill */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 shadow-inner shadow-slate-100/50 border border-slate-200/40">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
                         {STROKE_WIDTHS.map((w) => (
                             <motion.button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
                                 whileHover={{ scale: 1.1 }}
@@ -724,7 +724,7 @@ export default function MapEditor({
                                 onClick={() => setUseFill((v) => !v)}
                                 title="Relleno"
                                 className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-all ${
-                                    useFill ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm shadow-[#208DCA]/20" : "bg-white/80 border-slate-200/40 text-slate-500 hover:text-slate-800"
+                                    useFill ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm shadow-[#208DCA]/20" : "bg-white border-slate-300/50 text-slate-500 hover:text-slate-800"
                                 }`}
                             >
                                 <div className="w-3.5 h-3.5 rounded" style={{ background: useFill ? color : "transparent", border: `2px solid ${color}` }} />
@@ -740,7 +740,7 @@ export default function MapEditor({
                                 initial={{ opacity: 0, width: 0 }}
                                 animate={{ opacity: 1, width: "auto" }}
                                 exit={{ opacity: 0, width: 0 }}
-                                className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40 overflow-hidden">
+                                className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50 overflow-hidden">
                                 {TEXT_SIZES.map((s) => (
                                     <motion.button key={s} onClick={() => setTextSize(s)} title={`${s}px`}
                                         whileHover={{ scale: 1.15 }}
@@ -753,7 +753,7 @@ export default function MapEditor({
                     </AnimatePresence>
 
                     {/* Opacity — compact glass */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <span className="text-[10px] text-slate-400 font-semibold tracking-wide">OP</span>
                         <input type="range" min={20} max={100} step={5} value={Math.round(opacity * 100)}
                             onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
@@ -772,7 +772,7 @@ export default function MapEditor({
                                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${
                                     openIconCat
                                         ? "bg-gradient-to-r from-[#253C87]/15 to-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm"
-                                        : "bg-white/80 border-slate-200/40 text-slate-500 hover:text-slate-800"
+                                        : "bg-white border-slate-300/50 text-slate-500 hover:text-slate-800"
                                 }`}
                             >
                                 <Layers size={13} />
@@ -789,7 +789,7 @@ export default function MapEditor({
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 8, scale: 0.9 }}
                                     transition={{ type: "spring", damping: 22, stiffness: 350 }}
-                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.12)] overflow-hidden"
+                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[9999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.12)] overflow-hidden"
                                     style={{ width: 340 }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
@@ -802,13 +802,13 @@ export default function MapEditor({
                                                     className={`flex-shrink-0 text-[10px] px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${
                                                         openIconCat === key
                                                             ? "text-white bg-gradient-to-r from-[#253C87] to-[#208DCA] font-semibold shadow-md shadow-[#208DCA]/30"
-                                                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+                                                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                                                     }`}
                                                 >{cat.label}</motion.button>
                                             ))}
                                         </div>
                                         <button onClick={() => setShowIconLabels((v) => !v)}
-                                            className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg ml-1 transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-300 hover:text-slate-600"}`}
+                                            className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg ml-1 transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800"}`}
                                         >Aa</button>
                                     </div>
                                     <div className="grid grid-cols-5 gap-1.5 p-3">
@@ -833,13 +833,13 @@ export default function MapEditor({
                     </div>
 
                     {/* Undo / Redo / Clear — glass pill */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-15 transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-25 transition-all">
                             <Undo2 size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-15 transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-25 transition-all">
                             <Redo2 size={14} />
                         </motion.button>
                         <AnimatePresence>
@@ -852,21 +852,21 @@ export default function MapEditor({
                             )}
                         </AnimatePresence>
                         <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-15 transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-25 transition-all">
                             <X size={14} />
                         </motion.button>
                     </div>
 
                     {/* View controls — glass pill */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white/90 to-slate-50/80 border border-slate-200/40">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                             onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-400 hover:text-slate-700 hover:bg-white"}`}>
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-500 hover:text-slate-900 hover:bg-white"}`}>
                             <Grid size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomOut size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }}
@@ -876,32 +876,58 @@ export default function MapEditor({
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomIn size={14} />
                         </motion.button>
                     </div>
 
-                    {/* Map toggle — gradient when active */}
-                    <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
-                        <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
-                            onClick={() => setShowMap((v) => !v)}
-                            className={`flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-xl transition-all ${
-                                showMap
-                                    ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/40"
-                                    : "bg-white/80 border border-slate-200/40 text-slate-500 hover:text-slate-800 hover:shadow-md"
+                    {/* Map/Search/Route — grouped navigation pills */}
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50">
+                        <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
+                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                onClick={() => { setShowMap((v) => !v); if (!showMap) setMapMode("search"); }}
+                                className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                    showMap && mapMode === "search"
+                                        ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
+                                        : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
+                                }`}
+                            >
+                                <Search size={12} />
+                                Buscar
+                            </motion.button>
+                        </Shine>
+                        <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
+                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                onClick={() => { setShowMap(true); setMapMode("route"); }}
+                                className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                    showMap && mapMode === "route"
+                                        ? "bg-gradient-to-r from-[#208DCA] to-[#253C87] text-white shadow-md shadow-[#253C87]/40"
+                                        : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
+                                }`}
+                            >
+                                <Navigation size={12} />
+                                Ruta
+                            </motion.button>
+                        </Shine>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                            onClick={() => setShowMap(false)}
+                            className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                !showMap
+                                    ? "bg-white text-slate-800 shadow-sm"
+                                    : "text-slate-500 hover:text-slate-900"
                             }`}
                         >
-                            <Map size={13} />
-                            Mapa
+                            <ImagePlus size={12} />
+                            Canvas
                         </motion.button>
-                    </Shine>
+                    </div>
 
                     {/* Fullscreen toggle */}
                     <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
                         onClick={() => setFullscreen((v) => !v)}
                         title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
                         className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                            fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white/80 border border-slate-200/40 text-slate-400 hover:text-slate-700 hover:shadow-md"
+                            fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
                         }`}
                     >
                         {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
@@ -927,7 +953,7 @@ export default function MapEditor({
                                 )}
                                 <motion.button whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.85 }}
                                     onClick={copyToClipboard} title="Copiar al portapapeles"
-                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white/80 border border-slate-200/40 text-slate-400 hover:text-slate-700 hover:shadow-md"}`}>
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"}`}>
                                     {copiedMsg ? <Check size={15} /> : <Copy size={15} />}
                                 </motion.button>
                                 <Shine enableOnHover color="white" opacity={0.4} duration={500} asChild>
@@ -958,22 +984,6 @@ export default function MapEditor({
                             transition={{ duration: 0.2 }}
                             className="flex flex-col gap-2 w-full h-full"
                         >
-                            {/* Mode toggle */}
-                            <div className="flex gap-1 bg-slate-200 rounded-xl p-1">
-                                <button
-                                    onClick={() => setMapMode("search")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "search" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}
-                                >
-                                    <Search size={11} /> Buscar lugar
-                                </button>
-                                <button
-                                    onClick={() => setMapMode("route")}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg transition-all ${mapMode === "route" ? "bg-slate-200 text-slate-800" : "text-slate-900 hover:text-slate-900"}`}
-                                >
-                                    <Navigation size={11} /> Ruta A → B
-                                </button>
-                            </div>
-
                             {/* Search mode */}
                             {mapMode === "search" && (
                                 <AddressAutocomplete
