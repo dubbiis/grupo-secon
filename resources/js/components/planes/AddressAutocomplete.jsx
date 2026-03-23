@@ -38,6 +38,7 @@ export default function AddressAutocomplete({
     const timerRef = useRef(null);
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     // Update dropdown position when opening
     useEffect(() => {
@@ -129,10 +130,17 @@ export default function AddressAutocomplete({
         }
     };
 
-    // Close on click outside
+    // Close on click outside (check both wrapper and portal dropdown)
     useEffect(() => {
         const handleClick = (e) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+            if (
+                wrapperRef.current && !wrapperRef.current.contains(e.target) &&
+                dropdownRef.current && !dropdownRef.current.contains(e.target)
+            ) {
+                setOpen(false);
+            }
+            // If dropdown not mounted yet, only check wrapper
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target) && !dropdownRef.current) {
                 setOpen(false);
             }
         };
@@ -179,6 +187,7 @@ export default function AddressAutocomplete({
 
             {open && results.length > 0 && createPortal(
                 <motion.div
+                    ref={dropdownRef}
                     initial={{ opacity: 0, y: -4, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
