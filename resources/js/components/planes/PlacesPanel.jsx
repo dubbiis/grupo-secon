@@ -182,44 +182,55 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                             const items = data[key] ?? [];
                             if (items.length === 0) return null;
                             return (
-                                <div key={key} className="p-3">
-                                    <p className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <span>{emoji}</span>
+                                <div key={key} className="p-4">
+                                    <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <span className="text-base">{emoji}</span>
                                         {label}
-                                        <span className="text-slate-900 font-normal">{items.length} encontrados</span>
+                                        <span className="text-[#208DCA] font-semibold bg-[#208DCA]/10 px-2 py-0.5 rounded-full text-[10px]">{items.length}</span>
                                     </p>
-                                    <div className="space-y-0.5">
+                                    <div className="space-y-2">
                                         {items.map((item, i) => {
                                             const isChecked = !!checked[`${key}_${i}`];
                                             return (
-                                                <button
+                                                <motion.button
                                                     key={i}
                                                     onClick={() => toggleItem(key, i)}
-                                                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-slate-200 transition-colors text-left group"
+                                                    initial={{ opacity: 0, x: -8 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: i * 0.04 }}
+                                                    whileHover={{ scale: 1.01 }}
+                                                    whileTap={{ scale: 0.99 }}
+                                                    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${
+                                                        isChecked
+                                                            ? "bg-[#208DCA]/8 border-[#208DCA]/25 shadow-sm"
+                                                            : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                                                    }`}
                                                 >
                                                     <div className="flex-shrink-0 mt-0.5">
-                                                        {isChecked
-                                                            ? <CheckSquare size={13} className="text-[#208DCA]" />
-                                                            : <Square size={13} className="text-white/15 group-hover:text-slate-900 transition-colors" />
-                                                        }
+                                                        <motion.div animate={{ scale: isChecked ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.2 }}>
+                                                            {isChecked
+                                                                ? <CheckSquare size={16} className="text-[#208DCA]" />
+                                                                : <Square size={16} className="text-slate-300" />
+                                                            }
+                                                        </motion.div>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={`text-xs font-medium leading-tight transition-colors ${isChecked ? "text-white" : "text-slate-900"}`}>
+                                                        <p className={`text-sm font-medium leading-tight ${isChecked ? "text-[#208DCA]" : "text-slate-800"}`}>
                                                             {item.name}
-                                                            {item.distance_text && (
-                                                                <span className="ml-1.5 text-[#208DCA]/60 font-normal text-[11px]">
-                                                                    {item.distance_text}
-                                                                </span>
-                                                            )}
                                                         </p>
+                                                        {item.distance_text && (
+                                                            <span className="text-xs text-slate-500 font-medium">
+                                                                {item.distance_text}
+                                                            </span>
+                                                        )}
                                                         {item.address && (
-                                                            <p className="text-[10px] text-white/22 mt-0.5 truncate">{item.address}</p>
+                                                            <p className="text-xs text-slate-400 mt-0.5 truncate">{item.address}</p>
                                                         )}
                                                         {item.phone && (
-                                                            <p className="text-[10px] text-white/22">Tel: {item.phone}</p>
+                                                            <p className="text-xs text-slate-400">Tel: {item.phone}</p>
                                                         )}
                                                     </div>
-                                                </button>
+                                                </motion.button>
                                             );
                                         })}
                                     </div>
@@ -228,21 +239,23 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                         })}
 
                         {totalItems === 0 && (
-                            <p className="px-4 py-3 text-xs text-slate-900 text-center">
+                            <p className="px-4 py-4 text-sm text-slate-500 text-center">
                                 No se encontraron lugares en este radio. Introduce los datos manualmente.
                             </p>
                         )}
 
                         {/* ── Confirm ── */}
                         {totalItems > 0 && (
-                            <div className="px-4 py-3 bg-black/10">
-                                <button
+                            <div className="px-4 py-3">
+                                <motion.button
                                     onClick={confirm}
-                                    className="w-full flex items-center justify-center gap-2 text-xs py-2 rounded-xl bg-[#208DCA]/15 border border-[#208DCA]/30 text-[#208DCA] hover:bg-[#208DCA]/25 transition-all font-medium"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full flex items-center justify-center gap-2 text-sm py-3 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white font-semibold shadow-lg shadow-[#208DCA]/25 hover:shadow-xl transition-all"
                                 >
-                                    <CheckCheck size={13} />
+                                    <CheckCheck size={16} />
                                     Usar datos seleccionados
-                                </button>
+                                </motion.button>
                             </div>
                         )}
                     </motion.div>
