@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Search, Loader2, AlertCircle, CheckSquare, Square, CheckCheck, MapPin, RefreshCw } from "lucide-react";
+import { Search, Loader2, AlertCircle, Check, MapPin, RefreshCw, Navigation } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { useTranslation } from "@/i18n";
 
 const GROUPS = {
@@ -178,84 +179,112 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                         animate={{ opacity: 1 }}
                         className="divide-y divide-white/4"
                     >
-                        {groups.map(({ key, label, emoji }) => {
+                        {groups.map(({ key, label, emoji }, gi) => {
                             const items = data[key] ?? [];
                             if (items.length === 0) return null;
                             return (
-                                <div key={key} className="p-4">
-                                    <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <span className="text-base">{emoji}</span>
-                                        {label}
-                                        <span className="text-[#208DCA] font-semibold bg-[#208DCA]/10 px-2 py-0.5 rounded-full text-[10px]">{items.length}</span>
-                                    </p>
-                                    <div className="space-y-2">
+                                <motion.div
+                                    key={key}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: gi * 0.1, type: "spring", stiffness: 200 }}
+                                    className="p-4"
+                                >
+                                    <div className="flex items-center gap-2.5 mb-3">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#253C87]/10 to-[#208DCA]/10 flex items-center justify-center text-lg">
+                                            {emoji}
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-800">{label}</span>
+                                        <span className="text-[#208DCA] font-bold bg-[#208DCA]/10 px-2.5 py-0.5 rounded-full text-[11px]">{items.length}</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {items.map((item, i) => {
                                             const isChecked = !!checked[`${key}_${i}`];
                                             return (
-                                                <motion.button
-                                                    key={i}
-                                                    onClick={() => toggleItem(key, i)}
-                                                    initial={{ opacity: 0, x: -8 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: i * 0.04 }}
-                                                    whileHover={{ scale: 1.01 }}
-                                                    whileTap={{ scale: 0.99 }}
-                                                    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${
-                                                        isChecked
-                                                            ? "bg-[#208DCA]/8 border-[#208DCA]/25 shadow-sm"
-                                                            : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
-                                                    }`}
-                                                >
-                                                    <div className="flex-shrink-0 mt-0.5">
-                                                        <motion.div animate={{ scale: isChecked ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.2 }}>
-                                                            {isChecked
-                                                                ? <CheckSquare size={16} className="text-[#208DCA]" />
-                                                                : <Square size={16} className="text-slate-300" />
-                                                            }
+                                                <Shine key={i} enableOnHover color="#208DCA" opacity={0.08} duration={400} asChild>
+                                                    <motion.button
+                                                        onClick={() => toggleItem(key, i)}
+                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        transition={{ delay: i * 0.05, type: "spring", stiffness: 300 }}
+                                                        whileHover={{ y: -2, shadow: "0 8px 24px rgba(0,0,0,0.1)" }}
+                                                        whileTap={{ scale: 0.97 }}
+                                                        className={`relative w-full flex items-start gap-3 p-3.5 rounded-2xl border-2 transition-all text-left overflow-hidden ${
+                                                            isChecked
+                                                                ? "bg-gradient-to-br from-[#208DCA]/8 to-[#253C87]/5 border-[#208DCA]/30 shadow-md shadow-[#208DCA]/10"
+                                                                : "bg-white border-slate-200/80 hover:border-slate-300"
+                                                        }`}
+                                                    >
+                                                        {/* Check indicator */}
+                                                        <motion.div
+                                                            className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                                                                isChecked
+                                                                    ? "bg-[#208DCA] shadow-sm shadow-[#208DCA]/30"
+                                                                    : "bg-slate-100 border border-slate-200"
+                                                            }`}
+                                                            animate={{ scale: isChecked ? [1, 1.2, 1] : 1 }}
+                                                            transition={{ duration: 0.25 }}
+                                                        >
+                                                            {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
                                                         </motion.div>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm font-medium leading-tight ${isChecked ? "text-[#208DCA]" : "text-slate-800"}`}>
-                                                            {item.name}
-                                                        </p>
-                                                        {item.distance_text && (
-                                                            <span className="text-xs text-slate-500 font-medium">
-                                                                {item.distance_text}
-                                                            </span>
+
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`text-[13px] font-semibold leading-tight ${isChecked ? "text-[#208DCA]" : "text-slate-800"}`}>
+                                                                {item.name}
+                                                            </p>
+                                                            {item.distance_text && (
+                                                                <div className="flex items-center gap-1 mt-1">
+                                                                    <Navigation size={10} className="text-[#208DCA]/50" />
+                                                                    <span className="text-[11px] text-[#208DCA]/70 font-medium">
+                                                                        {item.distance_text}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            {item.address && (
+                                                                <p className="text-[11px] text-slate-400 mt-0.5 truncate">{item.address}</p>
+                                                            )}
+                                                            {item.phone && (
+                                                                <p className="text-[11px] text-slate-400">📞 {item.phone}</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Selected glow */}
+                                                        {isChecked && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                className="absolute top-0 right-0 w-16 h-16 bg-[#208DCA]/5 rounded-full blur-2xl -mr-4 -mt-4 pointer-events-none"
+                                                            />
                                                         )}
-                                                        {item.address && (
-                                                            <p className="text-xs text-slate-400 mt-0.5 truncate">{item.address}</p>
-                                                        )}
-                                                        {item.phone && (
-                                                            <p className="text-xs text-slate-400">Tel: {item.phone}</p>
-                                                        )}
-                                                    </div>
-                                                </motion.button>
+                                                    </motion.button>
+                                                </Shine>
                                             );
                                         })}
                                     </div>
-                                </div>
+                                </motion.div>
                             );
                         })}
 
                         {totalItems === 0 && (
-                            <p className="px-4 py-4 text-sm text-slate-500 text-center">
+                            <p className="px-4 py-6 text-sm text-slate-400 text-center">
                                 No se encontraron lugares en este radio. Introduce los datos manualmente.
                             </p>
                         )}
 
                         {/* ── Confirm ── */}
                         {totalItems > 0 && (
-                            <div className="px-4 py-3">
-                                <motion.button
-                                    onClick={confirm}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full flex items-center justify-center gap-2 text-sm py-3 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white font-semibold shadow-lg shadow-[#208DCA]/25 hover:shadow-xl transition-all"
-                                >
-                                    <CheckCheck size={16} />
-                                    Usar datos seleccionados
-                                </motion.button>
+                            <div className="px-4 py-4">
+                                <Shine enableOnHover color="white" opacity={0.3} duration={500} asChild>
+                                    <motion.button
+                                        onClick={confirm}
+                                        whileHover={{ scale: 1.02, y: -1 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full flex items-center justify-center gap-2.5 text-sm py-3.5 rounded-2xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white font-bold shadow-xl shadow-[#208DCA]/30 hover:shadow-2xl transition-all"
+                                    >
+                                        <Check size={16} strokeWidth={3} />
+                                        Usar datos seleccionados
+                                    </motion.button>
+                                </Shine>
                             </div>
                         )}
                     </motion.div>
