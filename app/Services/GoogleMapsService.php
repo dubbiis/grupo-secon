@@ -207,8 +207,12 @@ class GoogleMapsService
      */
     public function getMapPOIs(float $lat, float $lng, array $categories): array
     {
-        $key = 'maps.pois.' . md5("{$lat},{$lng}," . implode(',', $categories));
-        return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng, $categories) {
+        // Round to 2 decimals (~1km grid) so nearby addresses share cache
+        $gridLat = round($lat, 2);
+        $gridLng = round($lng, 2);
+        sort($categories);
+        $key = 'maps.pois.' . md5("{$gridLat},{$gridLng}," . implode(',', $categories));
+        return Cache::remember($key, 60 * 60 * 24 * 30, function () use ($lat, $lng, $categories) {
             $pois = [];
 
             if (in_array('hospital', $categories)) {
@@ -255,7 +259,7 @@ class GoogleMapsService
 
     public function getTransportData(float $lat, float $lng): array
     {
-        $key = 'maps.transport.' . md5("{$lat},{$lng}");
+        $key = 'maps.transport.' . md5(round($lat, 2) . ',' . round($lng, 2));
         return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
             $origin = ['lat' => $lat, 'lng' => $lng];
 
@@ -299,7 +303,7 @@ class GoogleMapsService
      */
     public function getEmergencyData(float $lat, float $lng): array
     {
-        $key = 'maps.emergency.' . md5("{$lat},{$lng}");
+        $key = 'maps.emergency.' . md5(round($lat, 2) . ',' . round($lng, 2));
         return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
             $origin = ['lat' => $lat, 'lng' => $lng];
 
