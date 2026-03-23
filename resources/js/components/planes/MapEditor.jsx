@@ -586,34 +586,40 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         try {
-            // Find the actual Leaflet pane with tiles
-            const mapEl = mapContainerRef.current.querySelector(".leaflet-container") || mapContainerRef.current;
-            const tilePane = mapEl.querySelector(".leaflet-tile-pane") || mapEl;
-            const mapRect = mapEl.getBoundingClientRect();
-            const mapW = mapEl.offsetWidth;
-            const mapH = mapEl.offsetHeight;
+            const leaflet = mapContainerRef.current.querySelector(".leaflet-container");
+            if (!leaflet) return;
+            const mapRect = leaflet.getBoundingClientRect();
+            const mapW = Math.round(mapRect.width);
+            const mapH = Math.round(mapRect.height);
 
             const composite = document.createElement("canvas");
             composite.width = mapW;
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // Draw tiles — position relative to the leaflet-map-pane transform
-            const tiles = mapEl.querySelectorAll(".leaflet-tile-loaded");
-            tiles.forEach((tile) => {
+            // Draw all tile images
+            leaflet.querySelectorAll(".leaflet-tile-loaded").forEach((tile) => {
                 const r = tile.getBoundingClientRect();
-                try {
-                    ctx.drawImage(tile, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
-                } catch {}
+                const x = Math.round(r.left - mapRect.left);
+                const y = Math.round(r.top - mapRect.top);
+                try { ctx.drawImage(tile, x, y, Math.round(r.width), Math.round(r.height)); } catch {}
             });
 
-            // Draw SVG overlays
-            const svgs = mapEl.querySelectorAll("svg");
-            for (const svg of svgs) {
+            // Draw all marker/overlay div icons (route labels, markers)
+            leaflet.querySelectorAll(".leaflet-marker-icon").forEach((marker) => {
+                // Skip — these are HTML divs, not images we can easily draw
+            });
+
+            // Draw SVG overlays (route lines)
+            for (const svg of leaflet.querySelectorAll("svg")) {
                 try {
                     const r = svg.getBoundingClientRect();
+                    const x = Math.round(r.left - mapRect.left);
+                    const y = Math.round(r.top - mapRect.top);
                     const clone = svg.cloneNode(true);
                     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                    clone.setAttribute("width", Math.round(r.width));
+                    clone.setAttribute("height", Math.round(r.height));
                     const data = new XMLSerializer().serializeToString(clone);
                     const svgImg = await new Promise((resolve) => {
                         const img = new Image();
@@ -621,7 +627,7 @@ const MapEditor = forwardRef(function MapEditor({
                         img.onerror = () => resolve(null);
                         img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
                     });
-                    if (svgImg) ctx.drawImage(svgImg, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+                    if (svgImg) ctx.drawImage(svgImg, x, y, Math.round(r.width), Math.round(r.height));
                 } catch {}
             }
 
