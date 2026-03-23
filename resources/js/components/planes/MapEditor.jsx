@@ -576,28 +576,30 @@ const MapEditor = forwardRef(function MapEditor({
 
     // ── Map capture ──────────────────────────────────────────────
     const startCaptureRef = useRef(null);
+    const [captureFlash, setCaptureFlash] = useState(false);
+
     startCaptureRef.current = async () => {
         if (!showMap || !mapContainerRef.current) {
-            // If map isn't visible, switch to map first and retry
             setShowMap(true);
             setTimeout(() => startCaptureRef.current?.(), 500);
             return;
         }
 
         try {
+            // Find the actual Leaflet pane with tiles
             const mapEl = mapContainerRef.current.querySelector(".leaflet-container") || mapContainerRef.current;
+            const tilePane = mapEl.querySelector(".leaflet-tile-pane") || mapEl;
+            const mapRect = mapEl.getBoundingClientRect();
             const mapW = mapEl.offsetWidth;
             const mapH = mapEl.offsetHeight;
 
-            // Create composite canvas from map tiles
             const composite = document.createElement("canvas");
             composite.width = mapW;
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // Draw tile images (with CORS handling)
+            // Draw tiles — position relative to the leaflet-map-pane transform
             const tiles = mapEl.querySelectorAll(".leaflet-tile-loaded");
-            const mapRect = mapEl.getBoundingClientRect();
             tiles.forEach((tile) => {
                 const r = tile.getBoundingClientRect();
                 try {
@@ -605,7 +607,7 @@ const MapEditor = forwardRef(function MapEditor({
                 } catch {}
             });
 
-            // Draw SVG overlays (routes, markers)
+            // Draw SVG overlays
             const svgs = mapEl.querySelectorAll("svg");
             for (const svg of svgs) {
                 try {
@@ -623,25 +625,32 @@ const MapEditor = forwardRef(function MapEditor({
                 } catch {}
             }
 
-            // Load into editor canvas
+            // Flash animation
+            setCaptureFlash(true);
+
             const dataUrl = composite.toDataURL("image/png");
             const img = new Image();
             img.onload = () => {
-                const c = canvasRef.current;
-                if (!c) return;
-                c.width = img.width;
-                c.height = img.height;
-                bgRef.current = img;
-                setHasBg(true);
-                setShowMap(false);
-                setElements([]);
-                setHistory([[]]);
-                setHistoryStep(0);
-                requestAnimationFrame(() => drawElements([]));
+                // Delay to let flash animation play
+                setTimeout(() => {
+                    const c = canvasRef.current;
+                    if (!c) return;
+                    c.width = img.width;
+                    c.height = img.height;
+                    bgRef.current = img;
+                    setHasBg(true);
+                    setShowMap(false);
+                    setCaptureFlash(false);
+                    setElements([]);
+                    setHistory([[]]);
+                    setHistoryStep(0);
+                    requestAnimationFrame(() => drawElements([]));
+                }, 600);
             };
             img.src = dataUrl;
         } catch (err) {
             console.error("Capture failed:", err);
+            setCaptureFlash(false);
         }
     };
 
@@ -995,7 +1004,7 @@ const MapEditor = forwardRef(function MapEditor({
                             onClick={() => setShowMap(false)}
                             className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
                                 !showMap
-                                    ? "bg-white text-slate-800 shadow-sm"
+                                    ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
                                     : "text-slate-500 hover:text-slate-900"
                             }`}
                         >
@@ -1145,9 +1154,30 @@ const MapEditor = forwardRef(function MapEditor({
                             <div className="flex gap-2 flex-1 min-h-0" style={{ height: "100%" }}>
                                 <div
                                     ref={mapContainerRef}
-                                    className={`rounded-xl overflow-hidden border border-slate-200 transition-all ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`}
+                                    className={`rounded-xl overflow-hidden border border-slate-200 transition-all relative ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`}
                                     style={{ height: "100%" }}
                                 >
+                                {/* Capture flash overlay */}
+                                <AnimatePresence>
+                                    {captureFlash && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: [0, 1, 1, 0] }}
+                                            transition={{ duration: 0.6, times: [0, 0.1, 0.5, 1] }}
+                                            className="absolute inset-0 z-[100] bg-white pointer-events-none flex items-center justify-center"
+                                        >
+                                            <motion.div
+                                                initial={{ scale: 0.5, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+                                                className="flex items-center gap-3 bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white px-6 py-3 rounded-2xl shadow-2xl"
+                                            >
+                                                <Check size={20} />
+                                                <span className="text-sm font-bold">Captura realizada</span>
+                                            </motion.div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                                 <LeafletMap
                                     command={mapCommand}
                                     onStatus={setMapStatus}
