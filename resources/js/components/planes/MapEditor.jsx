@@ -171,10 +171,14 @@ function drawElements(ctx, elements, selectedIdx = null, showGrid = false, canva
                 const s = el.size ?? 36;
                 ctx.strokeRect(el.x - 4, el.y - s - 4, 120, s + 12);
             } else if (el.type === "rect") {
-                ctx.strokeRect(el.x - 4, el.y - 4, el.w + 8, el.h + 8);
+                const rx = Math.min(el.x1, el.x2), ry = Math.min(el.y1, el.y2);
+                const rw = Math.abs(el.x2 - el.x1), rh = Math.abs(el.y2 - el.y1);
+                ctx.strokeRect(rx - 4, ry - 4, rw + 8, rh + 8);
             } else if (el.type === "circle") {
+                const ccx = (el.x1 + el.x2) / 2, ccy = (el.y1 + el.y2) / 2;
+                const cr = Math.sqrt((el.x2 - el.x1) ** 2 + (el.y2 - el.y1) ** 2) / 2;
                 ctx.beginPath();
-                ctx.arc(el.cx, el.cy, el.r + 6, 0, Math.PI * 2);
+                ctx.arc(ccx, ccy, cr + 6, 0, Math.PI * 2);
                 ctx.stroke();
             } else if (el.type === "line" || el.type === "arrow") {
                 ctx.strokeRect(
@@ -413,7 +417,7 @@ const MapEditor = forwardRef(function MapEditor({
         };
     };
 
-    // Hit test for text/emoji
+    // Hit test for ALL element types
     const hitTestElement = (pos) => {
         for (let i = elements.length - 1; i >= 0; i--) {
             const el = elements[i];
@@ -423,15 +427,21 @@ const MapEditor = forwardRef(function MapEditor({
                     return i;
                 }
             } else if (el.type === "rect") {
+                // rect stored as x1,y1,x2,y2
+                const x = Math.min(el.x1, el.x2), y = Math.min(el.y1, el.y2);
+                const w = Math.abs(el.x2 - el.x1), h = Math.abs(el.y2 - el.y1);
                 const margin = 8;
-                if (pos.x >= el.x - margin && pos.x <= el.x + el.w + margin &&
-                    pos.y >= el.y - margin && pos.y <= el.y + el.h + margin) {
+                if (pos.x >= x - margin && pos.x <= x + w + margin &&
+                    pos.y >= y - margin && pos.y <= y + h + margin) {
                     return i;
                 }
             } else if (el.type === "circle") {
-                const dx = pos.x - el.cx;
-                const dy = pos.y - el.cy;
-                if (Math.sqrt(dx * dx + dy * dy) <= el.r + 8) {
+                // circle stored as x1,y1,x2,y2
+                const cx = (el.x1 + el.x2) / 2, cy = (el.y1 + el.y2) / 2;
+                const r = Math.sqrt((el.x2 - el.x1) ** 2 + (el.y2 - el.y1) ** 2) / 2;
+                const dx = pos.x - cx;
+                const dy = pos.y - cy;
+                if (Math.sqrt(dx * dx + dy * dy) <= r + 8) {
                     return i;
                 }
             } else if (el.type === "line" || el.type === "arrow") {
@@ -472,9 +482,16 @@ const MapEditor = forwardRef(function MapEditor({
 
         // Calculate drag offset based on element type
         const getDragOff = (el) => {
-            if (el.type === "circle") return { x: pos.x - el.cx, y: pos.y - el.cy };
-            if (el.type === "line" || el.type === "arrow") return { x: pos.x, y: pos.y, dx1: el.x1 - pos.x, dy1: el.y1 - pos.y, dx2: el.x2 - pos.x, dy2: el.y2 - pos.y };
-            if (el.type === "path") return { x: pos.x, y: pos.y, pathOff: el.points?.map(([px, py]) => [px - pos.x, py - pos.y]) };
+            if (el.type === "rect" || el.type === "circle" || el.type === "line" || el.type === "arrow") {
+                return { x: pos.x, y: pos.y, dx1: el.x1 - pos.x, dy1: el.y1 - pos.y, dx2: el.x2 - pos.x, dy2: el.y2 - pos.y };
+            }
+            if (el.type === "path") {
+                return { x: pos.x, y: pos.y, pathOff: el.points?.map((p) => {
+                    const px = Array.isArray(p) ? p[0] : p.x;
+                    const py = Array.isArray(p) ? p[1] : p.y;
+                    return [px - pos.x, py - pos.y];
+                }) };
+            }
             return { x: pos.x - (el.x ?? 0), y: pos.y - (el.y ?? 0) };
         };
 
@@ -532,27 +549,24 @@ const MapEditor = forwardRef(function MapEditor({
 
             if (el.type === "text" || el.type === "emoji") {
                 el.x = dx; el.y = dy;
-            } else if (el.type === "rect") {
-                const ox = dx - el.x, oy = dy - el.y;
-                el.x = dx; el.y = dy;
-            } else if (el.type === "circle") {
-                el.cx = dx; el.cy = dy;
-            } else if (el.type === "line" || el.type === "arrow") {
-                if (!dragOffRef.current.dx1) {
-                    dragOffRef.current.dx1 = el.x1 - dragOffRef.current.x;
-                    dragOffRef.current.dy1 = el.y1 - dragOffRef.current.y;
-                    dragOffRef.current.dx2 = el.x2 - dragOffRef.current.x;
-                    dragOffRef.current.dy2 = el.y2 - dragOffRef.current.y;
-                }
+            } else if (el.type === "rect" || el.type === "circle" || el.type === "line" || el.type === "arrow") {
+                // All these use x1,y1,x2,y2 — move both endpoints
                 el.x1 = pos.x + dragOffRef.current.dx1;
                 el.y1 = pos.y + dragOffRef.current.dy1;
                 el.x2 = pos.x + dragOffRef.current.dx2;
                 el.y2 = pos.y + dragOffRef.current.dy2;
             } else if (el.type === "path" && el.points) {
                 if (!dragOffRef.current.pathOff) {
-                    dragOffRef.current.pathOff = el.points.map(([px, py]) => [px - dragOffRef.current.x, py - dragOffRef.current.y]);
+                    dragOffRef.current.pathOff = el.points.map((p) => {
+                        const px = Array.isArray(p) ? p[0] : p.x;
+                        const py = Array.isArray(p) ? p[1] : p.y;
+                        return [px - dragOffRef.current.x, py - dragOffRef.current.y];
+                    });
                 }
-                el.points = dragOffRef.current.pathOff.map(([ox, oy]) => [pos.x + ox, pos.y + oy]);
+                el.points = dragOffRef.current.pathOff.map(([ox, oy]) => {
+                    const sample = el.points?.[0];
+                    return Array.isArray(sample) ? [pos.x + ox, pos.y + oy] : { x: pos.x + ox, y: pos.y + oy };
+                });
             }
 
             els[dragIdxRef.current] = el;
