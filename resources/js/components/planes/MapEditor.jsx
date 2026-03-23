@@ -138,13 +138,13 @@ function drawElements(ctx, elements, selectedIdx = null, showGrid = false, canva
             const w = Math.abs(el.x2 - el.x1), h = Math.abs(el.y2 - el.y1);
             ctx.strokeStyle = el.color; ctx.lineWidth = el.width;
             ctx.strokeRect(x, y, w, h);
-            if (el.fill) { ctx.fillStyle = el.fillColor; ctx.globalAlpha = (el.opacity ?? 1) * 0.25; ctx.fillRect(x, y, w, h); }
+            if (el.fill) { ctx.fillStyle = el.fillColor; ctx.globalAlpha = (el.opacity ?? 1) * 0.5; ctx.fillRect(x, y, w, h); }
         } else if (el.type === "circle") {
             const r = Math.sqrt((el.x2 - el.x1) ** 2 + (el.y2 - el.y1) ** 2) / 2;
             const cx = (el.x1 + el.x2) / 2, cy = (el.y1 + el.y2) / 2;
             ctx.strokeStyle = el.color; ctx.lineWidth = el.width;
             ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.stroke();
-            if (el.fill) { ctx.fillStyle = el.fillColor; ctx.globalAlpha = (el.opacity ?? 1) * 0.25; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.fill(); }
+            if (el.fill) { ctx.fillStyle = el.fillColor; ctx.globalAlpha = (el.opacity ?? 1) * 0.5; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.fill(); }
         } else if (el.type === "text") {
             ctx.fillStyle = el.color;
             ctx.font = `bold ${el.size ?? 22}px Arial`;
@@ -162,13 +162,32 @@ function drawElements(ctx, elements, selectedIdx = null, showGrid = false, canva
         ctx.restore();
 
         // Selection highlight
-        if (idx === selectedIdx && (el.type === "text" || el.type === "emoji")) {
+        if (idx === selectedIdx) {
             ctx.save();
-            const s = el.size ?? 36;
             ctx.strokeStyle = "#208DCA";
             ctx.lineWidth = 2;
             ctx.setLineDash([4, 3]);
-            ctx.strokeRect(el.x - 4, el.y - s - 4, 120, s + 12);
+            if (el.type === "text" || el.type === "emoji") {
+                const s = el.size ?? 36;
+                ctx.strokeRect(el.x - 4, el.y - s - 4, 120, s + 12);
+            } else if (el.type === "rect") {
+                ctx.strokeRect(el.x - 4, el.y - 4, el.w + 8, el.h + 8);
+            } else if (el.type === "circle") {
+                ctx.beginPath();
+                ctx.arc(el.cx, el.cy, el.r + 6, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (el.type === "line" || el.type === "arrow") {
+                ctx.strokeRect(
+                    Math.min(el.x1, el.x2) - 6, Math.min(el.y1, el.y2) - 6,
+                    Math.abs(el.x2 - el.x1) + 12, Math.abs(el.y2 - el.y1) + 12
+                );
+            } else if (el.type === "path" && el.points?.length > 0) {
+                const xs = el.points.map(p => p[0]), ys = el.points.map(p => p[1]);
+                ctx.strokeRect(
+                    Math.min(...xs) - 6, Math.min(...ys) - 6,
+                    Math.max(...xs) - Math.min(...xs) + 12, Math.max(...ys) - Math.min(...ys) + 12
+                );
+            }
             ctx.restore();
         }
     });
@@ -395,13 +414,50 @@ const MapEditor = forwardRef(function MapEditor({
     };
 
     // Hit test for text/emoji
-    const hitTestTextEmoji = (pos) => {
+    const hitTestElement = (pos) => {
         for (let i = elements.length - 1; i >= 0; i--) {
             const el = elements[i];
             if (el.type === "text" || el.type === "emoji") {
                 const s = el.size ?? 36;
                 if (pos.x >= el.x - 4 && pos.x <= el.x + 120 && pos.y >= el.y - s - 4 && pos.y <= el.y + 12) {
                     return i;
+                }
+            } else if (el.type === "rect") {
+                const margin = 8;
+                if (pos.x >= el.x - margin && pos.x <= el.x + el.w + margin &&
+                    pos.y >= el.y - margin && pos.y <= el.y + el.h + margin) {
+                    return i;
+                }
+            } else if (el.type === "circle") {
+                const dx = pos.x - el.cx;
+                const dy = pos.y - el.cy;
+                if (Math.sqrt(dx * dx + dy * dy) <= el.r + 8) {
+                    return i;
+                }
+            } else if (el.type === "line" || el.type === "arrow") {
+                // Distance from point to line segment
+                const dx = el.x2 - el.x1;
+                const dy = el.y2 - el.y1;
+                const len2 = dx * dx + dy * dy;
+                if (len2 === 0) continue;
+                let t = ((pos.x - el.x1) * dx + (pos.y - el.y1) * dy) / len2;
+                t = Math.max(0, Math.min(1, t));
+                const px = el.x1 + t * dx;
+                const py = el.y1 + t * dy;
+                const dist = Math.sqrt((pos.x - px) ** 2 + (pos.y - py) ** 2);
+                if (dist <= 10) return i;
+            } else if (el.type === "path" && el.points?.length > 1) {
+                // Check distance to any segment of the path
+                for (let j = 1; j < el.points.length; j++) {
+                    const [ax, ay] = el.points[j - 1];
+                    const [bx, by] = el.points[j];
+                    const dx = bx - ax, dy = by - ay;
+                    const len2 = dx * dx + dy * dy;
+                    if (len2 === 0) continue;
+                    let t = ((pos.x - ax) * dx + (pos.y - ay) * dy) / len2;
+                    t = Math.max(0, Math.min(1, t));
+                    const dist = Math.sqrt((pos.x - (ax + t * dx)) ** 2 + (pos.y - (ay + t * dy)) ** 2);
+                    if (dist <= 10) return i;
                 }
             }
         }
@@ -414,14 +470,22 @@ const MapEditor = forwardRef(function MapEditor({
         setContextMenu(null);
         const pos = getPos(e);
 
+        // Calculate drag offset based on element type
+        const getDragOff = (el) => {
+            if (el.type === "circle") return { x: pos.x - el.cx, y: pos.y - el.cy };
+            if (el.type === "line" || el.type === "arrow") return { x: pos.x, y: pos.y, dx1: el.x1 - pos.x, dy1: el.y1 - pos.y, dx2: el.x2 - pos.x, dy2: el.y2 - pos.y };
+            if (el.type === "path") return { x: pos.x, y: pos.y, pathOff: el.points?.map(([px, py]) => [px - pos.x, py - pos.y]) };
+            return { x: pos.x - (el.x ?? 0), y: pos.y - (el.y ?? 0) };
+        };
+
         // Select tool
         if (tool === "select") {
-            const idx = hitTestTextEmoji(pos);
+            const idx = hitTestElement(pos);
             if (idx >= 0) {
                 setSelectedIdx(idx);
                 isDraggingRef.current = true;
                 dragIdxRef.current = idx;
-                dragOffRef.current = { x: pos.x - elements[idx].x, y: pos.y - elements[idx].y };
+                dragOffRef.current = getDragOff(elements[idx]);
             } else {
                 setSelectedIdx(null);
             }
@@ -429,12 +493,12 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drag text/emoji with any tool
-        const idx = hitTestTextEmoji(pos);
+        // Drag elements with any tool
+        const idx = hitTestElement(pos);
         if (idx >= 0 && tool !== "text") {
             isDraggingRef.current = true;
             dragIdxRef.current = idx;
-            dragOffRef.current = { x: pos.x - elements[idx].x, y: pos.y - elements[idx].y };
+            dragOffRef.current = getDragOff(elements[idx]);
             return;
         }
 
@@ -456,7 +520,36 @@ const MapEditor = forwardRef(function MapEditor({
 
         if (isDraggingRef.current && dragIdxRef.current !== null) {
             const els = [...elements];
-            els[dragIdxRef.current] = { ...els[dragIdxRef.current], x: pos.x - dragOffRef.current.x, y: pos.y - dragOffRef.current.y };
+            const el = { ...els[dragIdxRef.current] };
+            const dx = pos.x - dragOffRef.current.x;
+            const dy = pos.y - dragOffRef.current.y;
+
+            if (el.type === "text" || el.type === "emoji") {
+                el.x = dx; el.y = dy;
+            } else if (el.type === "rect") {
+                const ox = dx - el.x, oy = dy - el.y;
+                el.x = dx; el.y = dy;
+            } else if (el.type === "circle") {
+                el.cx = dx; el.cy = dy;
+            } else if (el.type === "line" || el.type === "arrow") {
+                if (!dragOffRef.current.dx1) {
+                    dragOffRef.current.dx1 = el.x1 - dragOffRef.current.x;
+                    dragOffRef.current.dy1 = el.y1 - dragOffRef.current.y;
+                    dragOffRef.current.dx2 = el.x2 - dragOffRef.current.x;
+                    dragOffRef.current.dy2 = el.y2 - dragOffRef.current.y;
+                }
+                el.x1 = pos.x + dragOffRef.current.dx1;
+                el.y1 = pos.y + dragOffRef.current.dy1;
+                el.x2 = pos.x + dragOffRef.current.dx2;
+                el.y2 = pos.y + dragOffRef.current.dy2;
+            } else if (el.type === "path" && el.points) {
+                if (!dragOffRef.current.pathOff) {
+                    dragOffRef.current.pathOff = el.points.map(([px, py]) => [px - dragOffRef.current.x, py - dragOffRef.current.y]);
+                }
+                el.points = dragOffRef.current.pathOff.map(([ox, oy]) => [pos.x + ox, pos.y + oy]);
+            }
+
+            els[dragIdxRef.current] = el;
             setElements(els);
             redraw(els, selectedIdx);
             return;
@@ -482,11 +575,11 @@ const MapEditor = forwardRef(function MapEditor({
             ctx.strokeStyle = color; ctx.lineWidth = strokeWidth; ctx.lineCap = "round";
             if (tool === "rect") {
                 ctx.strokeRect(Math.min(x1, pos.x), Math.min(y1, pos.y), Math.abs(pos.x - x1), Math.abs(pos.y - y1));
-                if (useFill) { ctx.fillStyle = color; ctx.globalAlpha = opacity * 0.25; ctx.fillRect(Math.min(x1, pos.x), Math.min(y1, pos.y), Math.abs(pos.x - x1), Math.abs(pos.y - y1)); }
+                if (useFill) { ctx.fillStyle = color; ctx.globalAlpha = opacity * 0.5; ctx.fillRect(Math.min(x1, pos.x), Math.min(y1, pos.y), Math.abs(pos.x - x1), Math.abs(pos.y - y1)); }
             } else if (tool === "circle") {
                 const r = Math.sqrt((pos.x - x1) ** 2 + (pos.y - y1) ** 2) / 2;
                 ctx.beginPath(); ctx.arc((x1 + pos.x) / 2, (y1 + pos.y) / 2, r, 0, 2 * Math.PI); ctx.stroke();
-                if (useFill) { ctx.fillStyle = color; ctx.globalAlpha = opacity * 0.25; ctx.beginPath(); ctx.arc((x1 + pos.x) / 2, (y1 + pos.y) / 2, r, 0, 2 * Math.PI); ctx.fill(); }
+                if (useFill) { ctx.fillStyle = color; ctx.globalAlpha = opacity * 0.5; ctx.beginPath(); ctx.arc((x1 + pos.x) / 2, (y1 + pos.y) / 2, r, 0, 2 * Math.PI); ctx.fill(); }
             } else {
                 ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(pos.x, pos.y); ctx.stroke();
                 if (tool === "arrow") {
@@ -687,7 +780,7 @@ const MapEditor = forwardRef(function MapEditor({
         e.preventDefault();
         if (!hasBg) return;
         const pos = getPos(e);
-        const idx = hitTestTextEmoji(pos);
+        const idx = hitTestElement(pos);
         if (idx >= 0) {
             setContextMenu({ x: e.clientX, y: e.clientY, elIdx: idx });
             setSelectedIdx(idx);
