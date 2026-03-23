@@ -638,7 +638,7 @@ export default function MapEditor({
     }[tool] ?? "cursor-crosshair";
 
     return (
-        <div className={`flex flex-col gap-2 w-full h-full overflow-hidden ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
+        <div className={`flex flex-col gap-2 w-full h-full ${openIconCat ? "" : "overflow-hidden"} ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
 
             {/* ── Toolbar — Glass Card with Shine ── */}
             <Shine enable loop duration={3000} loopDelay={5000} color="#208DCA" opacity={0.08} asChild>
@@ -789,7 +789,7 @@ export default function MapEditor({
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 8, scale: 0.9 }}
                                     transition={{ type: "spring", damping: 22, stiffness: 350 }}
-                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[9999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.12)] overflow-hidden"
+                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[9999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] overflow-hidden"
                                     style={{ width: 340 }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
@@ -833,27 +833,27 @@ export default function MapEditor({
                     </div>
 
                     {/* Undo / Redo / Clear — glass pill */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/60">
                         <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-25 transition-all">
-                            <Undo2 size={14} />
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
+                            <Undo2 size={16} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/8 disabled:opacity-25 transition-all">
-                            <Redo2 size={14} />
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
+                            <Redo2 size={16} />
                         </motion.button>
                         <AnimatePresence>
                             {selectedIdx !== null && (
                                 <motion.button initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
                                     onClick={deleteSelected} title="Eliminar (Del)"
-                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
-                                    <Trash2 size={14} />
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 transition-all">
+                                    <Trash2 size={16} />
                                 </motion.button>
                             )}
                         </AnimatePresence>
                         <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-25 transition-all">
-                            <X size={14} />
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 transition-all">
+                            <X size={16} />
                         </motion.button>
                     </div>
 
