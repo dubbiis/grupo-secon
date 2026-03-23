@@ -406,10 +406,17 @@
     "text_label": "Run of show (texto)"
   },
   "s12": {
-    "desc": "Define los tipos de acreditacion del evento.",
-    "list_view": "Lista de acreditaciones",
-    "designer_view": "Disenador de tarjetas",
-    "add": "Anadir tipo de acreditacion"
+    "desc": "Anade las personas que participan en el evento con su foto y cargo.",
+    "title": "Personas del evento",
+    "person": "Persona",
+    "registered": "registrados",
+    "add": "Anadir persona",
+    "photo": "Foto",
+    "add_photo": "Anadir foto",
+    "name": "Nombre",
+    "name_placeholder": "Nombre completo",
+    "role": "Cargo",
+    "role_placeholder": "Ej: Director, Staff, Prensa, VIP..."
   },
   "s13": {
     "desc": "Registra todos los contactos clave.",
@@ -485,7 +492,7 @@
     "9": "Personal",
     "10": "Transporte",
     "11": "Run of Show",
-    "12": "Acreditaciones",
+    "12": "Personas del evento",
     "13": "Contactos",
     "14": "Anexos",
     "15": "Branding"

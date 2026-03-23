@@ -59,7 +59,6 @@ Route::middleware('auth')->group(function () {
 
     // Herramientas standalone
     Route::get('/editor-mapas', fn() => inertia('EditorMapas'))->name('editor-mapas');
-    Route::get('/editor-acreditaciones', fn() => inertia('EditorAcreditaciones'))->name('editor-acreditaciones');
 
     // Admin
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

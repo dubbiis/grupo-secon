@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, CreditCard, Settings, TrendingUp, Users } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, ChevronRight, Map, Settings, TrendingUp, Users } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "@/i18n";
 
@@ -40,12 +40,6 @@ export default function AppLayout({ children, title, subtitle }) {
             label: t("nav.map_editor"),
             icon: Map,
             active: currentUrl === "/editor-mapas",
-        },
-        {
-            href: "/editor-acreditaciones",
-            label: t("nav.credentials"),
-            icon: CreditCard,
-            active: currentUrl === "/editor-acreditaciones",
         },
     ];
 

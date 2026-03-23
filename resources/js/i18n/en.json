@@ -406,10 +406,17 @@
     "text_label": "Run of show (text)"
   },
   "s12": {
-    "desc": "Define event credential types.",
-    "list_view": "Credentials list",
-    "designer_view": "Card designer",
-    "add": "Add credential type"
+    "desc": "Add the people participating in the event with their photo and role.",
+    "title": "Event people",
+    "person": "Person",
+    "registered": "registered",
+    "add": "Add person",
+    "photo": "Photo",
+    "add_photo": "Add photo",
+    "name": "Name",
+    "name_placeholder": "Full name",
+    "role": "Role",
+    "role_placeholder": "E.g.: Director, Staff, Press, VIP..."
   },
   "s13": {
     "desc": "Register all key contacts.",
@@ -485,7 +492,7 @@
     "9": "Staff",
     "10": "Transport",
     "11": "Run of Show",
-    "12": "Credentials",
+    "12": "Event People",
     "13": "Contacts",
     "14": "Annexes",
     "15": "Branding"
