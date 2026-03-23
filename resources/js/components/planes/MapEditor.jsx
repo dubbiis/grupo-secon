@@ -932,7 +932,12 @@ export default function MapEditor({
                                         onChange={setRouteA}
                                         onSelect={(place) => {
                                             setRouteA(place.displayName);
-                                            setRouteACoords({ lat: place.lat, lng: place.lng });
+                                            const coordsA = { lat: place.lat, lng: place.lng };
+                                            setRouteACoords(coordsA);
+                                            // Auto-trace if B already has coords
+                                            if (routeBCoords) {
+                                                setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                            }
                                         }}
                                         biasLat={routeACoords?.lat}
                                         biasLng={routeACoords?.lng}
@@ -944,7 +949,12 @@ export default function MapEditor({
                                         onChange={setRouteB}
                                         onSelect={(place) => {
                                             setRouteB(place.displayName);
-                                            setRouteBCoords({ lat: place.lat, lng: place.lng });
+                                            const coordsB = { lat: place.lat, lng: place.lng };
+                                            setRouteBCoords(coordsB);
+                                            // Auto-trace if A already has coords
+                                            if (routeACoords) {
+                                                setMapCommand({ type: "route", a: routeACoords, b: coordsB });
+                                            }
                                         }}
                                         biasLat={routeACoords?.lat || routeBCoords?.lat}
                                         biasLng={routeACoords?.lng || routeBCoords?.lng}
