@@ -570,13 +570,20 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drag elements with any tool
+        // Drag elements with any tool — also select to show handles
         const idx = hitTestElement(pos);
         if (idx >= 0 && tool !== "text") {
+            setSelectedIdx(idx);
             isDraggingRef.current = true;
             dragIdxRef.current = idx;
             dragOffRef.current = getDragOff(elements[idx]);
+            redraw(elements, idx);
             return;
+        }
+        // Click on empty area deselects
+        if (idx < 0 && selectedIdx !== null) {
+            setSelectedIdx(null);
+            redraw(elements, null);
         }
 
         if (tool === "text") {
