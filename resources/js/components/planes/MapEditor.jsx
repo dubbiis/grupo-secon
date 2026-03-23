@@ -588,47 +588,65 @@ const MapEditor = forwardRef(function MapEditor({
         try {
             const leaflet = mapContainerRef.current.querySelector(".leaflet-container");
             if (!leaflet) return;
-            const mapRect = leaflet.getBoundingClientRect();
-            const mapW = Math.round(mapRect.width);
-            const mapH = Math.round(mapRect.height);
+
+            // Use the tile pane as reference — it contains the actual visible tiles
+            const tilePane = leaflet.querySelector(".leaflet-tile-pane");
+            const overlayPane = leaflet.querySelector(".leaflet-overlay-pane");
+            const containerRect = leaflet.getBoundingClientRect();
+            const mapW = Math.round(containerRect.width);
+            const mapH = Math.round(containerRect.height);
 
             const composite = document.createElement("canvas");
             composite.width = mapW;
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // Draw all tile images
-            leaflet.querySelectorAll(".leaflet-tile-loaded").forEach((tile) => {
+            // Clip to map bounds
+            ctx.beginPath();
+            ctx.rect(0, 0, mapW, mapH);
+            ctx.clip();
+
+            // Draw all tile images — use containerRect as origin
+            leaflet.querySelectorAll("img.leaflet-tile-loaded").forEach((tile) => {
                 const r = tile.getBoundingClientRect();
-                const x = Math.round(r.left - mapRect.left);
-                const y = Math.round(r.top - mapRect.top);
-                try { ctx.drawImage(tile, x, y, Math.round(r.width), Math.round(r.height)); } catch {}
-            });
-
-            // Draw all marker/overlay div icons (route labels, markers)
-            leaflet.querySelectorAll(".leaflet-marker-icon").forEach((marker) => {
-                // Skip — these are HTML divs, not images we can easily draw
-            });
-
-            // Draw SVG overlays (route lines)
-            for (const svg of leaflet.querySelectorAll("svg")) {
                 try {
-                    const r = svg.getBoundingClientRect();
-                    const x = Math.round(r.left - mapRect.left);
-                    const y = Math.round(r.top - mapRect.top);
-                    const clone = svg.cloneNode(true);
-                    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-                    clone.setAttribute("width", Math.round(r.width));
-                    clone.setAttribute("height", Math.round(r.height));
-                    const data = new XMLSerializer().serializeToString(clone);
-                    const svgImg = await new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = () => resolve(img);
-                        img.onerror = () => resolve(null);
-                        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
-                    });
-                    if (svgImg) ctx.drawImage(svgImg, x, y, Math.round(r.width), Math.round(r.height));
+                    ctx.drawImage(tile,
+                        r.left - containerRect.left,
+                        r.top - containerRect.top,
+                        r.width, r.height
+                    );
                 } catch {}
+            });
+
+            // Draw SVG overlays (route lines, markers)
+            if (overlayPane) {
+                for (const svg of overlayPane.querySelectorAll("svg")) {
+                    try {
+                        const r = svg.getBoundingClientRect();
+                        const clone = svg.cloneNode(true);
+                        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                        clone.setAttribute("width", String(Math.round(r.width)));
+                        clone.setAttribute("height", String(Math.round(r.height)));
+                        // Remove any transform on the SVG root (already accounted for by getBoundingClientRect)
+                        clone.removeAttribute("style");
+                        clone.style.width = Math.round(r.width) + "px";
+                        clone.style.height = Math.round(r.height) + "px";
+                        const data = new XMLSerializer().serializeToString(clone);
+                        const svgImg = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(img);
+                            img.onerror = () => resolve(null);
+                            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
+                        });
+                        if (svgImg) {
+                            ctx.drawImage(svgImg,
+                                r.left - containerRect.left,
+                                r.top - containerRect.top,
+                                Math.round(r.width), Math.round(r.height)
+                            );
+                        }
+                    } catch {}
+                }
             }
 
             // Flash animation
