@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function () {
 
     // Maps (Nominatim + Overpass + Valhalla)
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
+    Route::post('/planes/{uuid}/maps/transit', [GoogleMapsController::class, 'transit'])->name('planes.maps.transit');
+    Route::post('/planes/{uuid}/maps/parking', [GoogleMapsController::class, 'parking'])->name('planes.maps.parking');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
     Route::get('/api/geocode', [GoogleMapsController::class, 'geocodeSearch'])->name('api.geocode');
     Route::get('/api/map-pois', [GoogleMapsController::class, 'mapPOIs'])->name('api.map-pois');

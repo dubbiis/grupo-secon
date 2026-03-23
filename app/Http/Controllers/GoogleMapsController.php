@@ -71,6 +71,26 @@ class GoogleMapsController extends Controller
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
     }
 
+    public function transit(Request $request, string $uuid)
+    {
+        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $coords = $this->resolveCoords($request, $plan);
+        if (!$coords) return response()->json(['error' => 'Dirección no encontrada'], 422);
+
+        $data = $this->maps->getTransitData($coords['lat'], $coords['lng']);
+        return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
+    }
+
+    public function parking(Request $request, string $uuid)
+    {
+        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $coords = $this->resolveCoords($request, $plan);
+        if (!$coords) return response()->json(['error' => 'Dirección no encontrada'], 422);
+
+        $data = $this->maps->getParkingData($coords['lat'], $coords['lng']);
+        return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
+    }
+
     private function clearTransportCache(Request $request, string $uuid): void
     {
         $plan = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();

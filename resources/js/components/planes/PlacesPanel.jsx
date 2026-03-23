@@ -72,37 +72,77 @@ export default function PlacesPanel({ uuid, type, onResult }) {
     const search = async (skipCache = false) => {
         setStatus("loading");
         setErrorMsg("");
+        setData(null);
+        setChecked({});
+
         try {
             const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-            const res  = await fetch(`/planes/${uuid}/maps/${type}`, {
-                method:  "POST",
-                headers: {
-                    "X-CSRF-TOKEN":  csrf,
-                    "Content-Type":  "application/json",
-                    "Accept":        "application/json",
-                },
-                body: JSON.stringify({ no_cache: skipCache }),
-            });
+            const headers = { "X-CSRF-TOKEN": csrf, "Content-Type": "application/json", "Accept": "application/json" };
+            const body = JSON.stringify({ no_cache: skipCache });
 
-            const json = await res.json();
-            if (!res.ok) {
-                setErrorMsg(json.error || "Error al buscar datos.");
-                setStatus("error");
-                return;
-            }
+            if (type === "transporte") {
+                // Two sequential requests — transit first, then parking
+                let merged = {};
+                let addr = "";
 
-            setData(json);
-            setAddressUsed(json.address_used ?? "");
+                // 1. Transit (metro + bus)
+                try {
+                    const res1 = await fetch(`/planes/${uuid}/maps/transit`, { method: "POST", headers, body });
+                    if (res1.ok) {
+                        const json1 = await res1.json();
+                        addr = json1.address_used ?? "";
+                        merged = { ...merged, ...json1 };
+                        // Show partial results immediately
+                        setData({ ...merged });
+                        setAddressUsed(addr);
+                        const partial = {};
+                        groups.forEach(({ key }) => {
+                            (merged[key] ?? []).forEach((_, i) => { partial[`${key}_${i}`] = true; });
+                        });
+                        setChecked(partial);
+                        setStatus("results");
+                    }
+                } catch {}
 
-            // Check all items by default
-            const allChecked = {};
-            groups.forEach(({ key }) => {
-                (json[key] ?? []).forEach((_, i) => {
-                    allChecked[`${key}_${i}`] = true;
+                // 2. Parking
+                try {
+                    const res2 = await fetch(`/planes/${uuid}/maps/parking`, { method: "POST", headers, body });
+                    if (res2.ok) {
+                        const json2 = await res2.json();
+                        merged = { ...merged, ...json2 };
+                        setData({ ...merged, address_used: addr });
+                        const allChecked = {};
+                        groups.forEach(({ key }) => {
+                            (merged[key] ?? []).forEach((_, i) => { allChecked[`${key}_${i}`] = true; });
+                        });
+                        setChecked(allChecked);
+                    }
+                } catch {}
+
+                if (!Object.keys(merged).some((k) => k !== "address_used")) {
+                    setErrorMsg("No se encontraron datos de transporte.");
+                    setStatus("error");
+                } else {
+                    setStatus("results");
+                }
+            } else {
+                // Single request for emergencia
+                const res = await fetch(`/planes/${uuid}/maps/${type}`, { method: "POST", headers, body });
+                const json = await res.json();
+                if (!res.ok) {
+                    setErrorMsg(json.error || "Error al buscar datos.");
+                    setStatus("error");
+                    return;
+                }
+                setData(json);
+                setAddressUsed(json.address_used ?? "");
+                const allChecked = {};
+                groups.forEach(({ key }) => {
+                    (json[key] ?? []).forEach((_, i) => { allChecked[`${key}_${i}`] = true; });
                 });
-            });
-            setChecked(allChecked);
-            setStatus("results");
+                setChecked(allChecked);
+                setStatus("results");
+            }
         } catch {
             setErrorMsg("No se pudo conectar. Los campos manuales siguen disponibles.");
             setStatus("error");
