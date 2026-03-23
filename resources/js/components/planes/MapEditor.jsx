@@ -649,7 +649,7 @@ export default function MapEditor({
                     className={`flex flex-wrap items-center gap-1.5 p-2.5 rounded-2xl backdrop-blur-2xl bg-gradient-to-r from-white/80 via-slate-50/70 to-white/80 border border-slate-200/50 shadow-[0_8px_32px_rgba(32,141,202,0.08),0_2px_8px_rgba(0,0,0,0.06)] ${fullscreen ? "" : "sticky top-0 z-40"}`}
                 >
                     {/* Tools — glass pill with gradient border */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-sm border border-slate-300/60">
                         {TOOLS.map((tl, i) => (
                             <motion.button
                                 key={tl.id}
@@ -663,7 +663,7 @@ export default function MapEditor({
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all relative ${
                                     tool === tl.id
                                         ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/50"
-                                        : "text-slate-500 hover:text-slate-900 hover:bg-white"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-white"
                                 }`}
                             >
                                 <tl.icon size={15} />
@@ -679,7 +679,7 @@ export default function MapEditor({
                     </div>
 
                     {/* Colors — glass pill with hover glow */}
-                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
+                    <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-sm border border-slate-300/60">
                         {QUICK_COLORS.map((c) => (
                             <motion.button
                                 key={c}
@@ -702,7 +702,7 @@ export default function MapEditor({
                     </div>
 
                     {/* Stroke widths — glass pill */}
-                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 shadow-inner shadow-slate-100/50 border border-slate-300/50">
+                    <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-sm border border-slate-300/60">
                         {STROKE_WIDTHS.map((w) => (
                             <motion.button key={w} onClick={() => setStrokeWidth(w)} title={`${w}px`}
                                 whileHover={{ scale: 1.1 }}
@@ -861,12 +861,12 @@ export default function MapEditor({
                     <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                             onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-500 hover:text-slate-900 hover:bg-white"}`}>
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-600 hover:text-slate-900 hover:bg-white"}`}>
                             <Grid size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomOut size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }}
@@ -876,7 +876,7 @@ export default function MapEditor({
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomIn size={14} />
                         </motion.button>
                     </div>
@@ -885,7 +885,7 @@ export default function MapEditor({
                     <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50">
                         <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                                onClick={() => { setShowMap((v) => !v); if (!showMap) setMapMode("search"); }}
+                                onClick={() => { setShowMap(true); setMapMode("search"); }}
                                 className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
                                     showMap && mapMode === "search"
                                         ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
