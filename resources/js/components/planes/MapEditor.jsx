@@ -7,6 +7,7 @@ import {
     Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
 } from "lucide-react";
 import LeafletMap from "@/components/planes/LeafletMap";
+import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 
@@ -178,6 +179,7 @@ export default function MapEditor({
     category = "plano",
     existingFiles = [],
     onSaved,
+    eventAddress = "",
 }) {
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
@@ -208,6 +210,10 @@ export default function MapEditor({
     const [mapQuery,  setMapQuery]  = useState("");
     const [routeA,    setRouteA]    = useState("");
     const [routeB,    setRouteB]    = useState("");
+    const [routeACoords, setRouteACoords] = useState(null);
+    const [routeBCoords, setRouteBCoords] = useState(null);
+    const [routeData, setRouteData] = useState(null);
+    const [activePOIs, setActivePOIs] = useState([]);
     const [mapCommand, setMapCommand] = useState(null);
     const [mapStatus,  setMapStatus]  = useState(null); // null | "loading" | "error" | "1.2 km · 4 min"
     const [openIconCat, setOpenIconCat] = useState(null);
@@ -548,9 +554,31 @@ export default function MapEditor({
     const searchMap = () => {
         if (mapMode === "search" && mapQuery.trim()) {
             setMapCommand({ type: "search", query: mapQuery });
-        } else if (mapMode === "route" && routeA.trim() && routeB.trim()) {
-            setMapCommand({ type: "route", a: routeA, b: routeB });
+        } else if (mapMode === "route") {
+            const a = routeACoords || (routeA.trim() ? routeA : null);
+            const b = routeBCoords || (routeB.trim() ? routeB : null);
+            if (a && b) setMapCommand({ type: "route", a, b });
         }
+    };
+
+    // Auto-fill point A from event address
+    useEffect(() => {
+        if (eventAddress && !routeA && mapMode === "route") {
+            setRouteA(eventAddress);
+        }
+    }, [eventAddress, mapMode]);
+
+    // Toggle POI layer
+    const togglePOI = (cat) => {
+        setActivePOIs((prev) => {
+            const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
+            // Get center from routeACoords or event coords
+            const center = routeACoords || (eventAddress ? null : null);
+            if (center) {
+                setMapCommand({ type: "poi", lat: center.lat, lng: center.lng, categories: next });
+            }
+            return next;
+        });
     };
 
     // ── Context menu ─────────────────────────────────────────────
@@ -882,60 +910,120 @@ export default function MapEditor({
 
                             {/* Search mode */}
                             {mapMode === "search" && (
-                                <div className="flex gap-1.5">
-                                    <div className="flex-1 flex items-center gap-2 bg-slate-200 border border-slate-200 rounded-xl px-3 py-2">
-                                        <Search size={13} className="text-slate-900 flex-shrink-0" />
-                                        <input type="text" value={mapQuery} onChange={(e) => setMapQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
-                                            placeholder="Buscar dirección, hospital..."
-                                            className="flex-1 bg-transparent text-xs text-slate-900 placeholder-slate-400 focus:outline-none"
-                                        />
-                                    </div>
-                                    <button onClick={searchMap}
-                                        className="px-3 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors">
-                                        Ir
-                                    </button>
-                                </div>
+                                <AddressAutocomplete
+                                    value={mapQuery}
+                                    onChange={setMapQuery}
+                                    onSelect={(place) => {
+                                        setMapQuery(place.displayName);
+                                        setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
+                                    }}
+                                    placeholder="Buscar dirección, hospital..."
+                                    biasLat={routeACoords?.lat}
+                                    biasLng={routeACoords?.lng}
+                                />
                             )}
 
                             {/* Route mode */}
                             {mapMode === "route" && (
                                 <div className="space-y-1.5">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-full bg-[#273887] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">A</span>
-                                        <input type="text" value={routeA} onChange={(e) => setRouteA(e.target.value)}
-                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
-                                            placeholder="Origen (dirección o lugar)"
-                                            className="flex-1 bg-slate-200 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-full bg-[#208DCA] border-2 border-white flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white">B</span>
-                                        <input type="text" value={routeB} onChange={(e) => setRouteB(e.target.value)}
-                                            onKeyDown={(e) => e.key === "Enter" && searchMap()}
-                                            placeholder="Destino (dirección o lugar)"
-                                            className="flex-1 bg-slate-200 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#208DCA]/40 transition-colors"
-                                        />
-                                    </div>
+                                    <AddressAutocomplete
+                                        label="A" labelColor="#253C87"
+                                        value={routeA}
+                                        onChange={setRouteA}
+                                        onSelect={(place) => {
+                                            setRouteA(place.displayName);
+                                            setRouteACoords({ lat: place.lat, lng: place.lng });
+                                        }}
+                                        biasLat={routeACoords?.lat}
+                                        biasLng={routeACoords?.lng}
+                                        placeholder="Origen (dirección o lugar)"
+                                    />
+                                    <AddressAutocomplete
+                                        label="B" labelColor="#208DCA"
+                                        value={routeB}
+                                        onChange={setRouteB}
+                                        onSelect={(place) => {
+                                            setRouteB(place.displayName);
+                                            setRouteBCoords({ lat: place.lat, lng: place.lng });
+                                        }}
+                                        biasLat={routeACoords?.lat || routeBCoords?.lat}
+                                        biasLng={routeACoords?.lng || routeBCoords?.lng}
+                                        placeholder="Destino (dirección o lugar)"
+                                    />
                                     <button onClick={searchMap} disabled={!routeA.trim() || !routeB.trim()}
-                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs hover:bg-[#208DCA]/30 transition-colors disabled:opacity-40">
+                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs font-medium hover:bg-[#208DCA]/30 transition-colors disabled:opacity-40">
                                         <Navigation size={11} /> Trazar ruta
                                     </button>
-                                    {mapStatus && mapStatus !== "loading" && mapStatus !== "error" && (
-                                        <p className="text-center text-[11px] text-[#208DCA] font-medium">{mapStatus}</p>
-                                    )}
                                     {mapStatus === "error" && (
-                                        <p className="text-center text-[11px] text-amber-400">No se encontró una o ambas direcciones</p>
+                                        <p className="text-center text-[11px] text-red-500">No se encontró una o ambas direcciones</p>
                                     )}
                                     {mapStatus === "loading" && (
-                                        <p className="text-center text-[11px] text-slate-900">Calculando ruta…</p>
+                                        <p className="text-center text-[11px] text-slate-500">Calculando ruta…</p>
                                     )}
                                 </div>
                             )}
 
+                            {/* POI toggles */}
+                            <div className="flex flex-wrap gap-1.5">
+                                {[
+                                    { key: "hospital", emoji: "🏥", label: "Hospitales" },
+                                    { key: "police", emoji: "👮", label: "Policía" },
+                                    { key: "parking", emoji: "🅿️", label: "Parking" },
+                                    { key: "metro", emoji: "🚇", label: "Metro" },
+                                ].map((poi) => (
+                                    <button
+                                        key={poi.key}
+                                        onClick={() => togglePOI(poi.key)}
+                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-all ${
+                                            activePOIs.includes(poi.key)
+                                                ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
+                                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                                        }`}
+                                    >
+                                        <span>{poi.emoji}</span> {poi.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Route alternatives cards */}
+                            <AnimatePresence>
+                                {routeData?.routes?.length > 1 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="flex gap-2 overflow-x-auto"
+                                    >
+                                        {routeData.routes.map((route, i) => {
+                                            const dist = (route.distance / 1000).toFixed(1);
+                                            const mins = Math.round(route.duration / 60);
+                                            const selected = i === routeData.selectedIndex;
+                                            return (
+                                                <motion.button
+                                                    key={i}
+                                                    onClick={() => {
+                                                        setMapCommand({ type: "route", a: routeACoords || routeA, b: routeBCoords || routeB, _selectIdx: i });
+                                                    }}
+                                                    className={`flex-shrink-0 px-3 py-2 rounded-xl text-[11px] border transition-all ${
+                                                        selected
+                                                            ? "bg-[#208DCA]/10 border-[#208DCA]/30 text-[#208DCA] font-semibold"
+                                                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                                                    }`}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    <span className="font-bold">{mins} min</span> · {dist} km
+                                                    {selected && <span className="ml-1.5">✓</span>}
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             {/* Leaflet map */}
-                            <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height: fullscreen ? "calc(100vh - 280px)" : 520 }}>
-                                <LeafletMap command={mapCommand} onStatus={setMapStatus} />
+                            <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height: fullscreen ? "calc(100vh - 320px)" : 520 }}>
+                                <LeafletMap command={mapCommand} onStatus={setMapStatus} onRouteData={setRouteData} />
                             </div>
                         </motion.div>
                     )}

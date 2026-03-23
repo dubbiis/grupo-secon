@@ -47,6 +47,7 @@ class PlanSectionController extends Controller
                 'metadata' => $f->metadata,
                 'order' => $f->order,
             ]),
+            'eventAddress' => $plan->getSectionByNumber(1)?->form_data['direccion_evento'] ?? '',
         ]);
     }
 

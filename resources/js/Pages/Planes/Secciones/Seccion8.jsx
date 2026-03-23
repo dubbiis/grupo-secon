@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Map, Upload } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
-export default function Seccion8({ plan, section, files = [] }) {
+export default function Seccion8({ plan, section, files = [], eventAddress = "" }) {
     const { t } = useTranslation();
     const [showMapEditor, setShowMapEditor] = useState(false);
     const planoFiles = files.filter((f) => f.file_category === "plano");
@@ -76,6 +76,7 @@ export default function Seccion8({ plan, section, files = [] }) {
                     category="plano"
                     existingFiles={planoFiles}
                     onSaved={() => {}}
+                    eventAddress={eventAddress}
                 />
             )}
         </SectionShell>

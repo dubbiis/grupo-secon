@@ -7,7 +7,7 @@ import PlacesPanel from "@/components/planes/PlacesPanel";
 import { Map } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
-export default function Seccion5({ plan, section, files = [] }) {
+export default function Seccion5({ plan, section, files = [], eventAddress = "" }) {
     const { t } = useTranslation();
     const [form, setForm] = useState({
         hospitales_reales: "",
@@ -85,6 +85,7 @@ export default function Seccion5({ plan, section, files = [] }) {
                         category="imagen_ruta"
                         existingFiles={mapFiles}
                         onSaved={() => {}}
+                        eventAddress={eventAddress}
                     />
                 )}
 

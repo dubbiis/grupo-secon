@@ -30,7 +30,7 @@ const SECTION_COMPONENTS = {
     11: Seccion11, 12: Seccion12, 13: Seccion13, 14: Seccion14, 15: Seccion15,
 };
 
-export default function Show({ plan, sections, currentSection, files }) {
+export default function Show({ plan, sections, currentSection, files, eventAddress }) {
     const { t } = useTranslation();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -137,6 +137,7 @@ export default function Show({ plan, sections, currentSection, files }) {
                                     section={currentSection}
                                     sections={sections}
                                     files={files}
+                                    eventAddress={eventAddress}
                                 />
                             </motion.div>
                         ) : (
