@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Pen, Minus, ArrowRight, Circle, Square, Type, Undo2, Redo2,
@@ -184,6 +185,8 @@ export default function MapEditor({
 }) {
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
+    const iconBtnRef = useRef(null);
+    const [iconDropPos, setIconDropPos] = useState({ top: 0, left: 0 });
     const containerRef = useRef(null);
 
     // Drawing refs (avoid re-render during draw)
@@ -663,7 +666,7 @@ export default function MapEditor({
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all relative ${
                                     tool === tl.id
                                         ? "bg-gradient-to-br from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/50"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-white"
+                                        : "text-slate-800 hover:text-slate-900 hover:bg-white"
                                 }`}
                             >
                                 <tl.icon size={15} />
@@ -763,12 +766,18 @@ export default function MapEditor({
                     </div>
 
                     {/* Icons dropdown */}
-                    <div className="relative">
+                    <div className="relative" ref={iconBtnRef}>
                         <Shine enableOnHover color="#208DCA" opacity={0.15} duration={500} asChild>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => setOpenIconCat(openIconCat ? null : "emergencia")}
+                                onClick={() => {
+                                    if (!openIconCat && iconBtnRef.current) {
+                                        const rect = iconBtnRef.current.getBoundingClientRect();
+                                        setIconDropPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 - 170 });
+                                    }
+                                    setOpenIconCat(openIconCat ? null : "emergencia");
+                                }}
                                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition-all ${
                                     openIconCat
                                         ? "bg-gradient-to-r from-[#253C87]/15 to-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm"
@@ -782,16 +791,15 @@ export default function MapEditor({
                                 </motion.span>
                             </motion.button>
                         </Shine>
-                        <AnimatePresence>
-                            {openIconCat && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 8, scale: 0.9 }}
-                                    transition={{ type: "spring", damping: 22, stiffness: 350 }}
-                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[9999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] overflow-hidden"
-                                    style={{ width: 340 }}
-                                    onClick={(e) => e.stopPropagation()}
+                        {openIconCat && createPortal(
+                            <motion.div
+                                initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.9 }}
+                                transition={{ type: "spring", damping: 22, stiffness: 350 }}
+                                className="fixed z-[99999] backdrop-blur-2xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] overflow-hidden"
+                                style={{ width: 340, top: iconDropPos.top, left: iconDropPos.left }}
+                                onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="flex items-center gap-0.5 px-2 pt-2.5 pb-2 border-b border-slate-100">
                                         <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
@@ -827,19 +835,19 @@ export default function MapEditor({
                                             </motion.button>
                                         ))}
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                </motion.div>,
+                            document.body
+                        )}
                     </div>
 
                     {/* Undo / Redo / Clear — glass pill */}
                     <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/60">
                         <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
                             <Undo2 size={16} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
                             <Redo2 size={16} />
                         </motion.button>
                         <AnimatePresence>
@@ -852,7 +860,7 @@ export default function MapEditor({
                             )}
                         </AnimatePresence>
                         <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 transition-all">
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 transition-all">
                             <X size={16} />
                         </motion.button>
                     </div>
@@ -861,12 +869,12 @@ export default function MapEditor({
                     <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                             onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-600 hover:text-slate-900 hover:bg-white"}`}>
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-800 hover:text-slate-900 hover:bg-white"}`}>
                             <Grid size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-800 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomOut size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }}
@@ -876,7 +884,7 @@ export default function MapEditor({
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
                             onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-800 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomIn size={14} />
                         </motion.button>
                     </div>
