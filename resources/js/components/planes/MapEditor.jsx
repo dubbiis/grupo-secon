@@ -802,7 +802,7 @@ export default function MapEditor({
                                 onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="flex items-center gap-0.5 px-2 pt-2.5 pb-2 border-b border-slate-100">
-                                        <div className="flex gap-0.5 flex-1 overflow-x-auto no-scrollbar">
+                                        <div className="flex gap-1 flex-1 flex-wrap">
                                             {Object.entries(ICON_CATEGORIES).map(([key, cat]) => (
                                                 <motion.button key={key} onClick={() => setOpenIconCat(key)}
                                                     whileHover={{ scale: 1.05 }}
