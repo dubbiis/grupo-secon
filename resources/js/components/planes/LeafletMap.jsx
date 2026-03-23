@@ -37,7 +37,7 @@ function routeLabel(text, isPrimary) {
     const bg = isPrimary ? "#208DCA" : "#64748B";
     return L.divIcon({
         className: "",
-        html: `<div style="background:${bg};color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-family:system-ui,sans-serif;cursor:pointer;border:2px solid white">${text}</div>`,
+        html: `<div style="background:${bg};color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:24px;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,0.3);font-family:system-ui,sans-serif;cursor:pointer;border:2px solid white;display:flex;align-items:center;gap:6px"><span style="font-size:15px">🚗</span>${text}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
     });
@@ -80,6 +80,7 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
     const routeLabelsRef = useRef([]);
     const poiLayerRef    = useRef([]);
     const prevCommandRef = useRef(null);
+    const cachedRoutesRef = useRef(null); // { routes, locA, locB }
 
     // Init map
     useEffect(() => {
@@ -111,6 +112,7 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
         const map = mapRef.current;
         if (!map) return;
 
+        cachedRoutesRef.current = { routes, locA, locB };
         clearRoutes();
 
         // Render alternatives first (behind), then primary (on top)
@@ -188,6 +190,15 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
         prevCommandRef.current = command;
 
         const map = mapRef.current;
+
+        // Select a different route alternative (no new API call)
+        if (command.type === "route" && command._selectIdx != null && cachedRoutesRef.current) {
+            const { routes, locA, locB } = cachedRoutesRef.current;
+            if (routes[command._selectIdx]) {
+                renderRoutes(routes, locA, locB, command._selectIdx);
+            }
+            return;
+        }
 
         if (command.type === "clear") {
             clearRoutes();
