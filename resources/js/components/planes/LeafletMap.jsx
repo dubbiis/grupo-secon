@@ -85,8 +85,10 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
     // Init map
     useEffect(() => {
         if (mapRef.current || !containerRef.current) return;
-        mapRef.current = L.map(containerRef.current, { zoomControl: true })
-            .setView([40.4168, -3.7038], 13);
+        mapRef.current = L.map(containerRef.current, {
+            zoomControl: true,
+            scrollWheelZoom: false,  // Prevent scroll hijack on laptops
+        }).setView([40.4168, -3.7038], 13);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
             maxZoom: 19,
