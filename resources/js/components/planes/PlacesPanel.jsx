@@ -163,7 +163,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="px-4 py-3 flex items-start gap-2 text-xs text-amber-400/70"
+                        className="px-4 py-3 flex items-start gap-2 text-sm text-red-500 font-medium"
                     >
                         <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
                         {errorMsg}
