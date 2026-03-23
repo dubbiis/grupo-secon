@@ -1133,12 +1133,6 @@ export default function MapEditor({
                 )}
             </AnimatePresence>
 
-            {/* ── Tips ── */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-900 px-1">
-                <span>Teclas: <kbd className="bg-slate-200 px-1 rounded">P</kbd>lápiz <kbd className="bg-slate-200 px-1 rounded">L</kbd>ínea <kbd className="bg-slate-200 px-1 rounded">A</kbd>flecha <kbd className="bg-slate-200 px-1 rounded">R</kbd>ect <kbd className="bg-slate-200 px-1 rounded">C</kbd>írculo <kbd className="bg-slate-200 px-1 rounded">T</kbd>exto <kbd className="bg-slate-200 px-1 rounded">S</kbd>eleccionar</span>
-                <span>·</span>
-                <span>Ctrl+Z/Y · Del=borrar seleccionado · Ctrl+V=pegar imagen · Clic derecho en icono/texto</span>
-            </div>
         </div>
     );
 }
