@@ -76,8 +76,8 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         containerRef.current.addEventListener("wheel", (e) => {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
-                const delta = e.deltaY > 0 ? -1 : 1;
-                map.zoomIn(delta);
+                const delta = e.deltaY > 0 ? -0.4 : 0.4;
+                map.setZoom(map.getZoom() + delta);
             }
         }, { passive: false });
 
