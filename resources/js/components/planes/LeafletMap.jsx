@@ -156,10 +156,15 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         onRouteData?.({ routes, selectedIndex: selectedIdx });
     }, [clearRoutes, onStatus, onRouteData]);
 
-    // React to commands
+    // React to commands — retry if map not ready yet
     useEffect(() => {
-        if (!command || !mapRef.current) return;
+        if (!command) return;
         if (prevCommandRef.current === command) return;
+        if (!mapRef.current) {
+            // Map not ready, retry in 100ms
+            const t = setTimeout(() => { prevCommandRef.current = null; }, 100);
+            return () => clearTimeout(t);
+        }
         prevCommandRef.current = command;
 
         const map = mapRef.current;
