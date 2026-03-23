@@ -2,8 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
 
-const PHOTON_URL = "https://photon.komoot.io/api/";
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+const GEOCODE_URL = "/api/geocode";
 
 const TYPE_ICONS = {
     house: MapPin,
@@ -52,55 +51,14 @@ export default function AddressAutocomplete({
 
             setLoading(true);
             try {
-                // Race: Nominatim vs Photon — use whichever responds first
-                const photonParams = new URLSearchParams({ q: query, limit: "5", lang: "default" });
+                const params = new URLSearchParams({ q: query });
                 if (biasLat && biasLng) {
-                    photonParams.set("lat", String(biasLat));
-                    photonParams.set("lon", String(biasLng));
+                    params.set("lat", String(biasLat));
+                    params.set("lng", String(biasLng));
                 }
 
-                const nominatimParams = new URLSearchParams({
-                    q: query, format: "json", limit: "5", addressdetails: "1",
-                });
-                if (biasLat && biasLng) {
-                    const d = 0.5;
-                    nominatimParams.set("viewbox", `${biasLng - d},${biasLat - d},${biasLng + d},${biasLat + d}`);
-                    nominatimParams.set("bounded", "0");
-                }
-
-                const photonReq = fetch(`${PHOTON_URL}?${photonParams}`, { signal: controller.signal })
-                    .then((r) => r.json())
-                    .then((data) =>
-                        (data.features || []).map((f) => {
-                            const p = f.properties || {};
-                            const [lng, lat] = f.geometry?.coordinates || [0, 0];
-                            return {
-                                lat, lng,
-                                displayName: [p.name, p.street, p.city, p.state, p.country].filter(Boolean).join(", "),
-                                name: p.name || p.street || "",
-                                subtitle: [p.city, p.state, p.country].filter(Boolean).join(", "),
-                                type: p.osm_value || p.type || "house",
-                            };
-                        })
-                    );
-
-                const nominatimReq = fetch(`${NOMINATIM_URL}?${nominatimParams}`, {
-                    signal: controller.signal,
-                    headers: { "User-Agent": "GrupoSecon/1.0" },
-                })
-                    .then((r) => r.json())
-                    .then((data) =>
-                        (data || []).map((r) => ({
-                            lat: parseFloat(r.lat), lng: parseFloat(r.lon),
-                            displayName: r.display_name,
-                            name: r.display_name.split(",")[0],
-                            subtitle: r.display_name.split(",").slice(1, 3).join(",").trim(),
-                            type: r.type || "house",
-                        }))
-                    );
-
-                // First valid response wins
-                const items = await Promise.any([photonReq, nominatimReq]);
+                const res = await fetch(`${GEOCODE_URL}?${params}`, { signal: controller.signal });
+                const items = await res.json();
 
                 setResults(items);
                 setOpen(items.length > 0);

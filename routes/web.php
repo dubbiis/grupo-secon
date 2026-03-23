@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     // Maps (Nominatim + Overpass + Valhalla)
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
+    Route::get('/api/geocode', [GoogleMapsController::class, 'geocodeSearch'])->name('api.geocode');
 
     // Custom questions
     Route::get('/custom-questions/{section}', [CustomQuestionController::class, 'index']);
