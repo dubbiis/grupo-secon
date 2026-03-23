@@ -34,12 +34,14 @@ function labelIcon(letter, bg) {
 }
 
 function routeLabel(text, isPrimary) {
-    const bg = isPrimary ? "#208DCA" : "#64748B";
+    const bg = isPrimary ? "white" : "#f1f5f9";
+    const color = isPrimary ? "#208DCA" : "#64748B";
+    const shadow = isPrimary ? "0 2px 12px rgba(32,141,202,0.3)" : "0 2px 8px rgba(0,0,0,0.15)";
     return L.divIcon({
         className: "",
-        html: `<div style="background:${bg};color:white;font-size:13px;font-weight:700;padding:6px 14px;border-radius:24px;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,0.3);font-family:system-ui,sans-serif;cursor:pointer;border:2px solid white;display:flex;align-items:center;gap:6px"><span style="font-size:15px">🚗</span>${text}</div>`,
+        html: `<div style="background:${bg};color:${color};font-size:13px;font-weight:700;padding:7px 12px;border-radius:8px;white-space:nowrap;box-shadow:${shadow};font-family:system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;line-height:1"><span style="font-size:14px">🚗</span><span><span style="font-size:14px">${text.split("·")[0].trim()}</span><br><span style="font-size:11px;font-weight:500;opacity:0.7">${text.split("·")[1]?.trim() || ""}</span></span></div>`,
         iconSize: [0, 0],
-        iconAnchor: [0, 0],
+        iconAnchor: [0, 14],
     });
 }
 
@@ -52,9 +54,9 @@ function poiIcon(emoji) {
     });
 }
 
-function getMidpoint(coords) {
-    const mid = Math.floor(coords.length / 2);
-    return coords[mid] || coords[0];
+function getRoutePoint(coords, fraction = 0.35) {
+    const idx = Math.floor(coords.length * fraction);
+    return coords[Math.min(idx, coords.length - 1)] || coords[0];
 }
 
 const POI_QUERIES = {
@@ -157,9 +159,9 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
 
             routeLayersRef.current.push(layer);
 
-            // Route label at midpoint
+            // Route label at ~35% of route (avoids overlapping endpoints)
             const coords = route.geometry.coordinates;
-            const mid = getMidpoint(coords);
+            const mid = getRoutePoint(coords, isPrimary ? 0.35 : 0.55);
             const dist = (route.distance / 1000).toFixed(1);
             const mins = Math.round(route.duration / 60);
             const text = `${mins} min · ${dist} km`;
