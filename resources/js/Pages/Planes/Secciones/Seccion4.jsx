@@ -19,11 +19,10 @@ export default function Seccion4({ plan, section }) {
         ...section.form_data,
     });
 
-    const numAccesos = parseInt(form.num_accesos) || 0;
+    const numAccesos = Math.max(1, parseInt(form.num_accesos) || 1);
 
-    // Sync accesos_detalle array with num_accesos
+    // Sync accesos_detalle array with num_accesos (minimum 1)
     useEffect(() => {
-        if (numAccesos <= 1) return;
         setForm((prev) => {
             const current = prev.accesos_detalle || [];
             if (current.length === numAccesos) return prev;
@@ -62,20 +61,10 @@ export default function Seccion4({ plan, section }) {
                 </div>
             </div>
 
-            {/* Single access description or per-access detail */}
-            {numAccesos <= 1 ? (
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s4.access_desc")}</label>
-                    <Textarea
-                        {...field("descripcion_accesos")}
-                        placeholder="Describe cada acceso: Acceso Norte (público general), Acceso Sur (VIP), Puerta de servicio (personal)..."
-                        rows={4}
-                    />
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    <label className="text-sm font-medium block">{t("s4.access_desc")}</label>
-                    <AnimatePresence>
+            {/* Access detail cards — always at least 1 */}
+            <div className="space-y-3">
+                <label className="text-sm font-medium block">{t("s4.access_desc")}</label>
+                <AnimatePresence>
                         {(form.accesos_detalle || []).map((acceso, i) => (
                             <motion.div
                                 key={i}
@@ -106,7 +95,6 @@ export default function Seccion4({ plan, section }) {
                         ))}
                     </AnimatePresence>
                 </div>
-            )}
 
             {/* ── Búsqueda automática de transporte ── */}
             <div className="space-y-3">
