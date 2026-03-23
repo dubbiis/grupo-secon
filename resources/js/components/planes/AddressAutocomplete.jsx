@@ -91,7 +91,9 @@ export default function AddressAutocomplete({
         onChange?.(val);
 
         if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => search(val), 150);
+        // Longer debounce if user is typing a number (likely street number)
+        const endsWithDigit = /\d$/.test(val.trim());
+        timerRef.current = setTimeout(() => search(val), endsWithDigit ? 800 : 250);
     };
 
     const handleSelect = (item) => {
