@@ -213,7 +213,6 @@ export default function MapEditor({
     const [routeACoords, setRouteACoords] = useState(null);
     const [routeBCoords, setRouteBCoords] = useState(null);
     const [routeData, setRouteData] = useState(null);
-    const [activePOIs, setActivePOIs] = useState([]);
     const [mapCommand, setMapCommand] = useState(null);
     const [mapStatus,  setMapStatus]  = useState(null); // null | "loading" | "error" | "1.2 km · 4 min"
     const [openIconCat, setOpenIconCat] = useState(null);
@@ -568,37 +567,7 @@ export default function MapEditor({
         }
     }, [eventAddress, mapMode]);
 
-    // Toggle POI layer
-    const poiCenterRef = useRef(null);
 
-    const sendPOICommand = (categories, center) => {
-        if (center && categories.length > 0) {
-            poiCenterRef.current = center;
-            setMapCommand({ type: "poi", lat: center.lat, lng: center.lng, categories });
-        } else if (categories.length === 0) {
-            setMapCommand({ type: "poi", lat: 0, lng: 0, categories: [] });
-        }
-    };
-
-    const togglePOI = async (cat) => {
-        const next = activePOIs.includes(cat) ? activePOIs.filter((c) => c !== cat) : [...activePOIs, cat];
-        setActivePOIs(next);
-
-        let center = routeACoords || routeBCoords || poiCenterRef.current;
-        if (!center && eventAddress) {
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(eventAddress)}&format=json&limit=1`, {
-                    headers: { "User-Agent": "GrupoSecon/1.0" },
-                });
-                const data = await res.json();
-                if (data[0]) {
-                    center = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-                    setRouteACoords(center);
-                }
-            } catch {}
-        }
-        sendPOICommand(next, center);
-    };
 
     // ── Context menu ─────────────────────────────────────────────
     const onContextMenu = (e) => {
@@ -993,28 +962,6 @@ export default function MapEditor({
                                     )}
                                 </div>
                             )}
-
-                            {/* POI toggles */}
-                            <div className="flex flex-wrap gap-1.5">
-                                {[
-                                    { key: "hospital", emoji: "🏥", label: "Hospitales" },
-                                    { key: "police", emoji: "👮", label: "Policía" },
-                                    { key: "parking", emoji: "🅿️", label: "Parking" },
-                                    { key: "metro", emoji: "🚇", label: "Metro" },
-                                ].map((poi) => (
-                                    <button
-                                        key={poi.key}
-                                        onClick={() => togglePOI(poi.key)}
-                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-all ${
-                                            activePOIs.includes(poi.key)
-                                                ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA]"
-                                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
-                                        }`}
-                                    >
-                                        <span>{poi.emoji}</span> {poi.label}
-                                    </button>
-                                ))}
-                            </div>
 
                             {/* Route alternatives cards */}
                             <AnimatePresence>
