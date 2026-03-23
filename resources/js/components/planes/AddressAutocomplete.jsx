@@ -102,15 +102,29 @@ export default function AddressAutocomplete({
         inputRef.current?.blur();
     };
 
-    const handleKeyDown = (e) => {
-        if (!open || results.length === 0) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                // Force search with current value
-                search(value);
+    const handleKeyDown = async (e) => {
+        if (e.key === "Escape") { setOpen(false); return; }
+
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (open && activeIdx >= 0 && results[activeIdx]) {
+                handleSelect(results[activeIdx]);
+            } else if (open && results.length > 0) {
+                handleSelect(results[0]);
+            } else if (value.trim().length >= 3) {
+                // No dropdown open — geocode the raw text directly
+                try {
+                    const params = new URLSearchParams({ q: value.trim() });
+                    if (biasLat && biasLng) { params.set("lat", String(biasLat)); params.set("lng", String(biasLng)); }
+                    const res = await fetch(`${GEOCODE_URL}?${params}`);
+                    const items = await res.json();
+                    if (items.length > 0) handleSelect(items[0]);
+                } catch {}
             }
             return;
         }
+
+        if (!open || results.length === 0) return;
 
         if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -118,15 +132,6 @@ export default function AddressAutocomplete({
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
             setActiveIdx((prev) => Math.max(prev - 1, 0));
-        } else if (e.key === "Enter") {
-            e.preventDefault();
-            if (activeIdx >= 0 && results[activeIdx]) {
-                handleSelect(results[activeIdx]);
-            } else if (results.length > 0) {
-                handleSelect(results[0]);
-            }
-        } else if (e.key === "Escape") {
-            setOpen(false);
         }
     };
 
