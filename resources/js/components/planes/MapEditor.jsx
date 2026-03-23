@@ -186,11 +186,32 @@ function drawElements(ctx, elements, selectedIdx = null, showGrid = false, canva
                     Math.abs(el.x2 - el.x1) + 12, Math.abs(el.y2 - el.y1) + 12
                 );
             } else if (el.type === "path" && el.points?.length > 0) {
-                const xs = el.points.map(p => p[0]), ys = el.points.map(p => p[1]);
+                const xs = el.points.map(p => Array.isArray(p) ? p[0] : p.x);
+                const ys = el.points.map(p => Array.isArray(p) ? p[1] : p.y);
                 ctx.strokeRect(
                     Math.min(...xs) - 6, Math.min(...ys) - 6,
                     Math.max(...xs) - Math.min(...xs) + 12, Math.max(...ys) - Math.min(...ys) + 12
                 );
+            }
+
+            // Draw resize handles on corners for rect/circle/line/arrow
+            if (el.type === "rect" || el.type === "circle" || el.type === "line" || el.type === "arrow") {
+                const corners = [
+                    { x: Math.min(el.x1, el.x2), y: Math.min(el.y1, el.y2) },
+                    { x: Math.max(el.x1, el.x2), y: Math.min(el.y1, el.y2) },
+                    { x: Math.min(el.x1, el.x2), y: Math.max(el.y1, el.y2) },
+                    { x: Math.max(el.x1, el.x2), y: Math.max(el.y1, el.y2) },
+                ];
+                ctx.fillStyle = "#208DCA";
+                corners.forEach((c) => {
+                    ctx.beginPath();
+                    ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.stroke();
+                });
             }
             ctx.restore();
         }
@@ -218,6 +239,8 @@ const MapEditor = forwardRef(function MapEditor({
     const startRef = useRef(null);
     const pathRef = useRef([]);
     const isDraggingRef = useRef(false);
+    const isResizingRef = useRef(false);
+    const resizeCornerRef = useRef(null); // "tl" | "tr" | "bl" | "br"
     const dragIdxRef = useRef(null);
     const dragOffRef = useRef({ x: 0, y: 0 });
 
@@ -417,6 +440,32 @@ const MapEditor = forwardRef(function MapEditor({
         };
     };
 
+    // Get bounding box corners for resizable elements
+    const getElementCorners = (el) => {
+        if (el.type === "rect" || el.type === "circle" || el.type === "line" || el.type === "arrow") {
+            return {
+                tl: { x: Math.min(el.x1, el.x2), y: Math.min(el.y1, el.y2) },
+                tr: { x: Math.max(el.x1, el.x2), y: Math.min(el.y1, el.y2) },
+                bl: { x: Math.min(el.x1, el.x2), y: Math.max(el.y1, el.y2) },
+                br: { x: Math.max(el.x1, el.x2), y: Math.max(el.y1, el.y2) },
+            };
+        }
+        return null;
+    };
+
+    // Check if pos is near a corner (returns corner key or null)
+    const hitTestCorner = (pos, el) => {
+        const corners = getElementCorners(el);
+        if (!corners) return null;
+        const threshold = 12;
+        for (const [key, corner] of Object.entries(corners)) {
+            if (Math.abs(pos.x - corner.x) < threshold && Math.abs(pos.y - corner.y) < threshold) {
+                return key;
+            }
+        }
+        return null;
+    };
+
     // Hit test for ALL element types
     const hitTestElement = (pos) => {
         for (let i = elements.length - 1; i >= 0; i--) {
@@ -495,6 +544,17 @@ const MapEditor = forwardRef(function MapEditor({
             return { x: pos.x - (el.x ?? 0), y: pos.y - (el.y ?? 0) };
         };
 
+        // Check resize corner on selected element first
+        if (selectedIdx !== null && elements[selectedIdx]) {
+            const corner = hitTestCorner(pos, elements[selectedIdx]);
+            if (corner) {
+                isResizingRef.current = true;
+                resizeCornerRef.current = corner;
+                dragIdxRef.current = selectedIdx;
+                return;
+            }
+        }
+
         // Select tool
         if (tool === "select") {
             const idx = hitTestElement(pos);
@@ -535,10 +595,38 @@ const MapEditor = forwardRef(function MapEditor({
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
-        // Change cursor when hovering over any element (always, regardless of tool)
-        if (!isDraggingRef.current && !isDrawingRef.current) {
-            const hoverIdx = hitTestElement(pos);
-            canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+        // Change cursor: resize corner > move element > default tool cursor
+        if (!isDraggingRef.current && !isDrawingRef.current && !isResizingRef.current) {
+            // Check resize corners on selected element first
+            if (selectedIdx !== null && elements[selectedIdx]) {
+                const corner = hitTestCorner(pos, elements[selectedIdx]);
+                if (corner) {
+                    canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
+                } else {
+                    const hoverIdx = hitTestElement(pos);
+                    canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+                }
+            } else {
+                const hoverIdx = hitTestElement(pos);
+                canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+            }
+        }
+
+        // Handle resize drag
+        if (isResizingRef.current && dragIdxRef.current !== null) {
+            const els = [...elements];
+            const el = { ...els[dragIdxRef.current] };
+            const corner = resizeCornerRef.current;
+
+            if (corner === "br") { el.x2 = pos.x; el.y2 = pos.y; }
+            else if (corner === "tl") { el.x1 = pos.x; el.y1 = pos.y; }
+            else if (corner === "tr") { el.x2 = pos.x; el.y1 = pos.y; }
+            else if (corner === "bl") { el.x1 = pos.x; el.y2 = pos.y; }
+
+            els[dragIdxRef.current] = el;
+            setElements(els);
+            redraw(els, selectedIdx);
+            return;
         }
 
         if (isDraggingRef.current && dragIdxRef.current !== null) {
@@ -618,6 +706,13 @@ const MapEditor = forwardRef(function MapEditor({
     };
 
     const onMouseUp = (e) => {
+        if (isResizingRef.current) {
+            isResizingRef.current = false;
+            resizeCornerRef.current = null;
+            dragIdxRef.current = null;
+            pushHistory(elements);
+            return;
+        }
         if (isDraggingRef.current) {
             isDraggingRef.current = false;
             pushHistory(elements);
