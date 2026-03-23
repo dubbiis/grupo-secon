@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
 
 const PHOTON_URL = "https://photon.komoot.io/api/";
+const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
 const TYPE_ICONS = {
     house: MapPin,
@@ -39,40 +40,67 @@ export default function AddressAutocomplete({
 
     const search = useCallback(
         async (query) => {
-            if (query.length < 3) {
+            if (query.length < 2) {
                 setResults([]);
                 setOpen(false);
                 return;
             }
 
-            // Abort previous request
             if (abortRef.current) abortRef.current.abort();
             const controller = new AbortController();
             abortRef.current = controller;
 
             setLoading(true);
             try {
-                const params = new URLSearchParams({ q: query, limit: "6", lang: "default" });
+                // Race: Nominatim vs Photon — use whichever responds first
+                const photonParams = new URLSearchParams({ q: query, limit: "5", lang: "default" });
                 if (biasLat && biasLng) {
-                    params.set("lat", String(biasLat));
-                    params.set("lon", String(biasLng));
+                    photonParams.set("lat", String(biasLat));
+                    photonParams.set("lon", String(biasLng));
                 }
-                const res = await fetch(`${PHOTON_URL}?${params}`, { signal: controller.signal });
-                const data = await res.json();
 
-                const items = (data.features || []).map((f) => {
-                    const p = f.properties || {};
-                    const [lng, lat] = f.geometry?.coordinates || [0, 0];
-                    const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
-                    return {
-                        lat,
-                        lng,
-                        displayName: parts.join(", "),
-                        name: p.name || p.street || "",
-                        subtitle: [p.city, p.state, p.country].filter(Boolean).join(", "),
-                        type: p.osm_value || p.type || "house",
-                    };
+                const nominatimParams = new URLSearchParams({
+                    q: query, format: "json", limit: "5", addressdetails: "1",
                 });
+                if (biasLat && biasLng) {
+                    const d = 0.5;
+                    nominatimParams.set("viewbox", `${biasLng - d},${biasLat - d},${biasLng + d},${biasLat + d}`);
+                    nominatimParams.set("bounded", "0");
+                }
+
+                const photonReq = fetch(`${PHOTON_URL}?${photonParams}`, { signal: controller.signal })
+                    .then((r) => r.json())
+                    .then((data) =>
+                        (data.features || []).map((f) => {
+                            const p = f.properties || {};
+                            const [lng, lat] = f.geometry?.coordinates || [0, 0];
+                            return {
+                                lat, lng,
+                                displayName: [p.name, p.street, p.city, p.state, p.country].filter(Boolean).join(", "),
+                                name: p.name || p.street || "",
+                                subtitle: [p.city, p.state, p.country].filter(Boolean).join(", "),
+                                type: p.osm_value || p.type || "house",
+                            };
+                        })
+                    );
+
+                const nominatimReq = fetch(`${NOMINATIM_URL}?${nominatimParams}`, {
+                    signal: controller.signal,
+                    headers: { "User-Agent": "GrupoSecon/1.0" },
+                })
+                    .then((r) => r.json())
+                    .then((data) =>
+                        (data || []).map((r) => ({
+                            lat: parseFloat(r.lat), lng: parseFloat(r.lon),
+                            displayName: r.display_name,
+                            name: r.display_name.split(",")[0],
+                            subtitle: r.display_name.split(",").slice(1, 3).join(",").trim(),
+                            type: r.type || "house",
+                        }))
+                    );
+
+                // First valid response wins
+                const items = await Promise.any([photonReq, nominatimReq]);
 
                 setResults(items);
                 setOpen(items.length > 0);
@@ -94,7 +122,7 @@ export default function AddressAutocomplete({
         onChange?.(val);
 
         if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => search(val), 300);
+        timerRef.current = setTimeout(() => search(val), 150);
     };
 
     const handleSelect = (item) => {
