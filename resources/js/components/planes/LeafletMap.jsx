@@ -67,7 +67,9 @@ function getRoutePoint(coords, fraction = 0.35) {
  *   { type: "poi",    lat, lng, categories: ["hospital", "police", ...] }
  *   { type: "clear" }
  */
-export default function LeafletMap({ command, onStatus, onRouteData }) {
+const NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
+
+export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDrag }) {
     const containerRef   = useRef(null);
     const mapRef         = useRef(null);
     const markersRef     = useRef([]);
@@ -224,7 +226,54 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
             doSearch
                 .then(({ lat, lng }) => {
                     clearRoutes();
-                    markersRef.current.push(L.marker([lat, lng]).addTo(map));
+                    const marker = L.marker([lat, lng], { draggable: true })
+                        .addTo(map)
+                        .bindTooltip("Mueve la chincheta hacia el lugar exacto", {
+                            direction: "top", offset: [0, -10], permanent: false,
+                        });
+
+                    marker.on("dragend", async () => {
+                        const pos = marker.getLatLng();
+                        marker.unbindTooltip();
+                        marker.bindTooltip("Buscando dirección...", { direction: "top", offset: [0, -10], permanent: true }).openTooltip();
+
+                        try {
+                            const res = await fetch(
+                                `${NOMINATIM_REVERSE}?lat=${pos.lat}&lon=${pos.lng}&format=json`,
+                                { headers: { "User-Agent": UA, "Accept-Language": "es" } }
+                            );
+                            const data = await res.json();
+                            const newAddress = data.display_name || `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
+
+                            marker.unbindTooltip();
+                            const popup = L.popup({ closeButton: false, className: "marker-drag-popup" })
+                                .setLatLng(pos)
+                                .setContent(`
+                                    <div style="font-family:system-ui;font-size:12px;max-width:260px">
+                                        <div style="font-weight:600;margin-bottom:6px;color:#1e293b">${newAddress}</div>
+                                        <div style="display:flex;gap:6px">
+                                            <button onclick="window.__markerUseNew__()" style="flex:1;padding:5px 8px;border-radius:8px;border:none;background:#208DCA;color:white;font-size:11px;font-weight:600;cursor:pointer">Usar esta dirección</button>
+                                            <button onclick="window.__markerKeep__()" style="flex:1;padding:5px 8px;border-radius:8px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:11px;cursor:pointer">Mantener actual</button>
+                                        </div>
+                                    </div>
+                                `)
+                                .openOn(map);
+
+                            window.__markerUseNew__ = () => {
+                                map.closePopup(popup);
+                                onMarkerDrag?.({ lat: pos.lat, lng: pos.lng, displayName: newAddress });
+                            };
+                            window.__markerKeep__ = () => {
+                                map.closePopup(popup);
+                                marker.setLatLng([lat, lng]);
+                            };
+                        } catch {
+                            marker.unbindTooltip();
+                            marker.bindTooltip("No se pudo obtener la dirección", { direction: "top", offset: [0, -10] });
+                        }
+                    });
+
+                    markersRef.current.push(marker);
                     map.setView([lat, lng], 15);
                     onStatus?.(null);
                 })

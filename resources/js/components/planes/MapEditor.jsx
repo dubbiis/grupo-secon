@@ -1001,7 +1001,19 @@ export default function MapEditor({
 
                             {/* Leaflet map */}
                             <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height: fullscreen ? "calc(100vh - 320px)" : 520 }}>
-                                <LeafletMap command={mapCommand} onStatus={setMapStatus} onRouteData={setRouteData} />
+                                <LeafletMap
+                                    command={mapCommand}
+                                    onStatus={setMapStatus}
+                                    onRouteData={setRouteData}
+                                    onMarkerDrag={(place) => {
+                                        if (mapMode === "search") {
+                                            setMapQuery(place.displayName);
+                                        } else if (mapMode === "route") {
+                                            setRouteA(place.displayName);
+                                            setRouteACoords({ lat: place.lat, lng: place.lng });
+                                        }
+                                    }}
+                                />
                             </div>
                         </motion.div>
                     )}
