@@ -922,6 +922,81 @@ export default function MapEditor({
                         </motion.button>
                     </div>
 
+                    {/* Address inputs — inline in toolbar */}
+                    <AnimatePresence>
+                        {showMap && mapMode === "search" && (
+                            <motion.div
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: "auto" }}
+                                exit={{ opacity: 0, width: 0 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="flex-1 min-w-[200px] overflow-visible"
+                            >
+                                <AddressAutocomplete
+                                    value={mapQuery}
+                                    onChange={setMapQuery}
+                                    onSelect={(place) => {
+                                        setMapQuery(place.displayName);
+                                        setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
+                                    }}
+                                    placeholder="Buscar dirección, hospital..."
+                                    biasLat={routeACoords?.lat}
+                                    biasLng={routeACoords?.lng}
+                                />
+                            </motion.div>
+                        )}
+                        {showMap && mapMode === "route" && (
+                            <motion.div
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: "auto" }}
+                                exit={{ opacity: 0, width: 0 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="flex-1 min-w-[300px] flex gap-1.5 items-center overflow-visible"
+                            >
+                                <AddressAutocomplete
+                                    label="A" labelColor="#253C87"
+                                    value={routeA}
+                                    onChange={setRouteA}
+                                    onSelect={(place) => {
+                                        setRouteA(place.displayName);
+                                        const coordsA = { lat: place.lat, lng: place.lng };
+                                        setRouteACoords(coordsA);
+                                        if (routeBCoords) {
+                                            setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                        } else {
+                                            setMapCommand({ type: "search", query: coordsA });
+                                        }
+                                    }}
+                                    biasLat={routeACoords?.lat}
+                                    biasLng={routeACoords?.lng}
+                                    placeholder="Origen"
+                                    className="flex-1"
+                                />
+                                <AddressAutocomplete
+                                    label="B" labelColor="#208DCA"
+                                    value={routeB}
+                                    onChange={setRouteB}
+                                    onSelect={(place) => {
+                                        setRouteB(place.displayName);
+                                        const coordsB = { lat: place.lat, lng: place.lng };
+                                        setRouteBCoords(coordsB);
+                                        if (routeACoords) {
+                                            setMapCommand({ type: "route", a: routeACoords, b: coordsB });
+                                        }
+                                    }}
+                                    biasLat={routeACoords?.lat || routeBCoords?.lat}
+                                    biasLng={routeACoords?.lng || routeBCoords?.lng}
+                                    placeholder="Destino"
+                                    className="flex-1"
+                                />
+                                {mapStatus === "loading" && (
+                                    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                        className="text-[10px] text-[#208DCA] font-medium whitespace-nowrap">Calculando...</motion.span>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* Fullscreen toggle */}
                     <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
                         onClick={() => setFullscreen((v) => !v)}
@@ -984,73 +1059,6 @@ export default function MapEditor({
                             transition={{ duration: 0.2 }}
                             className="flex flex-col gap-2 w-full h-full"
                         >
-                            {/* Search mode */}
-                            {mapMode === "search" && (
-                                <AddressAutocomplete
-                                    value={mapQuery}
-                                    onChange={setMapQuery}
-                                    onSelect={(place) => {
-                                        setMapQuery(place.displayName);
-                                        setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
-                                    }}
-                                    placeholder="Buscar dirección, hospital..."
-                                    biasLat={routeACoords?.lat}
-                                    biasLng={routeACoords?.lng}
-                                />
-                            )}
-
-                            {/* Route mode */}
-                            {mapMode === "route" && (
-                                <div className="space-y-1.5">
-                                    <AddressAutocomplete
-                                        label="A" labelColor="#253C87"
-                                        value={routeA}
-                                        onChange={setRouteA}
-                                        onSelect={(place) => {
-                                            setRouteA(place.displayName);
-                                            const coordsA = { lat: place.lat, lng: place.lng };
-                                            setRouteACoords(coordsA);
-                                            if (routeBCoords) {
-                                                setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
-                                            } else {
-                                                // Show A on map while user types B
-                                                setMapCommand({ type: "search", query: coordsA });
-                                            }
-                                        }}
-                                        biasLat={routeACoords?.lat}
-                                        biasLng={routeACoords?.lng}
-                                        placeholder="Origen (dirección o lugar)"
-                                    />
-                                    <AddressAutocomplete
-                                        label="B" labelColor="#208DCA"
-                                        value={routeB}
-                                        onChange={setRouteB}
-                                        onSelect={(place) => {
-                                            setRouteB(place.displayName);
-                                            const coordsB = { lat: place.lat, lng: place.lng };
-                                            setRouteBCoords(coordsB);
-                                            // Auto-trace if A already has coords
-                                            if (routeACoords) {
-                                                setMapCommand({ type: "route", a: routeACoords, b: coordsB });
-                                            }
-                                        }}
-                                        biasLat={routeACoords?.lat || routeBCoords?.lat}
-                                        biasLng={routeACoords?.lng || routeBCoords?.lng}
-                                        placeholder="Destino (dirección o lugar)"
-                                    />
-                                    <button onClick={searchMap} disabled={!routeA.trim() || !routeB.trim()}
-                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#208DCA]/20 border border-[#208DCA]/30 text-[#208DCA] text-xs font-medium hover:bg-[#208DCA]/30 transition-colors disabled:opacity-40">
-                                        <Navigation size={11} /> Trazar ruta
-                                    </button>
-                                    {mapStatus === "error" && (
-                                        <p className="text-center text-[11px] text-red-500">No se encontró una o ambas direcciones</p>
-                                    )}
-                                    {mapStatus === "loading" && (
-                                        <p className="text-center text-[11px] text-slate-500">Calculando ruta…</p>
-                                    )}
-                                </div>
-                            )}
-
                             {/* Leaflet map + route panel side by side */}
                             <div className="flex gap-2 flex-1 min-h-0" style={{ height: "100%" }}>
                                 <div className={`rounded-xl overflow-hidden border border-slate-200 transition-all ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`} style={{ height: "100%" }}>
