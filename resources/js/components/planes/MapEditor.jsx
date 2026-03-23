@@ -518,6 +518,12 @@ const MapEditor = forwardRef(function MapEditor({
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
+        // Change cursor when hovering over any element (always, regardless of tool)
+        if (!isDraggingRef.current && !isDrawingRef.current) {
+            const hoverIdx = hitTestElement(pos);
+            canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+        }
+
         if (isDraggingRef.current && dragIdxRef.current !== null) {
             const els = [...elements];
             const el = { ...els[dragIdxRef.current] };
