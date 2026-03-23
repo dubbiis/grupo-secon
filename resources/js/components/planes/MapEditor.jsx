@@ -569,29 +569,35 @@ export default function MapEditor({
     }, [eventAddress, mapMode]);
 
     // Toggle POI layer
-    const togglePOI = (cat) => {
-        setActivePOIs((prev) => {
-            const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
-            const center = routeACoords || routeBCoords;
-            if (center) {
-                setMapCommand({ type: "poi", lat: center.lat, lng: center.lng, categories: next });
-            } else if (eventAddress) {
-                // Geocode event address to get coords for POI search
-                fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(eventAddress)}&format=json&limit=1`, {
+    const poiCenterRef = useRef(null);
+
+    const sendPOICommand = (categories, center) => {
+        if (center && categories.length > 0) {
+            poiCenterRef.current = center;
+            setMapCommand({ type: "poi", lat: center.lat, lng: center.lng, categories });
+        } else if (categories.length === 0) {
+            setMapCommand({ type: "poi", lat: 0, lng: 0, categories: [] });
+        }
+    };
+
+    const togglePOI = async (cat) => {
+        const next = activePOIs.includes(cat) ? activePOIs.filter((c) => c !== cat) : [...activePOIs, cat];
+        setActivePOIs(next);
+
+        let center = routeACoords || routeBCoords || poiCenterRef.current;
+        if (!center && eventAddress) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(eventAddress)}&format=json&limit=1`, {
                     headers: { "User-Agent": "GrupoSecon/1.0" },
-                })
-                    .then((r) => r.json())
-                    .then((data) => {
-                        if (data[0]) {
-                            const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-                            setRouteACoords(coords);
-                            setMapCommand({ type: "poi", lat: coords.lat, lng: coords.lng, categories: next });
-                        }
-                    })
-                    .catch(() => {});
-            }
-            return next;
-        });
+                });
+                const data = await res.json();
+                if (data[0]) {
+                    center = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    setRouteACoords(center);
+                }
+            } catch {}
+        }
+        sendPOICommand(next, center);
     };
 
     // ── Context menu ─────────────────────────────────────────────
