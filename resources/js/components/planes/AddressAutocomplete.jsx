@@ -52,7 +52,7 @@ export default function AddressAutocomplete({
 
             setLoading(true);
             try {
-                const params = new URLSearchParams({ q: query, limit: "6", lang: "es" });
+                const params = new URLSearchParams({ q: query, limit: "6", lang: "default" });
                 if (biasLat && biasLng) {
                     params.set("lat", String(biasLat));
                     params.set("lon", String(biasLng));
