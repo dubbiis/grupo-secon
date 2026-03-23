@@ -11,7 +11,6 @@ L.Icon.Default.mergeOptions({
 
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";
 const OSRM      = "https://router.project-osrm.org/route/v1/driving";
-const OVERPASS   = "https://overpass-api.de/api/interpreter";
 const UA         = "GrupoSecon/1.0";
 
 async function geocode(query) {
@@ -59,12 +58,6 @@ function getRoutePoint(coords, fraction = 0.35) {
     return coords[Math.min(idx, coords.length - 1)] || coords[0];
 }
 
-const POI_QUERIES = {
-    hospital: { query: '["amenity"~"hospital|clinic"]', emoji: "🏥", radius: 5000 },
-    police:   { query: '["amenity"~"police"]', emoji: "👮", radius: 5000 },
-    parking:  { query: '["amenity"="parking"]', emoji: "🅿️", radius: 2000 },
-    metro:    { query: '["railway"="station"]', emoji: "🚇", radius: 3000 },
-};
 
 /**
  * command prop:
@@ -263,54 +256,23 @@ export default function LeafletMap({ command, onStatus, onRouteData }) {
             const { lat, lng, categories } = command;
             if (!lat || !lng || !categories?.length) return;
 
-            // Build ONE Overpass query for all categories
-            const parts = [];
-            categories.forEach((cat) => {
-                const cfg = POI_QUERIES[cat];
-                if (!cfg) return;
-                parts.push(`node${cfg.query}(around:${cfg.radius},${lat},${lng})`);
-                parts.push(`way${cfg.query}(around:${cfg.radius},${lat},${lng})`);
-            });
-            if (!parts.length) return;
-
-            const query = `[out:json][timeout:15];(${parts.join(";")};);out center 30;`;
+            // Use backend proxy (cached 7 days, no CORS/rate issues)
+            const params = new URLSearchParams({ lat, lng });
+            categories.forEach((c) => params.append("categories[]", c));
 
             (async () => {
                 try {
-                    const res = await fetch(OVERPASS, {
-                        method: "POST",
-                        body: `data=${encodeURIComponent(query)}`,
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    });
-                    const data = await res.json();
+                    const res = await fetch(`/api/map-pois?${params}`);
+                    const pois = await res.json();
 
-                    // Map each element to its category for the right emoji
-                    const catCounts = {};
-                    (data.elements || []).forEach((el) => {
-                        const elLat = el.lat || el.center?.lat;
-                        const elLng = el.lon || el.center?.lon;
-                        if (!elLat || !elLng) return;
-
-                        // Determine which category this element belongs to
-                        const tags = el.tags || {};
-                        let emoji = "📍";
-                        if (tags.amenity === "hospital" || tags.amenity === "clinic") emoji = "🏥";
-                        else if (tags.amenity === "police") emoji = "👮";
-                        else if (tags.amenity === "parking") emoji = "🅿️";
-                        else if (tags.railway === "station") emoji = "🚇";
-
-                        // Limit 8 per emoji type
-                        catCounts[emoji] = (catCounts[emoji] || 0) + 1;
-                        if (catCounts[emoji] > 8) return;
-
-                        const name = tags.name || tags.amenity || tags.railway || "POI";
-                        const m = L.marker([elLat, elLng], { icon: poiIcon(emoji) })
-                            .bindTooltip(name, { direction: "top", offset: [0, -10] })
+                    (pois || []).forEach((poi) => {
+                        const m = L.marker([poi.lat, poi.lng], { icon: poiIcon(poi.emoji) })
+                            .bindTooltip(poi.name, { direction: "top", offset: [0, -10] })
                             .addTo(map);
                         poiLayerRef.current.push(m);
                     });
                 } catch {
-                    // Silently ignore Overpass failures
+                    // Silently ignore failures
                 }
             })();
         }

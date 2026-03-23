@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
     Route::get('/api/geocode', [GoogleMapsController::class, 'geocodeSearch'])->name('api.geocode');
+    Route::get('/api/map-pois', [GoogleMapsController::class, 'mapPOIs'])->name('api.map-pois');
 
     // Custom questions
     Route::get('/custom-questions/{section}', [CustomQuestionController::class, 'index']);

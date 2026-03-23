@@ -61,6 +61,23 @@ class GoogleMapsController extends Controller
     }
 
     /**
+     * POIs for map overlay — uses cached backend Overpass queries
+     */
+    public function mapPOIs(Request $request)
+    {
+        $lat = (float) $request->input('lat');
+        $lng = (float) $request->input('lng');
+        $categories = $request->input('categories', []);
+
+        if (!$lat || !$lng || empty($categories)) {
+            return response()->json([]);
+        }
+
+        $pois = $this->maps->getMapPOIs($lat, $lng, $categories);
+        return response()->json($pois);
+    }
+
+    /**
      * Proxy for Photon/Nominatim geocoding autocomplete (avoids CORS in production)
      */
     public function geocodeSearch(Request $request)

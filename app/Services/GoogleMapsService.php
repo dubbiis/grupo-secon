@@ -202,6 +202,57 @@ class GoogleMapsService
      * Transport data for section 4:
      * metro_tren, autobus, parking
      */
+    /**
+     * POIs for map overlay — cached 7 days, single combined response
+     */
+    public function getMapPOIs(float $lat, float $lng, array $categories): array
+    {
+        $key = 'maps.pois.' . md5("{$lat},{$lng}," . implode(',', $categories));
+        return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng, $categories) {
+            $pois = [];
+
+            if (in_array('hospital', $categories)) {
+                foreach (array_slice($this->queryHospitals($lat, $lng), 0, 8) as $el) {
+                    $tags = $el['tags'] ?? [];
+                    $name = $tags['name'] ?? null;
+                    if (!$name) continue;
+                    $coords = $this->getCoords($el);
+                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🏥'];
+                }
+            }
+
+            if (in_array('police', $categories)) {
+                foreach (array_slice($this->queryPolice($lat, $lng), 0, 8) as $el) {
+                    $tags = $el['tags'] ?? [];
+                    $name = $tags['name'] ?? ($tags['description'] ?? 'Policía');
+                    $coords = $this->getCoords($el);
+                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '👮'];
+                }
+            }
+
+            if (in_array('parking', $categories)) {
+                foreach (array_slice($this->queryParking($lat, $lng), 0, 8) as $el) {
+                    $tags = $el['tags'] ?? [];
+                    $name = $tags['name'] ?? 'Parking';
+                    $coords = $this->getCoords($el);
+                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🅿️'];
+                }
+            }
+
+            if (in_array('metro', $categories)) {
+                foreach (array_slice($this->queryTransit($lat, $lng), 0, 8) as $el) {
+                    $tags = $el['tags'] ?? [];
+                    $name = $tags['name'] ?? null;
+                    if (!$name) continue;
+                    $coords = $this->getCoords($el);
+                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🚇'];
+                }
+            }
+
+            return $pois;
+        });
+    }
+
     public function getTransportData(float $lat, float $lng): array
     {
         $key = 'maps.transport.' . md5("{$lat},{$lng}");
