@@ -12,7 +12,6 @@ import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
-import html2canvas from "html2canvas";
 
 // ── Herramientas ──────────────────────────────────────────────
 const TOOLS = [
@@ -616,17 +615,55 @@ export default function MapEditor({
 
         try {
             const mapEl = mapContainerRef.current.querySelector(".leaflet-container") || mapContainerRef.current;
-            const canvas = await html2canvas(mapEl, { useCORS: true, allowTaint: true, logging: false });
+            const mapW = mapEl.offsetWidth;
+            const mapH = mapEl.offsetHeight;
+            const dpr = window.devicePixelRatio || 1;
+
+            // Create composite canvas from all map tile images + SVG overlays
+            const composite = document.createElement("canvas");
+            composite.width = mapW * dpr;
+            composite.height = mapH * dpr;
+            const compCtx = composite.getContext("2d");
+            compCtx.scale(dpr, dpr);
+
+            // Draw tile images
+            const tiles = mapEl.querySelectorAll(".leaflet-tile-loaded");
+            tiles.forEach((tile) => {
+                const rect = tile.getBoundingClientRect();
+                const mapRect = mapEl.getBoundingClientRect();
+                const x = rect.left - mapRect.left;
+                const y = rect.top - mapRect.top;
+                try { compCtx.drawImage(tile, x, y, rect.width, rect.height); } catch {}
+            });
+
+            // Draw SVG overlays (routes, markers)
+            const svgs = mapEl.querySelectorAll("svg");
+            for (const svg of svgs) {
+                const svgRect = svg.getBoundingClientRect();
+                const mapRect = mapEl.getBoundingClientRect();
+                const x = svgRect.left - mapRect.left;
+                const y = svgRect.top - mapRect.top;
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+                const svgImg = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => resolve(null);
+                    img.src = url;
+                });
+                if (svgImg) {
+                    compCtx.drawImage(svgImg, x, y, svgRect.width, svgRect.height);
+                }
+                URL.revokeObjectURL(url);
+            }
 
             // Crop to selection
             const crop = document.createElement("canvas");
-            const dpr = window.devicePixelRatio || 1;
-            const scaleX = canvas.width / mapEl.offsetWidth;
-            const scaleY = canvas.height / mapEl.offsetHeight;
-            crop.width = w * scaleX;
-            crop.height = h * scaleY;
-            const ctx = crop.getContext("2d");
-            ctx.drawImage(canvas, startX * scaleX, startY * scaleY, w * scaleX, h * scaleY, 0, 0, crop.width, crop.height);
+            crop.width = w * dpr;
+            crop.height = h * dpr;
+            const cropCtx = crop.getContext("2d");
+            cropCtx.drawImage(composite, startX * dpr, startY * dpr, w * dpr, h * dpr, 0, 0, w * dpr, h * dpr);
 
             // Load into editor canvas
             const img = new Image();
