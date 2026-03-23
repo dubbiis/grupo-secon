@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -175,14 +175,14 @@ function drawElements(ctx, elements, selectedIdx = null, showGrid = false, canva
 }
 
 // ── Main component ─────────────────────────────────────────────
-export default function MapEditor({
+const MapEditor = forwardRef(function MapEditor({
     mode = "standalone",
     uuid, sectionNumber,
     category = "plano",
     existingFiles = [],
     onSaved,
     eventAddress = "",
-}) {
+}, ref) {
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
     const iconBtnRef = useRef(null);
@@ -582,8 +582,17 @@ export default function MapEditor({
     const startCapture = () => {
         setCaptureMode(true);
         setCaptureRect(null);
+        captureRectRef.current = null;
         setShowMap(true);
     };
+
+    const cancelCapture = () => {
+        setCaptureMode(false);
+        setCaptureRect(null);
+        captureRectRef.current = null;
+    };
+
+    useImperativeHandle(ref, () => ({ startCapture, cancelCapture, captureMode }), [captureMode]);
 
     const handleCaptureMouseDown = (e) => {
         if (!captureMode) return;
@@ -1155,26 +1164,16 @@ export default function MapEditor({
                         )}
                     </AnimatePresence>
 
-                    {/* Capture screenshot */}
-                    {showMap && (
-                        <Shine enableOnHover color="white" opacity={0.3} duration={500} asChild>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={captureMode ? () => { setCaptureMode(false); setCaptureRect(null); } : startCapture}
-                                className={`flex items-center gap-1.5 text-[11px] font-semibold px-3.5 py-2 rounded-xl transition-all ${
-                                    captureMode
-                                        ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
-                                        : "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-lg shadow-[#208DCA]/30"
-                                }`}
-                            >
-                                {captureMode ? (
-                                    <><X size={13} /> Cancelar</>
-                                ) : (
-                                    <><Crosshair size={13} /> Captura</>
-                                )}
-                            </motion.button>
-                        </Shine>
+                    {/* Capture cancel (small) - only in toolbar when active */}
+                    {captureMode && (
+                        <motion.button
+                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => { setCaptureMode(false); setCaptureRect(null); }}
+                            className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30"
+                        >
+                            <X size={13} /> Cancelar
+                        </motion.button>
                     )}
 
                     {/* Fullscreen toggle */}
@@ -1452,4 +1451,6 @@ export default function MapEditor({
 
         </div>
     );
-}
+});
+
+export default MapEditor;

@@ -17,7 +17,7 @@ function LogoShimmer() {
     );
 }
 
-export default function AppLayout({ children, title, subtitle }) {
+export default function AppLayout({ children, title, subtitle, headerAction }) {
     const { auth } = usePage().props;
     const currentUrl = typeof window !== "undefined" ? window.location.pathname : "";
     const [adminHover, setAdminHover] = useState(false);
@@ -183,9 +183,12 @@ export default function AppLayout({ children, title, subtitle }) {
 
                 {/* Top bar */}
                 {(title || subtitle) && (
-                    <header className="flex-shrink-0 px-8 py-5 border-b border-slate-200 bg-white">
-                        {title && <h1 className="text-xl font-bold text-slate-900 leading-tight">{title}</h1>}
-                        {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+                    <header className="flex-shrink-0 px-8 py-5 border-b border-slate-200 bg-white flex items-center justify-between">
+                        <div>
+                            {title && <h1 className="text-xl font-bold text-slate-900 leading-tight">{title}</h1>}
+                            {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+                        </div>
+                        {headerAction}
                     </header>
                 )}
 
