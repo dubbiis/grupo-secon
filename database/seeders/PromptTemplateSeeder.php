@@ -26,19 +26,26 @@ La redacción del presente Plan de Seguridad ha sido realizada por **{nombre del
 
 Este documento contiene información confidencial y su difusión está legalmente restringida. Su uso está destinado exclusivamente a las organizaciones que participan en el evento, y no podrá ser copiado, remitido, distribuido o retenido sin el consentimiento escrito de la entidad autorizante.',
                 'use_example_output' => false,
-                'user_prompt_template' => 'Genera el texto de la SECCIÓN 1: OBJETIVO DEL PLAN DE SEGURIDAD para el siguiente evento:
+                'user_prompt_template' => 'Redacta el apartado "Objetivo del Plan de Seguridad" para el siguiente evento:
 
-**Datos del evento:**
 - Nombre del evento: {{nombre_evento}}
-- Organizador/Patrocinador: {{organizador}}
-- Dirección: {{direccion_evento}}
-- Tipo de evento: {{tipo_evento}}
+- Organizador: {{organizador}}
+- Productora: {{productora}}
+- Tipo de evento: {{tipo_evento}} {{tipo_evento_otro}}
 - Nombre del espacio: {{nombre_espacio}}
-- Empresa productora: {{productora}}
+- Tipo de espacio: {{tipo_espacio}} {{tipo_espacio_otro}}
+- Dirección: {{direccion_evento}}
 - Redactor del plan: {{nombre_redactor}}
-- Número de habilitación del Director de Seguridad: {{num_habilitacion}}
+- Nº habilitación: {{num_habilitacion}}
+- Información adicional: {{info_adicional}}
 
-El objetivo debe explicar el propósito del plan, el ámbito de aplicación, y quién lo ha redactado. Debe ser único, profesional y adaptado al tipo de evento específico. Mínimo 300 palabras.',
+El texto debe:
+1. Presentar el propósito del plan de seguridad para este evento concreto
+2. Identificar al organizador, la productora y el redactor del plan
+3. Describir brevemente el tipo de evento y el espacio donde se celebra
+4. Mencionar el marco legal (Ley de Seguridad Privada, normativa autonómica aplicable)
+5. Incluir toda la información adicional proporcionada
+Mínimo 300 palabras.',
             ],
             [
                 'section_number' => 2,
@@ -67,18 +74,29 @@ Aproximadamente {numero_visitantes_por_dia} visitantes por día y un equipo oper
 **Asistentes VIP:**
 {asistentes_vip}',
                 'use_example_output' => false,
-                'user_prompt_template' => 'Genera el texto de la SECCIÓN 2: DESCRIPCIÓN GENERAL DEL EVENTO con los siguientes datos:
+                'user_prompt_template' => 'Genera el apartado "Descripción General del Evento" con estos datos:
 
-**Datos:**
-- Descripción general: {{descripcion_general}}
-- Objetivo principal del evento: {{objetivo_evento}}
-- Fecha: {{fecha_evento}}
-- Horario: {{horario_evento}}
-- Montaje y desmontaje: {{montaje_desmontaje}}
-- Número de asistentes previstos: {{num_asistentes}}
-- Asistentes VIP: {{asistentes_vip}}
+- Descripción del evento: {{descripcion_general}}
+- Objetivo del evento: {{objetivo_evento}}
+- Fecha del evento: {{fecha_evento}}
+- Montaje: {{montaje}}
+- Desmontaje: {{desmontaje}}
+- Horario detallado montaje: {{horario_montaje_detallado}}
+- Horario detallado evento: {{horario_evento_detallado}}
+- Horario detallado desmontaje: {{horario_desmontaje_detallado}}
+- Aforo previsto: {{aforo_previsto}}
+- Aforo del espacio: {{aforo_espacio}}
 
-Incluye toda la información relevante de forma estructurada. Describe el evento, su naturaleza, alcance y características principales desde el punto de vista de la seguridad.',
+Genera el contenido en DOS partes:
+
+PARTE 1 — Texto descriptivo (2-3 párrafos):
+Breve descripción del evento, naturaleza, objetivos y aforo previsto vs capacidad del espacio.
+
+PARTE 2 — Cronograma en formato tabla markdown:
+Genera una tabla con columnas: **Fase** | **Fecha** | **Horario** | **Descripción**
+Incluye una fila por cada día de montaje, cada día de evento y cada día de desmontaje.
+Usa los horarios detallados proporcionados. Si un día no tiene horario, indica "Por confirmar".
+Ordena cronológicamente: primero montaje, luego evento, luego desmontaje.',
             ],
             [
                 'section_number' => 3,
