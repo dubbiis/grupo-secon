@@ -54,6 +54,25 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
             });
         } catch {}
 
+        // Section 5: hospitales y comisarías
+        const sec5 = sections.find((s) => s.section_number === 5)?.form_data;
+        const parseResourceLines = (text, prefix) => {
+            if (!text) return;
+            text.split("\n").forEach((line) => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                // Format: "Nombre (dist): Dirección. Tel: ..."
+                const colonIdx = trimmed.indexOf(":");
+                if (colonIdx > 0) {
+                    const name = trimmed.slice(0, colonIdx).replace(/\s*\(.*?\)\s*$/, "").trim();
+                    const rest = trimmed.slice(colonIdx + 1).replace(/\.?\s*Tel[.:].*/i, "").trim();
+                    if (rest) addrs.push({ label: `${prefix} ${name}`, address: rest });
+                }
+            });
+        };
+        parseResourceLines(sec5?.hospitales_reales, "🏥");
+        parseResourceLines(sec5?.comisarias_reales, "🚔");
+
         return addrs;
     })();
 

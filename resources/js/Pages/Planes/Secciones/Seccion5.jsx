@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
@@ -6,6 +6,22 @@ import MapEditor from "@/components/planes/MapEditor";
 import PlacesPanel from "@/components/planes/PlacesPanel";
 import { Map } from "lucide-react";
 import { useTranslation } from "@/i18n";
+
+/** Parse "Nombre (dist): Dirección. Tel: ..." lines into { label, address } */
+function parseResourceLines(text, prefix) {
+    if (!text) return [];
+    return text.split("\n").reduce((acc, line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return acc;
+        const colonIdx = trimmed.indexOf(":");
+        if (colonIdx > 0) {
+            const name = trimmed.slice(0, colonIdx).replace(/\s*\(.*?\)\s*$/, "").trim();
+            const rest = trimmed.slice(colonIdx + 1).replace(/\.?\s*Tel[.:].*/i, "").trim();
+            if (rest) acc.push({ label: `${prefix} ${name}`, address: rest });
+        }
+        return acc;
+    }, []);
+}
 
 export default function Seccion5({ plan, section, files = [], eventAddress = "", planAddresses = [] }) {
     const { t } = useTranslation();
@@ -15,6 +31,13 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
         ...section.form_data,
     });
     const [showMapEditor, setShowMapEditor] = useState(false);
+
+    // Combine plan addresses with live-parsed hospital/police addresses
+    const allAddresses = useMemo(() => {
+        const hospitals = parseResourceLines(form.hospitales_reales, "🏥");
+        const police = parseResourceLines(form.comisarias_reales, "🚔");
+        return [...planAddresses, ...hospitals, ...police];
+    }, [planAddresses, form.hospitales_reales, form.comisarias_reales]);
 
     const field = (key) => ({
         value: form[key],
@@ -86,7 +109,7 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                         existingFiles={mapFiles}
                         onSaved={() => {}}
                         eventAddress={eventAddress}
-                        planAddresses={planAddresses}
+                        planAddresses={allAddresses}
                     />
                 )}
 
