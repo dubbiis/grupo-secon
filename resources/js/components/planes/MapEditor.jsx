@@ -1310,6 +1310,67 @@ const MapEditor = forwardRef(function MapEditor({
                         </div>
                     )}
 
+                    {/* Address inputs — full-width row inside toolbar */}
+                    {showMap && mapMode === "search" && (
+                        <div className="basis-full min-w-0">
+                            <AddressAutocomplete
+                                value={mapQuery}
+                                onChange={setMapQuery}
+                                onSelect={(place) => {
+                                    setMapQuery(place.displayName);
+                                    setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
+                                }}
+                                placeholder="Buscar dirección, hospital..."
+                                biasLat={routeACoords?.lat}
+                                biasLng={routeACoords?.lng}
+                            />
+                        </div>
+                    )}
+                    {showMap && mapMode === "route" && (
+                        <div className="flex items-center gap-2 basis-full min-w-0">
+                            <AddressAutocomplete
+                                label="A" labelColor="#253C87"
+                                value={routeA}
+                                onChange={setRouteA}
+                                onSelect={(place) => {
+                                    setRouteA(place.displayName);
+                                    const coordsA = { lat: place.lat, lng: place.lng };
+                                    setRouteACoords(coordsA);
+                                    if (routeBCoords) {
+                                        setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                    } else {
+                                        setMapCommand({ type: "search", query: coordsA });
+                                    }
+                                }}
+                                biasLat={routeACoords?.lat}
+                                biasLng={routeACoords?.lng}
+                                placeholder="Origen"
+                                className="flex-1 min-w-0"
+                            />
+                            <AddressAutocomplete
+                                label="B" labelColor="#208DCA"
+                                value={routeB}
+                                onChange={setRouteB}
+                                onSelect={(place) => {
+                                    setRouteB(place.displayName);
+                                    const coordsB = { lat: place.lat, lng: place.lng };
+                                    setRouteBCoords(coordsB);
+                                    if (routeACoords) {
+                                        setMapCommand({ type: "route", a: routeACoords, b: coordsB });
+                                    }
+                                }}
+                                biasLat={routeACoords?.lat || routeBCoords?.lat}
+                                biasLng={routeACoords?.lng || routeBCoords?.lng}
+                                placeholder="Destino"
+                                className="flex-1 min-w-0"
+                            />
+                            {mapStatus === "loading" && (
+                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                    className="text-[10px] text-[#208DCA] font-medium whitespace-nowrap">Calculando...</motion.span>
+                            )}
+                        </div>
+                    )}
+
                     {/* Addresses panel toggle */}
                     {showMap && planAddresses.length > 0 && (
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
@@ -1371,83 +1432,6 @@ const MapEditor = forwardRef(function MapEditor({
                 </div>
             </motion.div>
             </Shine>
-
-            {/* ── Address inputs — separate bar below toolbar ── */}
-            <AnimatePresence>
-                {showMap && mapMode === "search" && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="px-2.5 pb-1.5 overflow-hidden"
-                    >
-                        <AddressAutocomplete
-                            value={mapQuery}
-                            onChange={setMapQuery}
-                            onSelect={(place) => {
-                                setMapQuery(place.displayName);
-                                setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
-                            }}
-                            placeholder="Buscar dirección, hospital..."
-                            biasLat={routeACoords?.lat}
-                            biasLng={routeACoords?.lng}
-                        />
-                    </motion.div>
-                )}
-                {showMap && mapMode === "route" && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="px-2.5 pb-1.5 overflow-hidden"
-                    >
-                        <div className="flex gap-2 items-center">
-                            <AddressAutocomplete
-                                label="A" labelColor="#253C87"
-                                value={routeA}
-                                onChange={setRouteA}
-                                onSelect={(place) => {
-                                    setRouteA(place.displayName);
-                                    const coordsA = { lat: place.lat, lng: place.lng };
-                                    setRouteACoords(coordsA);
-                                    if (routeBCoords) {
-                                        setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
-                                    } else {
-                                        setMapCommand({ type: "search", query: coordsA });
-                                    }
-                                }}
-                                biasLat={routeACoords?.lat}
-                                biasLng={routeACoords?.lng}
-                                placeholder="Origen"
-                                className="flex-1"
-                            />
-                            <AddressAutocomplete
-                                label="B" labelColor="#208DCA"
-                                value={routeB}
-                                onChange={setRouteB}
-                                onSelect={(place) => {
-                                    setRouteB(place.displayName);
-                                    const coordsB = { lat: place.lat, lng: place.lng };
-                                    setRouteBCoords(coordsB);
-                                    if (routeACoords) {
-                                        setMapCommand({ type: "route", a: routeACoords, b: coordsB });
-                                    }
-                                }}
-                                biasLat={routeACoords?.lat || routeBCoords?.lat}
-                                biasLng={routeACoords?.lng || routeBCoords?.lng}
-                                placeholder="Destino"
-                                className="flex-1"
-                            />
-                            {mapStatus === "loading" && (
-                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                    className="text-[10px] text-[#208DCA] font-medium whitespace-nowrap">Calculando...</motion.span>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* ── Canvas + Map ── */}
             <div className="flex-1 min-h-0">
