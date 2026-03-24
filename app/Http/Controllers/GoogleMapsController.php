@@ -191,56 +191,83 @@ class GoogleMapsController extends Controller
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        // ── Strategy 1: Photon (Elasticsearch-based, best fuzzy matching) ──
-        // Works like Google: handles any format, typos, abbreviations, house numbers
-        try {
-            $params = ['q' => $q, 'limit' => 6, 'lang' => 'es'];
+        // Helper: search Photon
+        $searchPhoton = function (string $query) use ($lat, $lng) {
+            $params = ['q' => $query, 'limit' => 6, 'lang' => 'es'];
             if ($lat && $lng) {
                 $params['lat'] = $lat;
                 $params['lon'] = $lng;
             }
-
             $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
                 ->timeout(4)
                 ->get('https://photon.komoot.io/api/', $params);
-
             if ($response->successful()) {
-                $features = $response->json()['features'] ?? [];
-                $results = $this->formatPhotonResults($features);
-                if (!empty($results)) {
-                    Cache::put($cacheKey, $results, 3600);
-                    return response()->json($results);
-                }
+                return $this->formatPhotonResults($response->json()['features'] ?? []);
             }
-        } catch (\Throwable) {}
+            return [];
+        };
 
-        // ── Strategy 2: Nominatim free-form (precise, good for exact addresses) ──
-        try {
-            $params = [
-                'q' => $q,
-                'format' => 'json',
-                'limit' => 5,
-                'addressdetails' => 1,
-            ];
+        // Helper: search Nominatim
+        $searchNominatim = function (string $query) use ($lat, $lng) {
+            $params = ['q' => $query, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
             if ($lat && $lng) {
                 $d = 0.5;
                 $params['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
                 $params['bounded'] = 0;
             }
-
             $response = Http::withHeaders($this->nominatimHeaders())
                 ->timeout(5)
                 ->get('https://nominatim.openstreetmap.org/search', $params);
-
             if ($response->successful()) {
-                $data = $response->json() ?? [];
-                if (!empty($data)) {
-                    $results = $this->formatNominatimResults($data);
+                return $this->formatNominatimResults($response->json() ?? []);
+            }
+            return [];
+        };
+
+        // Strip house number from query for retry: "calle mirto 9" → "calle mirto"
+        $hasNumber = preg_match('/\d/', $q);
+        $queryWithoutNumber = $hasNumber
+            ? preg_replace('/\s*[,.]?\s*\b\d{1,5}\s*[a-zA-Z]?\b\s*[,.]?\s*/', ' ', $q)
+            : null;
+        $queryWithoutNumber = $queryWithoutNumber ? preg_replace('/\s+/', ' ', trim($queryWithoutNumber)) : null;
+
+        // ── 1. Photon with full query (fuzzy, handles any format) ──
+        try {
+            $results = $searchPhoton($q);
+            if (!empty($results)) {
+                Cache::put($cacheKey, $results, 3600);
+                return response()->json($results);
+            }
+        } catch (\Throwable) {}
+
+        // ── 2. Nominatim with full query (precise, good for exact addresses) ──
+        try {
+            $results = $searchNominatim($q);
+            if (!empty($results)) {
+                Cache::put($cacheKey, $results, 3600);
+                return response()->json($results);
+            }
+        } catch (\Throwable) {}
+
+        // ── 3. If query had a number and nothing found: retry without it ──
+        // "calle mirto 9" → "calle mirto" — finds the street, user drags pin
+        if ($queryWithoutNumber && $queryWithoutNumber !== $q && strlen($queryWithoutNumber) >= 3) {
+            try {
+                $results = $searchPhoton($queryWithoutNumber);
+                if (!empty($results)) {
                     Cache::put($cacheKey, $results, 3600);
                     return response()->json($results);
                 }
-            }
-        } catch (\Throwable) {}
+            } catch (\Throwable) {}
+
+            try {
+                $results = $searchNominatim($queryWithoutNumber);
+                if (!empty($results)) {
+                    Cache::put($cacheKey, $results, 3600);
+                    return response()->json($results);
+                }
+            } catch (\Throwable) {}
+        }
 
         return response()->json([]);
     }
