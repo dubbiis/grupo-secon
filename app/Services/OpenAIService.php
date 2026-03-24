@@ -36,13 +36,13 @@ class OpenAIService
         }
 
         if ($template->use_example_output && $template->example_output) {
-            $userPrompt .= "\n\n---\n**Texto de ejemplo como referencia de estilo y formato** (no lo copies literalmente, úsalo solo como guía de estructura, extensión y tono):\n\n" . $template->example_output;
+            $userPrompt .= "\n\n---\nTEXTO DE REFERENCIA OBLIGATORIO — Debes seguir ESTRICTAMENTE esta estructura, formato, extensión y nivel de detalle. Adapta el contenido a los datos del evento actual pero mantén la misma organización de párrafos, el mismo tono profesional y una longitud similar. No inventes datos que no estén en el contexto proporcionado:\n\n" . $template->example_output;
         }
 
         $systemPrompt = $template->system_prompt;
 
         // Global rules for all AI generations
-        $systemPrompt .= "\n\nREGLAS OBLIGATORIAS:\n- NO incluyas conclusión, resumen final ni párrafo de cierre a menos que se pida explícitamente.\n- NO uses encabezados markdown (###, ##, #). Usa texto corrido con párrafos y negritas (**texto**) para dar estructura.\n- NO uses emojis ni iconos.";
+        $systemPrompt .= "\n\nREGLAS OBLIGATORIAS:\n- NO incluyas conclusión, resumen final ni párrafo de cierre a menos que se pida explícitamente.\n- NO uses encabezados markdown (###, ##, #). Usa texto corrido con párrafos y negritas (**texto**) para dar estructura.\n- NO uses emojis ni iconos.\n- NO inventes datos, nombres, cifras ni información que no esté en el contexto proporcionado. Si no tienes un dato, omítelo o indica que debe completarse.\n- Si se proporciona un texto de referencia, sigue su estructura y extensión de forma estricta.";
 
         if ($lang !== 'es') {
             $langName = match($lang) { 'en' => 'English', default => 'Spanish' };
