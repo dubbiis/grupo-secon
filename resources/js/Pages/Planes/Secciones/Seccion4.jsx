@@ -7,11 +7,6 @@ import { useTranslation } from "@/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { DoorOpen, ImagePlus } from "lucide-react";
 
-const EMERGENCY_OPTIONS = [
-    { value: "si", label: "Sí, cumple con las medidas necesarias" },
-    { value: "parcial", label: "Parcialmente, requiere adaptaciones" },
-    { value: "no", label: "No cumple actualmente" },
-];
 
 function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded }) {
     const inputRef = useRef(null);
@@ -86,7 +81,6 @@ export default function Seccion4({ plan, section }) {
         descripcion_accesos:       "",
         accesos_detalle:           [],
         acceso_vehiculos_emergencia: "",
-        acceso_vehiculos_detalle:  "",
         datos_transporte_googlemaps: "",
         datos_parkings_googlemaps: "",
         ...section.form_data,
@@ -185,26 +179,13 @@ export default function Seccion4({ plan, section }) {
             </div>
 
             {/* Acceso vehículos de emergencia */}
-            <div className="space-y-3">
-                <label className="text-sm font-medium block">{t("s4.emergency_access")}</label>
-                <select
-                    value={form.acceso_vehiculos_emergencia ?? ""}
-                    onChange={(e) => setForm((prev) => ({ ...prev, acceso_vehiculos_emergencia: e.target.value }))}
-                    className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
-                >
-                    <option value="">{t("forms.select")}</option>
-                    {EMERGENCY_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-                {form.acceso_vehiculos_emergencia && (
-                    <Textarea
-                        value={form.acceso_vehiculos_detalle ?? ""}
-                        onChange={(e) => setForm((prev) => ({ ...prev, acceso_vehiculos_detalle: e.target.value }))}
-                        placeholder={t("s4.emergency_access_ph")}
-                        rows={2}
-                    />
-                )}
+            <div>
+                <label className="text-sm font-medium mb-1.5 block">{t("s4.emergency_access")}</label>
+                <Textarea
+                    {...field("acceso_vehiculos_emergencia")}
+                    placeholder={t("s4.emergency_access_ph")}
+                    rows={3}
+                />
             </div>
 
             {/* Búsqueda automática de transporte */}
