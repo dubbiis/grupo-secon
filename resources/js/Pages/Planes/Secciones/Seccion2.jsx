@@ -179,6 +179,7 @@ export default function Seccion2({ plan, section }) {
         horarios_evento: {},
         horarios_desmontaje: {},
         aforo_previsto: "",
+        aforo_espacio: "",
         ...section.form_data,
     });
 
@@ -248,9 +249,15 @@ export default function Seccion2({ plan, section }) {
             </div>
 
             {/* Aforo */}
-            <div className="max-w-xs">
-                <label className="text-sm font-medium mb-1.5 block">{t("s2.capacity")}</label>
-                <Input type="number" {...field("aforo_previsto")} placeholder={t("s2.capacity_ph")} min={1} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.capacity")}</label>
+                    <Input type="number" {...field("aforo_previsto")} placeholder={t("s2.capacity_ph")} min={1} />
+                </div>
+                <div>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.venue_capacity")}</label>
+                    <Input type="number" {...field("aforo_espacio")} placeholder={t("s2.venue_capacity_ph")} min={1} />
+                </div>
             </div>
 
             {/* ── Montaje ─────────────────────────────────────────── */}

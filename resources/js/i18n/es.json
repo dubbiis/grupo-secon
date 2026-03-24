@@ -357,7 +357,9 @@
     "setup_date_start": "Inicio montaje",
     "setup_date_end": "Fin montaje",
     "teardown_date_start": "Inicio desmontaje",
-    "teardown_date_end": "Fin desmontaje"
+    "teardown_date_end": "Fin desmontaje",
+    "venue_capacity": "Aforo del espacio",
+    "venue_capacity_ph": "Capacidad máxima del recinto"
   },
   "s3": {
     "desc": "Registra cada espacio/titular del evento con sus datos de contacto. El espacio principal se carga desde la sección 1.",

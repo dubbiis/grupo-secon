@@ -357,7 +357,9 @@
     "setup_date_start": "Setup start",
     "setup_date_end": "Setup end",
     "teardown_date_start": "Teardown start",
-    "teardown_date_end": "Teardown end"
+    "teardown_date_end": "Teardown end",
+    "venue_capacity": "Venue capacity",
+    "venue_capacity_ph": "Maximum venue capacity"
   },
   "s3": {
     "desc": "Register each event space/holder with their contact details. The main space is loaded from section 1.",
