@@ -346,6 +346,10 @@
     "capacity": "Aforo previsto *",
     "capacity_ph": "Aforo total esperado"
   },
+  "s3": {
+    "desc": "Registra cada espacio/titular del evento con sus datos de contacto. El espacio principal se carga desde la sección 1.",
+    "add": "Añadir espacio"
+  },
   "s4": {
     "capacity": "Aforo total *",
     "capacity_ph": "Capacidad maxima del recinto",
@@ -355,7 +359,9 @@
     "transport": "Transporte publico y parkings",
     "public_transport": "Transporte publico cercano",
     "auto_hint": "Rellenado automaticamente o escribe manualmente.",
-    "parking_nearby": "Parkings cercanos"
+    "parking_nearby": "Parkings cercanos",
+    "emergency_access": "¿El recinto cumple con las medidas para acceso de vehículos de emergencia?",
+    "emergency_access_ph": "Describe las condiciones de acceso: ancho de puertas, rampas, altura libre, recorrido interior..."
   },
   "s5": {
     "emergency": "Recursos de emergencia cercanos",
@@ -371,7 +377,7 @@
   },
   "s6": {
     "public_type": "Tipo de publico *",
-    "specify_public": "Especifica el tipo de publico...",
+    "public_type_ph": "Ej: Publico general mixto, jovenes 18-30, familiar, profesional...",
     "age_range": "Rango de edad estimado",
     "geo_scope": "Ambito geografico",
     "vips_title": "Artistas / VIPs / Personalidades",

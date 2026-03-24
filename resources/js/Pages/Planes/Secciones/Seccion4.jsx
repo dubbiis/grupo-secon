@@ -5,7 +5,78 @@ import SectionShell from "@/components/planes/SectionShell";
 import PlacesPanel from "@/components/planes/PlacesPanel";
 import { useTranslation } from "@/i18n";
 import { motion, AnimatePresence } from "framer-motion";
-import { DoorOpen } from "lucide-react";
+import { DoorOpen, ImagePlus } from "lucide-react";
+
+const EMERGENCY_OPTIONS = [
+    { value: "si", label: "Sí, cumple con las medidas necesarias" },
+    { value: "parcial", label: "Parcialmente, requiere adaptaciones" },
+    { value: "no", label: "No cumple actualmente" },
+];
+
+function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded }) {
+    const inputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+    const [localPreview, setLocalPreview] = useState(null);
+
+    const upload = async (file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => setLocalPreview(e.target.result);
+        reader.readAsDataURL(file);
+
+        setUploading(true);
+        try {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("file_category", `acceso_foto_${accessIdx}`);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+            const res = await fetch(`/planes/${uuid}/seccion/4/archivo`, {
+                method: "POST",
+                headers: { "X-CSRF-TOKEN": csrfToken },
+                body: fd,
+            });
+            if (res.ok) {
+                const data = await res.json();
+                onUploaded(data.url);
+                setLocalPreview(null);
+            }
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const displayUrl = localPreview || currentUrl;
+
+    return (
+        <div
+            className="w-full h-28 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden"
+            onClick={() => inputRef.current?.click()}
+        >
+            {displayUrl ? (
+                <>
+                    <img src={displayUrl} alt="acceso" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ImagePlus size={18} className="text-white" />
+                    </div>
+                </>
+            ) : uploading ? (
+                <div className="text-xs text-[#208DCA] animate-pulse">Subiendo...</div>
+            ) : (
+                <>
+                    <ImagePlus size={18} className="text-slate-400 group-hover:text-[#208DCA]/50 transition-colors" />
+                    <span className="text-[10px] text-slate-400">Foto del acceso</span>
+                </>
+            )}
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => upload(e.target.files?.[0])}
+            />
+        </div>
+    );
+}
 
 export default function Seccion4({ plan, section }) {
     const { t } = useTranslation();
@@ -14,6 +85,8 @@ export default function Seccion4({ plan, section }) {
         num_accesos:               "",
         descripcion_accesos:       "",
         accesos_detalle:           [],
+        acceso_vehiculos_emergencia: "",
+        acceso_vehiculos_detalle:  "",
         datos_transporte_googlemaps: "",
         datos_parkings_googlemaps: "",
         ...section.form_data,
@@ -27,7 +100,7 @@ export default function Seccion4({ plan, section }) {
             const current = prev.accesos_detalle || [];
             if (current.length === numAccesos) return prev;
             const updated = Array.from({ length: numAccesos }, (_, i) =>
-                current[i] || { nombre: `Acceso ${i + 1}`, descripcion: "" }
+                current[i] || { nombre: `Acceso ${i + 1}`, descripcion: "", foto_url: "" }
             );
             return { ...prev, accesos_detalle: updated };
         });
@@ -37,7 +110,6 @@ export default function Seccion4({ plan, section }) {
         setForm((prev) => {
             const updated = [...(prev.accesos_detalle || [])];
             updated[idx] = { ...updated[idx], [key]: val };
-            // Also sync to descripcion_accesos as combined text for AI
             const combined = updated.map((a) => `${a.nombre}: ${a.descripcion}`).filter((s) => s.length > 3).join("\n");
             return { ...prev, accesos_detalle: updated, descripcion_accesos: combined };
         });
@@ -51,7 +123,6 @@ export default function Seccion4({ plan, section }) {
     const transportRef = useRef(null);
     const parkingRef = useRef(null);
 
-    // Auto-resize textareas when value changes programmatically
     useEffect(() => {
         [transportRef, parkingRef].forEach((ref) => {
             const el = ref.current;
@@ -72,42 +143,71 @@ export default function Seccion4({ plan, section }) {
                 </div>
             </div>
 
-            {/* Access detail cards — always at least 1 */}
+            {/* Access detail cards */}
             <div className="space-y-3">
                 <label className="text-sm font-medium block">{t("s4.access_desc")}</label>
                 <AnimatePresence>
-                        {(form.accesos_detalle || []).map((acceso, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -8 }}
-                                transition={{ delay: i * 0.05 }}
-                                className="rounded-xl border border-slate-200 bg-white p-3 space-y-2"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-lg bg-[#208DCA]/10 flex items-center justify-center flex-shrink-0">
-                                        <DoorOpen size={14} className="text-[#208DCA]" />
-                                    </div>
-                                    <Input
-                                        value={acceso.nombre}
-                                        onChange={(e) => updateAcceso(i, "nombre", e.target.value)}
-                                        placeholder={`Nombre del acceso ${i + 1}`}
-                                        className="text-sm font-medium"
-                                    />
+                    {(form.accesos_detalle || []).map((acceso, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="rounded-xl border border-slate-200 bg-white p-3 space-y-2"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-[#208DCA]/10 flex items-center justify-center flex-shrink-0">
+                                    <DoorOpen size={14} className="text-[#208DCA]" />
                                 </div>
-                                <Textarea
-                                    value={acceso.descripcion}
-                                    onChange={(e) => updateAcceso(i, "descripcion", e.target.value)}
-                                    placeholder="Ubicación, tipo de público, controles de seguridad, ancho, señalización..."
-                                    rows={2}
+                                <Input
+                                    value={acceso.nombre}
+                                    onChange={(e) => updateAcceso(i, "nombre", e.target.value)}
+                                    placeholder={`Nombre del acceso ${i + 1}`}
+                                    className="text-sm font-medium"
                                 />
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
+                            </div>
+                            <Textarea
+                                value={acceso.descripcion}
+                                onChange={(e) => updateAcceso(i, "descripcion", e.target.value)}
+                                placeholder="Ubicación, tipo de público, controles de seguridad, ancho, señalización..."
+                                rows={2}
+                            />
+                            <AccessPhotoUpload
+                                uuid={plan.uuid}
+                                accessIdx={i}
+                                currentUrl={acceso.foto_url}
+                                onUploaded={(url) => updateAcceso(i, "foto_url", url)}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
 
-            {/* ── Búsqueda automática de transporte ── */}
+            {/* Acceso vehículos de emergencia */}
+            <div className="space-y-3">
+                <label className="text-sm font-medium block">{t("s4.emergency_access")}</label>
+                <select
+                    value={form.acceso_vehiculos_emergencia ?? ""}
+                    onChange={(e) => setForm((prev) => ({ ...prev, acceso_vehiculos_emergencia: e.target.value }))}
+                    className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                >
+                    <option value="">{t("forms.select")}</option>
+                    {EMERGENCY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                </select>
+                {form.acceso_vehiculos_emergencia && (
+                    <Textarea
+                        value={form.acceso_vehiculos_detalle ?? ""}
+                        onChange={(e) => setForm((prev) => ({ ...prev, acceso_vehiculos_detalle: e.target.value }))}
+                        placeholder={t("s4.emergency_access_ph")}
+                        rows={2}
+                    />
+                )}
+            </div>
+
+            {/* Búsqueda automática de transporte */}
             <div className="space-y-3">
                 <label className="text-sm font-medium block">{t("s4.transport")}</label>
                 <PlacesPanel

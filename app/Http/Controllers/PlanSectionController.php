@@ -30,6 +30,7 @@ class PlanSectionController extends Controller
                 'section_number' => $s->section_number,
                 'section_name' => $s->section_name,
                 'status' => $s->status,
+                'form_data' => $s->form_data ?? [],
             ]),
             'currentSection' => $currentSection ? [
                 'section_number' => $currentSection->section_number,

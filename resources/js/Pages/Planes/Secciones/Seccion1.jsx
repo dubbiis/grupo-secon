@@ -17,7 +17,17 @@ const TIPOS_EVENTO = [
     "Otro",
 ];
 
-const TIPOS_ESPACIO = ["Recinto cerrado", "Espacio abierto", "Mixto", "Instalación permanente", "Otro"];
+const TIPOS_ESPACIO = [
+    "Estadio / Arena",
+    "Hotel",
+    "Espacio para eventos",
+    "Centro de convenciones",
+    "Showroom",
+    "Estudio / Plató",
+    "Recinto ferial",
+    "Venue outdoor",
+    "Otro",
+];
 
 export default function Seccion1({ plan, section }) {
     const { t } = useTranslation();

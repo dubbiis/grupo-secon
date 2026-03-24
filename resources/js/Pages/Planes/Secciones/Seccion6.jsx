@@ -6,14 +6,11 @@ import SectionShell from "@/components/planes/SectionShell";
 import { Plus, Trash2, ChevronDown, User, ImagePlus, Sparkles, Loader2 } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
-const TIPOS_PUBLICO = [
-    "Público general mixto",
-    "Jóvenes (18-30 años)",
-    "Familiar (todas las edades)",
-    "Profesional / Corporativo",
-    "Deportivo",
-    "Cultural / Artístico",
-    "Otro",
+const AMBITOS_GEOGRAFICOS = [
+    "Local (ciudad)",
+    "Regional",
+    "Nacional",
+    "Internacional",
 ];
 
 // ── Inline VIP photo uploader ──────────────────────────────
@@ -279,22 +276,10 @@ export default function Seccion6({ plan, section }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">{t("s6.public_type")}</label>
-                    <select
-                        value={form.perfil_publico}
-                        onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50"
-                    >
-                        <option value="">Seleccionar...</option>
-                        {TIPOS_PUBLICO.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
-                    </select>
-                    {form.perfil_publico === "Otro" && (
-                        <Input
-                            value={form.perfil_publico_otro ?? ""}
-                            onChange={(e) => setForm((prev) => ({ ...prev, perfil_publico_otro: e.target.value }))}
-                            placeholder={t("s6.specify_public")}
-                            className="mt-2"
-                        />
-                    )}
+                    <Input
+                        {...field("perfil_publico")}
+                        placeholder={t("s6.public_type_ph")}
+                    />
                 </div>
 
                 <div>
@@ -304,7 +289,14 @@ export default function Seccion6({ plan, section }) {
 
                 <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-1.5 block">{t("forms.geo_scope")}</label>
-                    <Input {...field("ambito_geografico")} placeholder="Ej: Local (ciudad), Regional (Cataluña), Nacional, Internacional" />
+                    <select
+                        value={form.ambito_geografico ?? ""}
+                        onChange={(e) => setForm((prev) => ({ ...prev, ambito_geografico: e.target.value }))}
+                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
+                    >
+                        <option value="">{t("forms.select")}</option>
+                        {AMBITOS_GEOGRAFICOS.map((a) => <option key={a} value={a}>{a}</option>)}
+                    </select>
                 </div>
             </div>
 

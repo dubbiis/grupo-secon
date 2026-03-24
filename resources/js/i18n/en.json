@@ -346,6 +346,10 @@
     "capacity": "Expected capacity *",
     "capacity_ph": "Total expected capacity"
   },
+  "s3": {
+    "desc": "Register each event space/holder with their contact details. The main space is loaded from section 1.",
+    "add": "Add space"
+  },
   "s4": {
     "capacity": "Total capacity *",
     "capacity_ph": "Maximum venue capacity",
@@ -355,7 +359,9 @@
     "transport": "Public transport and parking",
     "public_transport": "Nearby public transport",
     "auto_hint": "Auto-filled or write manually.",
-    "parking_nearby": "Nearby parking"
+    "parking_nearby": "Nearby parking",
+    "emergency_access": "Does the venue meet emergency vehicle access requirements?",
+    "emergency_access_ph": "Describe access conditions: door width, ramps, clearance height, interior routes..."
   },
   "s5": {
     "emergency": "Nearby emergency resources",
@@ -371,7 +377,7 @@
   },
   "s6": {
     "public_type": "Public type *",
-    "specify_public": "Specify the public type...",
+    "public_type_ph": "E.g.: General mixed public, young 18-30, family, professional...",
     "age_range": "Estimated age range",
     "geo_scope": "Geographic scope",
     "vips_title": "Artists / VIPs / Personalities",
