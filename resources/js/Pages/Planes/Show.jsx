@@ -149,7 +149,7 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.25, ease: "easeOut" }}
-                                className="max-w-5xl mx-auto px-6 py-10"
+                                className="px-6 py-10"
                             >
                                 <SectionComponent
                                     plan={plan}
