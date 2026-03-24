@@ -1247,129 +1247,131 @@ const MapEditor = forwardRef(function MapEditor({
                         </motion.button>
                     </div>
 
-                    {/* Map/Search/Route — grouped navigation pills */}
-                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50">
-                        <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
+                    {/* Map/Search/Route nav + address inputs — same row */}
+                    <div className="flex items-center gap-1.5 basis-full min-w-0">
+                        <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50 flex-shrink-0">
+                            <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
+                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                    onClick={() => { setShowMap(true); setMapMode("search"); }}
+                                    className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                        showMap && mapMode === "search"
+                                            ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
+                                            : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
+                                    }`}
+                                >
+                                    <Search size={12} />
+                                    Buscar
+                                </motion.button>
+                            </Shine>
+                            <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
+                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                    onClick={() => { setShowMap(true); setMapMode("route"); }}
+                                    className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                        showMap && mapMode === "route"
+                                            ? "bg-gradient-to-r from-[#208DCA] to-[#253C87] text-white shadow-md shadow-[#253C87]/40"
+                                            : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
+                                    }`}
+                                >
+                                    <Navigation size={12} />
+                                    Ruta
+                                </motion.button>
+                            </Shine>
                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                                onClick={() => { setShowMap(true); setMapMode("search"); }}
+                                onClick={() => setShowMap(false)}
                                 className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
-                                    showMap && mapMode === "search"
+                                    !showMap
                                         ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
-                                        : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
+                                        : "text-slate-500 hover:text-slate-900"
                                 }`}
                             >
-                                <Search size={12} />
-                                Buscar
+                                <ImagePlus size={12} />
+                                Canvas
                             </motion.button>
-                        </Shine>
-                        <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                                onClick={() => { setShowMap(true); setMapMode("route"); }}
-                                className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
-                                    showMap && mapMode === "route"
-                                        ? "bg-gradient-to-r from-[#208DCA] to-[#253C87] text-white shadow-md shadow-[#253C87]/40"
-                                        : showMap ? "bg-white/80 text-slate-600 hover:bg-white" : "text-slate-500 hover:text-slate-900"
-                                }`}
-                            >
-                                <Navigation size={12} />
-                                Ruta
-                            </motion.button>
-                        </Shine>
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                            onClick={() => setShowMap(false)}
-                            className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
-                                !showMap
-                                    ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/40"
-                                    : "text-slate-500 hover:text-slate-900"
-                            }`}
-                        >
-                            <ImagePlus size={12} />
-                            Canvas
-                        </motion.button>
+                        </div>
+
+                        {/* Map / Satellite toggle */}
+                        {showMap && (
+                            <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-lg bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/50 flex-shrink-0">
+                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                    onClick={() => setSatelliteView(false)}
+                                    className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
+                                        !satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                    }`}
+                                >
+                                    Mapa
+                                </motion.button>
+                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                    onClick={() => setSatelliteView(true)}
+                                    className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
+                                        satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                    }`}
+                                >
+                                    Satélite
+                                </motion.button>
+                            </div>
+                        )}
+
+                        {/* Address inputs — fill remaining space */}
+                        {showMap && mapMode === "search" && (
+                            <div className="flex-1 min-w-0">
+                                <AddressAutocomplete
+                                    value={mapQuery}
+                                    onChange={setMapQuery}
+                                    onSelect={(place) => {
+                                        setMapQuery(place.displayName);
+                                        setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
+                                    }}
+                                    placeholder="Buscar dirección, hospital..."
+                                    biasLat={routeACoords?.lat}
+                                    biasLng={routeACoords?.lng}
+                                />
+                            </div>
+                        )}
+                        {showMap && mapMode === "route" && (
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <AddressAutocomplete
+                                    label="A" labelColor="#253C87"
+                                    value={routeA}
+                                    onChange={setRouteA}
+                                    onSelect={(place) => {
+                                        setRouteA(place.displayName);
+                                        const coordsA = { lat: place.lat, lng: place.lng };
+                                        setRouteACoords(coordsA);
+                                        if (routeBCoords) {
+                                            setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                        } else {
+                                            setMapCommand({ type: "search", query: coordsA });
+                                        }
+                                    }}
+                                    biasLat={routeACoords?.lat}
+                                    biasLng={routeACoords?.lng}
+                                    placeholder="Origen"
+                                    className="flex-1 min-w-0"
+                                />
+                                <AddressAutocomplete
+                                    label="B" labelColor="#208DCA"
+                                    value={routeB}
+                                    onChange={setRouteB}
+                                    onSelect={(place) => {
+                                        setRouteB(place.displayName);
+                                        const coordsB = { lat: place.lat, lng: place.lng };
+                                        setRouteBCoords(coordsB);
+                                        if (routeACoords) {
+                                            setMapCommand({ type: "route", a: routeACoords, b: coordsB });
+                                        }
+                                    }}
+                                    biasLat={routeACoords?.lat || routeBCoords?.lat}
+                                    biasLng={routeACoords?.lng || routeBCoords?.lng}
+                                    placeholder="Destino"
+                                    className="flex-1 min-w-0"
+                                />
+                                {mapStatus === "loading" && (
+                                    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                        className="text-[10px] text-[#208DCA] font-medium whitespace-nowrap">Calculando...</motion.span>
+                                )}
+                            </div>
+                        )}
                     </div>
-
-                    {/* Map / Satellite toggle */}
-                    {showMap && (
-                        <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-lg bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/50">
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                                onClick={() => setSatelliteView(false)}
-                                className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
-                                    !satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
-                                }`}
-                            >
-                                Mapa
-                            </motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                                onClick={() => setSatelliteView(true)}
-                                className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
-                                    satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
-                                }`}
-                            >
-                                Satélite
-                            </motion.button>
-                        </div>
-                    )}
-
-                    {/* Address inputs — full-width row inside toolbar */}
-                    {showMap && mapMode === "search" && (
-                        <div className="basis-full min-w-0">
-                            <AddressAutocomplete
-                                value={mapQuery}
-                                onChange={setMapQuery}
-                                onSelect={(place) => {
-                                    setMapQuery(place.displayName);
-                                    setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
-                                }}
-                                placeholder="Buscar dirección, hospital..."
-                                biasLat={routeACoords?.lat}
-                                biasLng={routeACoords?.lng}
-                            />
-                        </div>
-                    )}
-                    {showMap && mapMode === "route" && (
-                        <div className="flex items-center gap-2 basis-full min-w-0">
-                            <AddressAutocomplete
-                                label="A" labelColor="#253C87"
-                                value={routeA}
-                                onChange={setRouteA}
-                                onSelect={(place) => {
-                                    setRouteA(place.displayName);
-                                    const coordsA = { lat: place.lat, lng: place.lng };
-                                    setRouteACoords(coordsA);
-                                    if (routeBCoords) {
-                                        setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
-                                    } else {
-                                        setMapCommand({ type: "search", query: coordsA });
-                                    }
-                                }}
-                                biasLat={routeACoords?.lat}
-                                biasLng={routeACoords?.lng}
-                                placeholder="Origen"
-                                className="flex-1 min-w-0"
-                            />
-                            <AddressAutocomplete
-                                label="B" labelColor="#208DCA"
-                                value={routeB}
-                                onChange={setRouteB}
-                                onSelect={(place) => {
-                                    setRouteB(place.displayName);
-                                    const coordsB = { lat: place.lat, lng: place.lng };
-                                    setRouteBCoords(coordsB);
-                                    if (routeACoords) {
-                                        setMapCommand({ type: "route", a: routeACoords, b: coordsB });
-                                    }
-                                }}
-                                biasLat={routeACoords?.lat || routeBCoords?.lat}
-                                biasLng={routeACoords?.lng || routeBCoords?.lng}
-                                placeholder="Destino"
-                                className="flex-1 min-w-0"
-                            />
-                            {mapStatus === "loading" && (
-                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                    className="text-[10px] text-[#208DCA] font-medium whitespace-nowrap">Calculando...</motion.span>
-                            )}
-                        </div>
-                    )}
 
                     {/* Addresses panel toggle */}
                     {showMap && planAddresses.length > 0 && (
