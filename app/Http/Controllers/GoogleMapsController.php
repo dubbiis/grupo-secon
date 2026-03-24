@@ -137,25 +137,153 @@ class GoogleMapsController extends Controller
     /**
      * Proxy for Photon/Nominatim geocoding autocomplete (avoids CORS in production)
      */
-    private function nominatimHeaders(): array
+    // ── CartoCiudad (gobierno de España, portales exactos) ────────
+
+    private const CARTO_BASE = 'https://www.cartociudad.es/geocoder/api/geocoder';
+
+    /**
+     * Autocomplete via CartoCiudad — returns candidates with portal-level precision.
+     * Filters out municipalities/provinces/etc to focus on streets and portals.
+     */
+    private function searchCartoCiudad(string $query): array
     {
-        return ['User-Agent' => 'GrupoSecon/1.0', 'Accept-Language' => 'es'];
+        $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
+            ->timeout(4)
+            ->get(self::CARTO_BASE . '/candidatesJsonp', [
+                'q' => $query,
+                'limit' => 8,
+                'countrycodes' => 'es',
+                'no_process' => 'municipio,provincia,comunidad autonoma,poblacion,toponimo,expendeduria,punto_recarga_electrica,ngbe,carretera',
+            ]);
+
+        if (!$response->successful()) return [];
+
+        // CartoCiudad may return JSONP — strip callback wrapper if present
+        $body = $response->body();
+        if (!str_starts_with(trim($body), '[') && !str_starts_with(trim($body), '{')) {
+            if (preg_match('/\((.+)\)\s*;?\s*$/s', $body, $m)) {
+                $body = $m[1];
+            }
+        }
+        $items = json_decode($body, true);
+        if (!is_array($items)) return [];
+
+        // Score: portals > streets, with number > without
+        usort($items, function ($a, $b) {
+            $scoreA = ($a['type'] === 'portal' ? 100 : 0) + (($a['portalNumber'] ?? '') ? 50 : 0);
+            $scoreB = ($b['type'] === 'portal' ? 100 : 0) + (($b['portalNumber'] ?? '') ? 50 : 0);
+            return $scoreB - $scoreA;
+        });
+
+        return collect($items)
+            ->filter(fn($item) => in_array($item['type'] ?? '', ['portal', 'callejero']))
+            ->take(6)
+            ->map(function ($item) {
+                $address = $item['address'] ?? $item['nombre'] ?? $item['name'] ?? '';
+                $muni = $item['muni'] ?? '';
+                $province = $item['province'] ?? '';
+                $portal = $item['portalNumber'] ?? '';
+                $type = $item['type'] ?? '';
+
+                $name = $address;
+                $subtitle = implode(', ', array_filter([$muni, $province]));
+                $displayName = $subtitle && !str_contains($address, $subtitle)
+                    ? "{$address}, {$subtitle}"
+                    : $address;
+
+                // Portal candidates have lat/lng directly
+                $lat = isset($item['lat']) ? (float) $item['lat'] : null;
+                $lng = isset($item['lng']) ? (float) $item['lng'] : null;
+
+                // If no direct coords, try findJsonp to resolve
+                if (!$lat || !$lng) {
+                    $resolved = $this->resolveCartoCiudad($item);
+                    if ($resolved) {
+                        $lat = $resolved['lat'];
+                        $lng = $resolved['lng'];
+                    }
+                }
+
+                if (!$lat || !$lng) return null;
+
+                return [
+                    'lat' => $lat,
+                    'lng' => $lng,
+                    'name' => $name,
+                    'subtitle' => $subtitle,
+                    'displayName' => $displayName,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
     }
 
-    private function formatNominatimResults(array $data): array
+    /**
+     * Resolve a CartoCiudad candidate to exact coordinates via findJsonp.
+     */
+    private function resolveCartoCiudad(array $item): ?array
     {
-        return collect($data)->map(fn($r) => [
-            'lat' => (float) $r['lat'],
-            'lng' => (float) $r['lon'],
-            'name' => explode(',', $r['display_name'])[0],
-            'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
-            'displayName' => $r['display_name'],
-        ])->values()->toArray();
+        $id = $item['id'] ?? null;
+        $type = $item['type'] ?? null;
+        if (!$id || !$type) return null;
+
+        try {
+            $params = ['id' => $id, 'type' => $type, 'outputformat' => 'geojson'];
+            if ($type === 'callejero' && !empty($item['portalNumber'])) {
+                $params['portal'] = $item['portalNumber'];
+            }
+
+            $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
+                ->timeout(4)
+                ->get(self::CARTO_BASE . '/findJsonp', $params);
+
+            if (!$response->successful()) return null;
+
+            $body = $response->body();
+            if (!str_starts_with(trim($body), '{') && !str_starts_with(trim($body), '[')) {
+                if (preg_match('/\((.+)\)\s*;?\s*$/s', $body, $m)) {
+                    $body = $m[1];
+                }
+            }
+            $data = json_decode($body, true);
+            if (!$data) return null;
+
+            // GeoJSON FeatureCollection or Feature
+            if (($data['type'] ?? '') === 'FeatureCollection') {
+                $coords = $data['features'][0]['geometry']['coordinates'] ?? null;
+            } elseif (($data['type'] ?? '') === 'Feature') {
+                $coords = $data['geometry']['coordinates'] ?? null;
+            } else {
+                return null;
+            }
+
+            if (!$coords || !is_array($coords)) return null;
+
+            // GeoJSON is [lng, lat]
+            return ['lat' => (float) $coords[1], 'lng' => (float) $coords[0]];
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
-    private function formatPhotonResults(array $features): array
+    // ── Photon (Elasticsearch fuzzy, international) ────────
+
+    private function searchPhoton(string $query, ?float $lat = null, ?float $lng = null): array
     {
-        return collect($features)->map(function ($f) {
+        $params = ['q' => $query, 'limit' => 6, 'lang' => 'es'];
+        if ($lat && $lng) {
+            $params['lat'] = $lat;
+            $params['lon'] = $lng;
+        }
+
+        $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
+            ->timeout(4)
+            ->get('https://photon.komoot.io/api/', $params);
+
+        if (!$response->successful()) return [];
+
+        return collect($response->json()['features'] ?? [])->map(function ($f) {
             $props = $f['properties'] ?? [];
             $street = $props['street'] ?? '';
             $number = $props['housenumber'] ?? '';
@@ -163,7 +291,6 @@ class GoogleMapsController extends Controller
             $city   = $props['city'] ?? $props['county'] ?? '';
             $state  = $props['state'] ?? '';
 
-            // Build a readable display name like Google does
             $mainPart = $name ?: ($street ? trim("{$street} {$number}") : '');
             $locationParts = array_filter([$city, $state]);
 
@@ -179,95 +306,39 @@ class GoogleMapsController extends Controller
           ->toArray();
     }
 
+    // ── geocodeSearch endpoint ────────
+
     public function geocodeSearch(Request $request)
     {
         $q = trim($request->input('q', ''));
         if (strlen($q) < 2) return response()->json([]);
 
-        $lat = $request->input('lat');
-        $lng = $request->input('lng');
+        $lat = $request->input('lat') ? (float) $request->input('lat') : null;
+        $lng = $request->input('lng') ? (float) $request->input('lng') : null;
 
         $cacheKey = 'geocode.' . md5($q . $lat . $lng);
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        // Helper: search Photon
-        $searchPhoton = function (string $query) use ($lat, $lng) {
-            $params = ['q' => $query, 'limit' => 6, 'lang' => 'es'];
-            if ($lat && $lng) {
-                $params['lat'] = $lat;
-                $params['lon'] = $lng;
-            }
-            $response = Http::withHeaders(['User-Agent' => 'GrupoSecon/1.0'])
-                ->timeout(4)
-                ->get('https://photon.komoot.io/api/', $params);
-            if ($response->successful()) {
-                return $this->formatPhotonResults($response->json()['features'] ?? []);
-            }
-            return [];
-        };
-
-        // Helper: search Nominatim
-        $searchNominatim = function (string $query) use ($lat, $lng) {
-            $params = ['q' => $query, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
-            if ($lat && $lng) {
-                $d = 0.5;
-                $params['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
-                $params['bounded'] = 0;
-            }
-            $response = Http::withHeaders($this->nominatimHeaders())
-                ->timeout(5)
-                ->get('https://nominatim.openstreetmap.org/search', $params);
-            if ($response->successful()) {
-                return $this->formatNominatimResults($response->json() ?? []);
-            }
-            return [];
-        };
-
-        // Strip house number from query for retry: "calle mirto 9" → "calle mirto"
-        $hasNumber = preg_match('/\d/', $q);
-        $queryWithoutNumber = $hasNumber
-            ? preg_replace('/\s*[,.]?\s*\b\d{1,5}\s*[a-zA-Z]?\b\s*[,.]?\s*/', ' ', $q)
-            : null;
-        $queryWithoutNumber = $queryWithoutNumber ? preg_replace('/\s+/', ' ', trim($queryWithoutNumber)) : null;
-
-        // ── 1. Photon with full query (fuzzy, handles any format) ──
+        // ── 1. CartoCiudad (Spain, portal-level precision) ──
         try {
-            $results = $searchPhoton($q);
+            $results = $this->searchCartoCiudad($q);
             if (!empty($results)) {
                 Cache::put($cacheKey, $results, 3600);
                 return response()->json($results);
             }
-        } catch (\Throwable) {}
-
-        // ── 2. Nominatim with full query (precise, good for exact addresses) ──
-        try {
-            $results = $searchNominatim($q);
-            if (!empty($results)) {
-                Cache::put($cacheKey, $results, 3600);
-                return response()->json($results);
-            }
-        } catch (\Throwable) {}
-
-        // ── 3. If query had a number and nothing found: retry without it ──
-        // "calle mirto 9" → "calle mirto" — finds the street, user drags pin
-        if ($queryWithoutNumber && $queryWithoutNumber !== $q && strlen($queryWithoutNumber) >= 3) {
-            try {
-                $results = $searchPhoton($queryWithoutNumber);
-                if (!empty($results)) {
-                    Cache::put($cacheKey, $results, 3600);
-                    return response()->json($results);
-                }
-            } catch (\Throwable) {}
-
-            try {
-                $results = $searchNominatim($queryWithoutNumber);
-                if (!empty($results)) {
-                    Cache::put($cacheKey, $results, 3600);
-                    return response()->json($results);
-                }
-            } catch (\Throwable) {}
+        } catch (\Throwable $e) {
+            \Log::debug('CartoCiudad failed', ['error' => $e->getMessage()]);
         }
+
+        // ── 2. Photon (international, fuzzy matching) ──
+        try {
+            $results = $this->searchPhoton($q, $lat, $lng);
+            if (!empty($results)) {
+                Cache::put($cacheKey, $results, 3600);
+                return response()->json($results);
+            }
+        } catch (\Throwable) {}
 
         return response()->json([]);
     }
