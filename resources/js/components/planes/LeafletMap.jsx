@@ -84,11 +84,26 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
         }, { passive: false });
 
         mapRef.current = map;
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+
+        // Base layers: map + satellite
+        const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
             maxZoom: 19,
             crossOrigin: "anonymous",
-        }).addTo(mapRef.current);
+        });
+        const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+            attribution: "© Esri, Maxar, Earthstar Geographics",
+            maxZoom: 19,
+            crossOrigin: "anonymous",
+        });
+
+        osmLayer.addTo(map);
+        L.control.layers(
+            { "Mapa": osmLayer, "Satélite": satelliteLayer },
+            null,
+            { position: "topright", collapsed: false }
+        ).addTo(map);
+
         return () => { mapRef.current?.remove(); mapRef.current = null; };
     }, []);
 

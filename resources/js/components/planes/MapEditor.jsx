@@ -836,7 +836,7 @@ const MapEditor = forwardRef(function MapEditor({
                 } catch {}
             });
 
-            // Draw SVG overlays (route lines, markers)
+            // Draw SVG overlays (route lines)
             if (overlayPane) {
                 for (const svg of overlayPane.querySelectorAll("svg")) {
                     try {
@@ -845,7 +845,6 @@ const MapEditor = forwardRef(function MapEditor({
                         clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
                         clone.setAttribute("width", String(Math.round(r.width)));
                         clone.setAttribute("height", String(Math.round(r.height)));
-                        // Remove any transform on the SVG root (already accounted for by getBoundingClientRect)
                         clone.removeAttribute("style");
                         clone.style.width = Math.round(r.width) + "px";
                         clone.style.height = Math.round(r.height) + "px";
@@ -858,6 +857,39 @@ const MapEditor = forwardRef(function MapEditor({
                         });
                         if (svgImg) {
                             ctx.drawImage(svgImg,
+                                r.left - containerRect.left,
+                                r.top - containerRect.top,
+                                Math.round(r.width), Math.round(r.height)
+                            );
+                        }
+                    } catch {}
+                }
+            }
+
+            // Draw HTML markers (A/B labels, POI icons) from the marker pane
+            const markerPane = leaflet.querySelector(".leaflet-marker-pane");
+            if (markerPane) {
+                for (const markerEl of markerPane.children) {
+                    try {
+                        const r = markerEl.getBoundingClientRect();
+                        if (r.width === 0 || r.height === 0) continue;
+                        // Use html2canvas-like approach: render the marker HTML to SVG foreignObject
+                        const html = markerEl.outerHTML;
+                        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(r.width)}" height="${Math.round(r.height)}">
+                            <foreignObject width="100%" height="100%">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:${Math.round(r.width)}px;height:${Math.round(r.height)}px">
+                                    ${html}
+                                </div>
+                            </foreignObject>
+                        </svg>`;
+                        const markerImg = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(img);
+                            img.onerror = () => resolve(null);
+                            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+                        });
+                        if (markerImg) {
+                            ctx.drawImage(markerImg,
                                 r.left - containerRect.left,
                                 r.top - containerRect.top,
                                 Math.round(r.width), Math.round(r.height)
