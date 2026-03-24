@@ -36,7 +36,7 @@ class OpenAIService
         }
 
         if ($template->use_example_output && $template->example_output) {
-            $userPrompt .= "\n\n---\nTEXTO DE REFERENCIA OBLIGATORIO — Debes seguir ESTRICTAMENTE esta estructura, formato, extensión y nivel de detalle. Adapta el contenido a los datos del evento actual pero mantén la misma organización de párrafos, el mismo tono profesional y una longitud similar. No inventes datos que no estén en el contexto proporcionado:\n\n" . $template->example_output;
+            $userPrompt .= "\n\n---\nPLANTILLA A COMPLETAR — El siguiente texto es una plantilla. Reproduce este texto EXACTAMENTE tal cual, pero sustituye las variables entre llaves {{variable}} y los datos de ejemplo por los datos reales del evento proporcionados arriba. No cambies la estructura, el orden de los párrafos ni el estilo de redacción. Solo reemplaza los datos de ejemplo por los datos reales. Si un dato no está disponible, déjalo como [pendiente de completar]:\n\n" . $template->example_output;
         }
 
         $systemPrompt = $template->system_prompt;
