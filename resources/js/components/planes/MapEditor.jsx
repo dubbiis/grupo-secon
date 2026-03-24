@@ -1371,67 +1371,67 @@ const MapEditor = forwardRef(function MapEditor({
                                 )}
                             </div>
                         )}
-                    </div>
 
-                    {/* Addresses panel toggle */}
-                    {showMap && planAddresses.length > 0 && (
-                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                            onClick={() => setShowAddressPanel((v) => !v)}
-                            title="Direcciones del plan"
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                                showAddressPanel ? "bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/30 shadow-sm shadow-[#208DCA]/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
+                        {/* Addresses panel toggle */}
+                        {showMap && planAddresses.length > 0 && (
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                onClick={() => setShowAddressPanel((v) => !v)}
+                                title="Direcciones del plan"
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
+                                    showAddressPanel ? "bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/30 shadow-sm shadow-[#208DCA]/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
+                                }`}
+                            >
+                                <BookOpen size={14} />
+                            </motion.button>
+                        )}
+
+                        {/* Fullscreen toggle */}
+                        <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
+                            onClick={() => setFullscreen((v) => !v)}
+                            title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
+                                fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
                             }`}
                         >
-                            <BookOpen size={15} />
+                            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                         </motion.button>
-                    )}
 
-                    {/* Fullscreen toggle */}
-                    <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
-                        onClick={() => setFullscreen((v) => !v)}
-                        title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                            fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
-                        }`}
-                    >
-                        {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-                    </motion.button>
-
-                    {/* Save / Export */}
-                    <div className="ml-auto flex items-center gap-2">
-                        {hasBg && (
-                            <>
-                                {mode === "standalone" && (
-                                    <div className="flex items-center text-xs rounded-xl overflow-hidden border border-slate-200/50 shadow-sm">
-                                        <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
-                                            onClick={() => setExportFormat("png")}
-                                            className={`px-3 py-1.5 transition-all ${exportFormat === "png" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
-                                            PNG
-                                        </motion.button>
-                                        <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
-                                            onClick={() => setExportFormat("jpeg")}
-                                            className={`px-3 py-1.5 transition-all ${exportFormat === "jpeg" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
-                                            JPG
-                                        </motion.button>
-                                    </div>
-                                )}
-                                <motion.button whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.85 }}
-                                    onClick={copyToClipboard} title="Copiar al portapapeles"
-                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"}`}>
-                                    {copiedMsg ? <Check size={15} /> : <Copy size={15} />}
-                                </motion.button>
-                                <Shine enableOnHover color="white" opacity={0.4} duration={500} asChild>
-                                    <RippleButton size="sm" onClick={handleSave} disabled={saving}
-                                        className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#253C87] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/30`}>
-                                {saved ? <><Check size={12} /> Guardado</>
-                                    : saving ? "Guardando..."
-                                    : mode === "standalone" ? <><Download size={12} /> Descargar</>
-                                    : <><Save size={12} /> Guardar</>}
-                            </RippleButton>
-                                </Shine>
-                        </>
-                    )}
-                </div>
+                        {/* Save / Export */}
+                        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+                            {hasBg && (
+                                <>
+                                    {mode === "standalone" && (
+                                        <div className="flex items-center text-xs rounded-xl overflow-hidden border border-slate-200/50 shadow-sm">
+                                            <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
+                                                onClick={() => setExportFormat("png")}
+                                                className={`px-2.5 py-1 transition-all ${exportFormat === "png" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
+                                                PNG
+                                            </motion.button>
+                                            <motion.button whileHover={{ backgroundColor: "rgba(32,141,202,0.08)" }}
+                                                onClick={() => setExportFormat("jpeg")}
+                                                className={`px-2.5 py-1 transition-all ${exportFormat === "jpeg" ? "bg-[#208DCA]/12 text-[#208DCA] font-bold" : "text-slate-400 bg-white/60"}`}>
+                                                JPG
+                                            </motion.button>
+                                        </div>
+                                    )}
+                                    <motion.button whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.85 }}
+                                        onClick={copyToClipboard} title="Copiar al portapapeles"
+                                        className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"}`}>
+                                        {copiedMsg ? <Check size={14} /> : <Copy size={14} />}
+                                    </motion.button>
+                                    <Shine enableOnHover color="white" opacity={0.4} duration={500} asChild>
+                                        <RippleButton size="sm" onClick={handleSave} disabled={saving}
+                                            className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#253C87] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/30`}>
+                                            {saved ? <><Check size={12} /> Guardado</>
+                                                : saving ? "Guardando..."
+                                                : mode === "standalone" ? <><Download size={12} /> Descargar</>
+                                                : <><Save size={12} /> Guardar</>}
+                                        </RippleButton>
+                                    </Shine>
+                                </>
+                            )}
+                        </div>
+                    </div>
             </motion.div>
             </Shine>
 
