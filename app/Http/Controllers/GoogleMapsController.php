@@ -320,26 +320,40 @@ class GoogleMapsController extends Controller
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        // ── 1. CartoCiudad (Spain, portal-level precision) ──
-        try {
-            $results = $this->searchCartoCiudad($q);
-            if (!empty($results)) {
-                Cache::put($cacheKey, $results, 3600);
-                return response()->json($results);
-            }
-        } catch (\Throwable $e) {
-            \Log::debug('CartoCiudad failed', ['error' => $e->getMessage()]);
-        }
+        // Search both providers and merge results
+        $cartoResults = [];
+        $photonResults = [];
 
-        // ── 2. Photon (international, fuzzy matching) ──
         try {
-            $results = $this->searchPhoton($q, $lat, $lng);
-            if (!empty($results)) {
-                Cache::put($cacheKey, $results, 3600);
-                return response()->json($results);
-            }
+            $cartoResults = $this->searchCartoCiudad($q);
         } catch (\Throwable) {}
 
-        return response()->json([]);
+        try {
+            $photonResults = $this->searchPhoton($q, $lat, $lng);
+        } catch (\Throwable) {}
+
+        // Merge: CartoCiudad first (portal precision for Spain), then Photon (international)
+        // Deduplicate by proximity (within ~100m = 0.001 degrees)
+        $merged = $cartoResults;
+        foreach ($photonResults as $photon) {
+            $dominated = false;
+            foreach ($cartoResults as $carto) {
+                if (abs($carto['lat'] - $photon['lat']) < 0.001 && abs($carto['lng'] - $photon['lng']) < 0.001) {
+                    $dominated = true;
+                    break;
+                }
+            }
+            if (!$dominated) {
+                $merged[] = $photon;
+            }
+        }
+
+        $results = array_slice($merged, 0, 8);
+
+        if (!empty($results)) {
+            Cache::put($cacheKey, $results, 3600);
+        }
+
+        return response()->json($results);
     }
 }
