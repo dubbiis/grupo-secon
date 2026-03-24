@@ -271,7 +271,7 @@ class GoogleMapsController extends Controller
 
     private function searchPhoton(string $query, ?float $lat = null, ?float $lng = null): array
     {
-        $params = ['q' => $query, 'limit' => 6, 'lang' => 'es'];
+        $params = ['q' => $query, 'limit' => 6, 'lang' => 'default'];
         if ($lat && $lng) {
             $params['lat'] = $lat;
             $params['lon'] = $lng;
