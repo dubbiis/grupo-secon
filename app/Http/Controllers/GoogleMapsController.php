@@ -137,6 +137,63 @@ class GoogleMapsController extends Controller
     /**
      * Proxy for Photon/Nominatim geocoding autocomplete (avoids CORS in production)
      */
+    /**
+     * Parse Spanish address formats to extract street, number, and city.
+     * Handles: "Gran Vía 28, Madrid", "C/ Serrano 45", "Paseo de la Castellana, 200, Madrid",
+     *          "Calle Alcalá nº 50", "Av. de América 12 28028 Madrid", etc.
+     */
+    private function parseSpanishAddress(string $q): ?array
+    {
+        // Normalize: remove nº, n°, num, etc.
+        $clean = preg_replace('/\b(n[ºo°]\.?|num\.?|número)\s*/iu', '', $q);
+        // Normalize C/, Av/, Pº etc.
+        $clean = preg_replace('/\bC\/\s*/iu', 'Calle ', $clean);
+        $clean = preg_replace('/\bAv\.?\s*/iu', 'Avenida ', $clean);
+        $clean = preg_replace('/\bPº\.?\s*/iu', 'Paseo ', $clean);
+        $clean = preg_replace('/\bPl\.?\s*/iu', 'Plaza ', $clean);
+        // Remove s/n
+        $clean = preg_replace('/\bs\/n\b/iu', '', $clean);
+        // Remove postal codes (5 digits alone)
+        $clean = preg_replace('/\b\d{5}\b/', '', $clean);
+        $clean = preg_replace('/\s+/', ' ', trim($clean));
+
+        // Pattern 1: "Street Name 123, City" or "Street Name 123 City"
+        if (preg_match('/^(.+?)\s*[,.]?\s*(\d{1,5})\s*[,.]?\s*(.+)$/u', $clean, $m)) {
+            return [
+                'street' => trim($m[1]),
+                'number' => trim($m[2]),
+                'city' => trim($m[3]),
+            ];
+        }
+
+        // Pattern 2: "Street Name 123" (no city)
+        if (preg_match('/^(.+?)\s*[,.]?\s*(\d{1,5})\s*$/u', $clean, $m)) {
+            return [
+                'street' => trim($m[1]),
+                'number' => trim($m[2]),
+                'city' => null,
+            ];
+        }
+
+        return null;
+    }
+
+    private function nominatimHeaders(): array
+    {
+        return ['User-Agent' => 'GrupoSecon/1.0', 'Accept-Language' => 'es'];
+    }
+
+    private function formatNominatimResults(array $data): array
+    {
+        return collect($data)->map(fn($r) => [
+            'lat' => (float) $r['lat'],
+            'lng' => (float) $r['lon'],
+            'name' => explode(',', $r['display_name'])[0],
+            'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
+            'displayName' => $r['display_name'],
+        ])->values()->toArray();
+    }
+
     public function geocodeSearch(Request $request)
     {
         $q = trim($request->input('q', ''));
@@ -145,45 +202,108 @@ class GoogleMapsController extends Controller
         $lat = $request->input('lat');
         $lng = $request->input('lng');
 
-        // Cache for 1 hour — same query = instant
         $cacheKey = 'geocode.' . md5($q . $lat . $lng);
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        // Try structured search first if query looks like "street number, city"
-        if (preg_match('/^(.+?)\s+(\d+)\s*[,.]?\s*(.+)$/u', $q, $m)) {
-            try {
-                $structParams = [
-                    'street' => trim($m[2] . ' ' . $m[1]),
-                    'city' => trim($m[3]),
-                    'country' => 'Spain',
-                    'format' => 'json',
-                    'limit' => 3,
-                    'addressdetails' => 1,
-                ];
-                $structResponse = Http::withHeaders([
-                    'User-Agent' => 'GrupoSecon/1.0',
-                    'Accept-Language' => 'es',
-                ])->timeout(4)->get('https://nominatim.openstreetmap.org/search', $structParams);
+        // ── Strategy 1: Structured search if address has a number ──
+        $parsed = $this->parseSpanishAddress($q);
+        if ($parsed) {
+            // Nominatim structured: street expects "number streetname"
+            $streetParam = $parsed['number'] . ' ' . $parsed['street'];
 
-                if ($structResponse->successful()) {
-                    $structData = $structResponse->json() ?? [];
-                    if (!empty($structData)) {
-                        $results = collect($structData)->map(fn($r) => [
-                            'lat' => (float) $r['lat'],
-                            'lng' => (float) $r['lon'],
-                            'name' => explode(',', $r['display_name'])[0],
-                            'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
-                            'displayName' => $r['display_name'],
-                        ])->values()->toArray();
+            $structParams = [
+                'street' => $streetParam,
+                'format' => 'json',
+                'limit' => 5,
+                'addressdetails' => 1,
+                'countrycodes' => 'es',
+            ];
+            if ($parsed['city']) {
+                $structParams['city'] = $parsed['city'];
+            }
+            if ($lat && $lng) {
+                $d = 0.5;
+                $structParams['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
+                $structParams['bounded'] = 0;
+            }
+
+            try {
+                $response = Http::withHeaders($this->nominatimHeaders())
+                    ->timeout(4)
+                    ->get('https://nominatim.openstreetmap.org/search', $structParams);
+
+                if ($response->successful()) {
+                    $data = $response->json() ?? [];
+                    if (!empty($data)) {
+                        $results = $this->formatNominatimResults($data);
                         Cache::put($cacheKey, $results, 3600);
                         return response()->json($results);
                     }
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable) {}
+
+            // Retry without number (find the street, then the user can pin)
+            try {
+                $fallbackParams = [
+                    'street' => $parsed['street'],
+                    'format' => 'json',
+                    'limit' => 3,
+                    'addressdetails' => 1,
+                    'countrycodes' => 'es',
+                ];
+                if ($parsed['city']) $fallbackParams['city'] = $parsed['city'];
+                if ($lat && $lng) {
+                    $d = 0.5;
+                    $fallbackParams['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
+                    $fallbackParams['bounded'] = 0;
+                }
+
+                $response = Http::withHeaders($this->nominatimHeaders())
+                    ->timeout(4)
+                    ->get('https://nominatim.openstreetmap.org/search', $fallbackParams);
+
+                if ($response->successful()) {
+                    $data = $response->json() ?? [];
+                    if (!empty($data)) {
+                        $results = $this->formatNominatimResults($data);
+                        Cache::put($cacheKey, $results, 3600);
+                        return response()->json($results);
+                    }
+                }
+            } catch (\Throwable) {}
         }
 
-        // Fallback: free-form Nominatim search
+        // ── Strategy 2: Free-form Nominatim search ──
+        try {
+            $params = [
+                'q' => $q,
+                'format' => 'json',
+                'limit' => 5,
+                'addressdetails' => 1,
+                'countrycodes' => 'es',
+            ];
+            if ($lat && $lng) {
+                $d = 0.5;
+                $params['viewbox'] = ($lng - $d) . ',' . ($lat - $d) . ',' . ($lng + $d) . ',' . ($lat + $d);
+                $params['bounded'] = 0;
+            }
+
+            $response = Http::withHeaders($this->nominatimHeaders())
+                ->timeout(5)
+                ->get('https://nominatim.openstreetmap.org/search', $params);
+
+            if ($response->successful()) {
+                $data = $response->json() ?? [];
+                if (!empty($data)) {
+                    $results = $this->formatNominatimResults($data);
+                    Cache::put($cacheKey, $results, 3600);
+                    return response()->json($results);
+                }
+            }
+        } catch (\Throwable) {}
+
+        // ── Strategy 3: Free-form WITHOUT countrycodes (international) ──
         try {
             $params = ['q' => $q, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
             if ($lat && $lng) {
@@ -192,29 +312,21 @@ class GoogleMapsController extends Controller
                 $params['bounded'] = 0;
             }
 
-            $response = Http::withHeaders([
-                'User-Agent' => 'GrupoSecon/1.0',
-                'Accept-Language' => 'es',
-            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', $params);
+            $response = Http::withHeaders($this->nominatimHeaders())
+                ->timeout(5)
+                ->get('https://nominatim.openstreetmap.org/search', $params);
 
             if ($response->successful()) {
                 $data = $response->json() ?? [];
-                $results = collect($data)->map(fn($r) => [
-                    'lat' => (float) $r['lat'],
-                    'lng' => (float) $r['lon'],
-                    'name' => explode(',', $r['display_name'])[0],
-                    'subtitle' => trim(implode(', ', array_slice(explode(',', $r['display_name']), 1, 2))),
-                    'displayName' => $r['display_name'],
-                ])->values()->toArray();
-
-                if (!empty($results)) {
+                if (!empty($data)) {
+                    $results = $this->formatNominatimResults($data);
                     Cache::put($cacheKey, $results, 3600);
                     return response()->json($results);
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable) {}
 
-        // Fallback: Photon
+        // ── Strategy 4: Photon (komoot) — better fuzzy matching ──
         try {
             $params = ['q' => $q, 'limit' => 5, 'lang' => 'default'];
             if ($lat && $lng) {
@@ -240,9 +352,9 @@ class GoogleMapsController extends Controller
                     'displayName' => implode(', ', array_filter([
                         $f['properties']['name'] ?? null,
                         $f['properties']['street'] ?? null,
+                        $f['properties']['housenumber'] ?? null,
                         $f['properties']['city'] ?? null,
                         $f['properties']['state'] ?? null,
-                        $f['properties']['country'] ?? null,
                     ])),
                 ])->values()->toArray();
 
@@ -251,7 +363,7 @@ class GoogleMapsController extends Controller
                     return response()->json($results);
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable) {}
 
         return response()->json([]);
     }
