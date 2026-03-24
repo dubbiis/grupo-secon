@@ -318,7 +318,9 @@
     "confirm_selection": "Confirmar selección",
     "results": "Resultados",
     "no_results": "Sin resultados",
-    "error_search": "Error en la búsqueda"
+    "error_search": "Error en la búsqueda",
+    "start_time": "Hora inicio",
+    "end_time": "Hora fin"
   },
   "sections": {
     "progress": "Progreso del plan",
@@ -343,8 +345,14 @@
     "setup_start_ph": "Ej: 15 de marzo a las 08:00",
     "setup_end": "Fin montaje",
     "setup_end_ph": "Ej: 16 de marzo a las 20:00",
-    "capacity": "Aforo previsto *",
-    "capacity_ph": "Aforo total esperado"
+    "capacity": "Aforo previsto",
+    "capacity_ph": "Aforo total esperado",
+    "setup_teardown": "Montaje / Desmontaje",
+    "event_dates": "Fechas del evento",
+    "day": "Día",
+    "setup": "Montaje",
+    "event": "Evento",
+    "timeline": "Línea temporal"
   },
   "s3": {
     "desc": "Registra cada espacio/titular del evento con sus datos de contacto. El espacio principal se carga desde la sección 1.",
