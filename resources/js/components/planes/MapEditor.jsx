@@ -6,6 +6,7 @@ import {
     Trash2, Download, Map, Search, Save, X, ImagePlus, Layers,
     ChevronDown, Check, MousePointer, Grid, ZoomIn, ZoomOut,
     Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
+    MapPin, BookOpen, ChevronRight,
 } from "lucide-react";
 import LeafletMap from "@/components/planes/LeafletMap";
 import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
@@ -269,6 +270,7 @@ const MapEditor = forwardRef(function MapEditor({
     const [mapStatus,  setMapStatus]  = useState(null); // null | "loading" | "error" | "1.2 km · 4 min"
     const [openIconCat, setOpenIconCat] = useState(null);
     const [showIconLabels, setShowIconLabels] = useState(false);
+    const [showAddressPanel, setShowAddressPanel] = useState(false);
     const [textPrompt, setTextPrompt] = useState(null);
     const [textValue, setTextValue] = useState("");
     const [showGrid, setShowGrid] = useState(false);
@@ -1253,6 +1255,19 @@ const MapEditor = forwardRef(function MapEditor({
                         </motion.button>
                     </div>
 
+                    {/* Addresses panel toggle */}
+                    {showMap && planAddresses.length > 0 && (
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                            onClick={() => setShowAddressPanel((v) => !v)}
+                            title="Direcciones del plan"
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                                showAddressPanel ? "bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/30 shadow-sm shadow-[#208DCA]/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
+                            }`}
+                        >
+                            <BookOpen size={15} />
+                        </motion.button>
+                    )}
+
                     {/* Fullscreen toggle */}
                     <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
                         onClick={() => setFullscreen((v) => !v)}
@@ -1322,7 +1337,6 @@ const MapEditor = forwardRef(function MapEditor({
                             placeholder="Buscar dirección, hospital..."
                             biasLat={routeACoords?.lat}
                             biasLng={routeACoords?.lng}
-                            quickAddresses={planAddresses}
                         />
                     </motion.div>
                 )}
@@ -1353,7 +1367,6 @@ const MapEditor = forwardRef(function MapEditor({
                                 biasLng={routeACoords?.lng}
                                 placeholder="Origen"
                                 className="flex-1"
-                                quickAddresses={planAddresses}
                             />
                             <AddressAutocomplete
                                 label="B" labelColor="#208DCA"
@@ -1371,7 +1384,6 @@ const MapEditor = forwardRef(function MapEditor({
                                 biasLng={routeACoords?.lng || routeBCoords?.lng}
                                 placeholder="Destino"
                                 className="flex-1"
-                                quickAddresses={planAddresses}
                             />
                             {mapStatus === "loading" && (
                                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -1395,8 +1407,88 @@ const MapEditor = forwardRef(function MapEditor({
                             transition={{ duration: 0.2 }}
                             className="flex flex-col gap-2 w-full h-full"
                         >
-                            {/* Leaflet map + route panel side by side */}
+                            {/* Leaflet map + panels side by side */}
                             <div className="flex gap-2 flex-1 min-h-0" style={{ height: "100%" }}>
+                                {/* Addresses panel — left side */}
+                                <AnimatePresence>
+                                    {showAddressPanel && planAddresses.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, width: 0, x: -20 }}
+                                            animate={{ opacity: 1, width: 240, x: 0 }}
+                                            exit={{ opacity: 0, width: 0, x: -20 }}
+                                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                            className="flex-shrink-0 overflow-hidden"
+                                            style={{ height: "100%" }}
+                                        >
+                                            <div className="h-full rounded-xl border border-slate-200 bg-white overflow-y-auto">
+                                                <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-3 py-2.5 flex items-center justify-between z-10">
+                                                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Direcciones</span>
+                                                    <button onClick={() => setShowAddressPanel(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                                <div className="p-2 space-y-1">
+                                                    {planAddresses.map((addr, i) => (
+                                                        <motion.button
+                                                            key={i}
+                                                            initial={{ opacity: 0, x: -8 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: i * 0.03 }}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const text = addr.address;
+                                                                if (mapMode === "search") {
+                                                                    setMapQuery(text);
+                                                                    // Trigger geocode
+                                                                    fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
+                                                                        .then(r => r.json())
+                                                                        .then(items => {
+                                                                            if (items[0]) setMapCommand({ type: "search", query: { lat: items[0].lat, lng: items[0].lng } });
+                                                                        }).catch(() => {});
+                                                                } else if (mapMode === "route") {
+                                                                    // Fill whichever is empty, or B if both filled
+                                                                    if (!routeA) {
+                                                                        setRouteA(text);
+                                                                        fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
+                                                                            .then(r => r.json())
+                                                                            .then(items => {
+                                                                                if (items[0]) {
+                                                                                    const coords = { lat: items[0].lat, lng: items[0].lng };
+                                                                                    setRouteACoords(coords);
+                                                                                    if (routeBCoords) setMapCommand({ type: "route", a: coords, b: routeBCoords });
+                                                                                    else setMapCommand({ type: "search", query: coords });
+                                                                                }
+                                                                            }).catch(() => {});
+                                                                    } else {
+                                                                        setRouteB(text);
+                                                                        fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
+                                                                            .then(r => r.json())
+                                                                            .then(items => {
+                                                                                if (items[0]) {
+                                                                                    const coords = { lat: items[0].lat, lng: items[0].lng };
+                                                                                    setRouteBCoords(coords);
+                                                                                    if (routeACoords) setMapCommand({ type: "route", a: routeACoords, b: coords });
+                                                                                }
+                                                                            }).catch(() => {});
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="w-full flex items-start gap-2 px-2.5 py-2 rounded-lg text-left hover:bg-[#208DCA]/8 transition-colors group"
+                                                        >
+                                                            <MapPin size={12} className="text-[#208DCA] mt-0.5 flex-shrink-0" />
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="text-[11px] font-medium text-slate-800 truncate group-hover:text-[#208DCA] transition-colors">{addr.label}</div>
+                                                                <div className="text-[10px] text-slate-400 truncate">{addr.address}</div>
+                                                            </div>
+                                                            <ChevronRight size={10} className="text-slate-300 mt-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </motion.button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 <div
                                     ref={mapContainerRef}
                                     className={`rounded-xl overflow-hidden border border-slate-200 transition-all relative ${routeData?.routes?.length > 1 ? "flex-1" : "w-full"}`}
