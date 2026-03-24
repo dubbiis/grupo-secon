@@ -28,6 +28,7 @@ export default function AddressAutocomplete({
     biasLng,
     placeholder = "Buscar dirección...",
     className = "",
+    quickAddresses = [],
 }) {
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
@@ -191,6 +192,27 @@ export default function AddressAutocomplete({
                     )}
                 </div>
             </div>
+
+            {/* Quick address chips */}
+            {quickAddresses.length > 0 && !value && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                    {quickAddresses.map((qa, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                                onChange?.(qa.address);
+                                // Trigger geocode search for this address
+                                search(qa.address);
+                            }}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-colors"
+                        >
+                            <MapPin size={9} />
+                            {qa.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {open && results.length > 0 && createPortal(
                 <motion.div

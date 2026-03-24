@@ -38,6 +38,25 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
     const progress = Math.round((doneSections / 15) * 100);
     const SectionComponent = currentSection ? (SECTION_COMPONENTS[currentSection.section_number] ?? SeccionTextoSimple) : null;
 
+    // Collect all addresses from plan sections for quick use in maps
+    const planAddresses = (() => {
+        const addrs = [];
+        const sec1 = sections.find((s) => s.section_number === 1)?.form_data;
+        if (sec1?.direccion_evento) addrs.push({ label: sec1.nombre_espacio || "Recinto principal", address: sec1.direccion_evento });
+
+        const sec3 = sections.find((s) => s.section_number === 3)?.form_data;
+        try {
+            const espacios = JSON.parse(sec3?.espacios_json ?? "[]");
+            espacios.forEach((e) => {
+                if (e.direccion && e.direccion !== sec1?.direccion_evento) {
+                    addrs.push({ label: e.nombre_espacio || e.tipo_espacio || "Espacio", address: e.direccion });
+                }
+            });
+        } catch {}
+
+        return addrs;
+    })();
+
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-hidden">
 
@@ -138,6 +157,7 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
                                     sections={sections}
                                     files={files}
                                     eventAddress={eventAddress}
+                                    planAddresses={planAddresses}
                                 />
                             </motion.div>
                         ) : (

@@ -226,6 +226,7 @@ const MapEditor = forwardRef(function MapEditor({
     existingFiles = [],
     onSaved,
     eventAddress = "",
+    planAddresses = [],
 }, ref) {
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
@@ -1272,6 +1273,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     placeholder="Buscar dirección, hospital..."
                                     biasLat={routeACoords?.lat}
                                     biasLng={routeACoords?.lng}
+                                    quickAddresses={planAddresses}
                                 />
                             </motion.div>
                         )}
@@ -1301,6 +1303,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     biasLng={routeACoords?.lng}
                                     placeholder="Origen"
                                     className="flex-1"
+                                    quickAddresses={planAddresses}
                                 />
                                 <AddressAutocomplete
                                     label="B" labelColor="#208DCA"
@@ -1318,6 +1321,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     biasLng={routeACoords?.lng || routeBCoords?.lng}
                                     placeholder="Destino"
                                     className="flex-1"
+                                    quickAddresses={planAddresses}
                                 />
                                 {mapStatus === "loading" && (
                                     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
