@@ -297,50 +297,6 @@ export default function Seccion2({ plan, section }) {
                 </AnimatePresence>
             </div>
 
-            {/* ── Desmontaje ─────────────────────────────────────── */}
-            <div className="mt-4">
-                <div className="flex items-center gap-2 mb-3">
-                    <Wrench size={15} className="text-orange-600" />
-                    <h3 className="text-sm font-semibold text-slate-800">{t("s2.teardown")}</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label className="text-xs text-slate-500 mb-1 block">{t("s2.teardown_date_start")}</label>
-                        <Input type="date" {...field("desmontaje_inicio")} />
-                    </div>
-                    <div>
-                        <label className="text-xs text-slate-500 mb-1 block">{t("s2.teardown_date_end")}</label>
-                        <Input type="date" {...field("desmontaje_fin")} />
-                    </div>
-                </div>
-
-                <AnimatePresence>
-                    {teardownDays.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
-                        >
-                            {teardownDays.map((day, i) => (
-                                <DayScheduleCard
-                                    key={formatDateKey(day)}
-                                    day={day}
-                                    index={i}
-                                    label={`${t("s2.day")} ${i + 1}`}
-                                    icon={Wrench}
-                                    colorClass="bg-orange-600"
-                                    horarios={form.horarios_desmontaje}
-                                    onUpdate={(dateKey, f, v) => updateHorario("teardown", dateKey, f, v)}
-                                    t={t}
-                                />
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
             {/* ── Fechas del evento ───────────────────────────────── */}
             <div className="mt-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -377,6 +333,50 @@ export default function Seccion2({ plan, section }) {
                                     colorClass="bg-[#208DCA]"
                                     horarios={form.horarios_evento}
                                     onUpdate={(dateKey, f, v) => updateHorario("event", dateKey, f, v)}
+                                    t={t}
+                                />
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* ── Desmontaje ─────────────────────────────────────── */}
+            <div className="mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                    <Wrench size={15} className="text-orange-600" />
+                    <h3 className="text-sm font-semibold text-slate-800">{t("s2.teardown")}</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label className="text-xs text-slate-500 mb-1 block">{t("s2.teardown_date_start")}</label>
+                        <Input type="date" {...field("desmontaje_inicio")} />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 mb-1 block">{t("s2.teardown_date_end")}</label>
+                        <Input type="date" {...field("desmontaje_fin")} />
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {teardownDays.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
+                        >
+                            {teardownDays.map((day, i) => (
+                                <DayScheduleCard
+                                    key={formatDateKey(day)}
+                                    day={day}
+                                    index={i}
+                                    label={`${t("s2.day")} ${i + 1}`}
+                                    icon={Wrench}
+                                    colorClass="bg-orange-600"
+                                    horarios={form.horarios_desmontaje}
+                                    onUpdate={(dateKey, f, v) => updateHorario("teardown", dateKey, f, v)}
                                     t={t}
                                 />
                             ))}
