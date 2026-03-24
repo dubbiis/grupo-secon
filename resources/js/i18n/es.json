@@ -352,7 +352,12 @@
     "day": "Día",
     "setup": "Montaje",
     "event": "Evento",
-    "timeline": "Línea temporal"
+    "timeline": "Línea temporal",
+    "teardown": "Desmontaje",
+    "setup_date_start": "Inicio montaje",
+    "setup_date_end": "Fin montaje",
+    "teardown_date_start": "Inicio desmontaje",
+    "teardown_date_end": "Fin desmontaje"
   },
   "s3": {
     "desc": "Registra cada espacio/titular del evento con sus datos de contacto. El espacio principal se carga desde la sección 1.",

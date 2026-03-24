@@ -352,7 +352,12 @@
     "day": "Day",
     "setup": "Setup",
     "event": "Event",
-    "timeline": "Timeline"
+    "timeline": "Timeline",
+    "teardown": "Teardown",
+    "setup_date_start": "Setup start",
+    "setup_date_end": "Setup end",
+    "teardown_date_start": "Teardown start",
+    "teardown_date_end": "Teardown end"
   },
   "s3": {
     "desc": "Register each event space/holder with their contact details. The main space is loaded from section 1.",
