@@ -104,8 +104,8 @@
     "file_attached": "Archivo"
   },
   "questions": {
-    "add_custom": "Añadir pregunta personalizada",
-    "add_question": "Añadir pregunta",
+    "add_custom": "Información adicional",
+    "add_question": "Añadir información",
     "remove_template": "Quitar de plantilla",
     "add_template": "Añadir a plantilla (aparecerá en futuros planes)",
     "answer_placeholder": "Escribe la respuesta...",

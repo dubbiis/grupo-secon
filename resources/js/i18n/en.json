@@ -104,8 +104,8 @@
     "file_attached": "File"
   },
   "questions": {
-    "add_custom": "Add custom question",
-    "add_question": "Add question",
+    "add_custom": "Additional information",
+    "add_question": "Add information",
     "remove_template": "Remove from template",
     "add_template": "Add to template (will appear in future plans)",
     "answer_placeholder": "Write your answer...",
