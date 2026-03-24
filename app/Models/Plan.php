@@ -59,8 +59,12 @@ class Plan extends Model
     protected static function generateUuid(): string
     {
         $year = date('Y');
-        $count = static::whereYear('created_at', $year)->count() + 1;
-        return 'SECON-' . $year . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+        $prefix = 'SECON-' . $year . '-';
+        $last = static::where('uuid', 'like', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(uuid, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('uuid');
+        $next = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
+        return $prefix . str_pad($next, 3, '0', STR_PAD_LEFT);
     }
 
     public function user()
