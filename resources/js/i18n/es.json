@@ -325,6 +325,11 @@
     "completed": "secciones completadas",
     "of": "de"
   },
+  "s1": {
+    "extra_info": "Información adicional",
+    "extra_info_desc": "Añade cualquier contexto adicional que pueda ser útil para la generación del plan de seguridad.",
+    "extra_info_ph": "Ej: El evento cuenta con pirotecnia, hay restricciones de ruido después de las 23:00, se esperan protestas en las inmediaciones..."
+  },
   "s2": {
     "event_desc": "Descripcion del evento *",
     "event_desc_ph": "Describe brevemente el evento, artistas, actividades...",
@@ -335,12 +340,11 @@
     "time_open": "Hora apertura",
     "time_close": "Hora cierre",
     "setup_start": "Inicio montaje",
-    "setup_end": "Fin desmontaje",
-    "attendees": "Numero de asistentes *",
-    "attendees_ph": "Aforo total esperado",
-    "vip_zone": "Zona VIP?",
-    "vip_desc": "Descripcion zona VIP",
-    "vip_ph": "Accesos, capacidad y caracteristicas de la zona VIP"
+    "setup_start_ph": "Ej: 15 de marzo a las 08:00",
+    "setup_end": "Fin montaje",
+    "setup_end_ph": "Ej: 16 de marzo a las 20:00",
+    "capacity": "Aforo previsto *",
+    "capacity_ph": "Aforo total esperado"
   },
   "s4": {
     "capacity": "Aforo total *",

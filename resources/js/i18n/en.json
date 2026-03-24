@@ -325,6 +325,11 @@
     "completed": "sections completed",
     "of": "of"
   },
+  "s1": {
+    "extra_info": "Additional information",
+    "extra_info_desc": "Add any additional context that may be useful for security plan generation.",
+    "extra_info_ph": "E.g.: The event includes pyrotechnics, noise restrictions after 11pm, protests expected nearby..."
+  },
   "s2": {
     "event_desc": "Event description *",
     "event_desc_ph": "Briefly describe the event, artists, activities...",
@@ -335,12 +340,11 @@
     "time_open": "Opening time",
     "time_close": "Closing time",
     "setup_start": "Setup start",
-    "setup_end": "Teardown end",
-    "attendees": "Number of attendees *",
-    "attendees_ph": "Total expected capacity",
-    "vip_zone": "VIP zone?",
-    "vip_desc": "VIP zone description",
-    "vip_ph": "Access, capacity and VIP zone features"
+    "setup_start_ph": "E.g.: March 15 at 08:00",
+    "setup_end": "Setup end",
+    "setup_end_ph": "E.g.: March 16 at 20:00",
+    "capacity": "Expected capacity *",
+    "capacity_ph": "Total expected capacity"
   },
   "s4": {
     "capacity": "Total capacity *",

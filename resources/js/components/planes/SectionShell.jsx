@@ -7,7 +7,7 @@ import GeneradorIA from "./GeneradorIA";
 import CustomQuestions from "./CustomQuestions";
 import { useTranslation } from "@/i18n";
 
-export default function SectionShell({ plan, section, formData, onFormChange, showIA = true, children }) {
+export default function SectionShell({ plan, section, formData, onFormChange, showIA = true, showCustomQuestions = true, children }) {
     const { t } = useTranslation();
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -69,7 +69,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                 {children}
 
                 {/* Custom questions — only for sections with IA */}
-                {showIA && (
+                {showIA && showCustomQuestions && (
                     <CustomQuestions
                         sectionNumber={section.section_number}
                         customAnswers={formData?.custom_answers ?? {}}

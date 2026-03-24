@@ -13,11 +13,9 @@ export default function Seccion2({ plan, section }) {
         fecha_fin: "",
         horario_apertura: "",
         horario_cierre: "",
-        fecha_montaje: "",
-        fecha_desmontaje: "",
-        num_asistentes: "",
-        tiene_vip: "no",
-        asistentes_vip: "",
+        inicio_montaje: "",
+        fin_montaje: "",
+        aforo_previsto: "",
         ...section.form_data,
     });
 
@@ -35,9 +33,9 @@ export default function Seccion2({ plan, section }) {
         horario_evento: form.horario_apertura && form.horario_cierre
             ? `${form.horario_apertura} a ${form.horario_cierre}`
             : form.horario_apertura || "",
-        montaje_desmontaje: form.fecha_montaje && form.fecha_desmontaje
-            ? `Montaje: ${form.fecha_montaje} / Desmontaje: ${form.fecha_desmontaje}`
-            : "",
+        montaje_desmontaje: form.inicio_montaje && form.fin_montaje
+            ? `Inicio montaje: ${form.inicio_montaje} / Fin montaje: ${form.fin_montaje}`
+            : form.inicio_montaje || "",
     }), [form]);
 
     return (
@@ -79,47 +77,25 @@ export default function Seccion2({ plan, section }) {
                 </div>
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">{t("s2.setup_start")}</label>
-                    <Input type="date" {...field("fecha_montaje")} />
+                    <Input {...field("inicio_montaje")} placeholder={t("s2.setup_start_ph")} />
                 </div>
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">{t("s2.setup_end")}</label>
-                    <Input type="date" {...field("fecha_desmontaje")} />
+                    <Input {...field("fin_montaje")} placeholder={t("s2.setup_end_ph")} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s2.attendees")}</label>
+                    <label className="text-sm font-medium mb-1.5 block">{t("s2.capacity")}</label>
                     <Input
                         type="number"
-                        {...field("num_asistentes")}
-                        placeholder={t("s2.attendees_ph")}
+                        {...field("aforo_previsto")}
+                        placeholder={t("s2.capacity_ph")}
                         min={1}
                     />
                 </div>
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s2.vip_zone")}</label>
-                    <select
-                        value={form.tiene_vip}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tiene_vip: e.target.value }))}
-                        className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
-                    >
-                        <option value="no">No</option>
-                        <option value="si">Sí</option>
-                    </select>
-                </div>
             </div>
-
-            {form.tiene_vip === "si" && (
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s2.vip_desc")}</label>
-                    <Textarea
-                        {...field("asistentes_vip")}
-                        placeholder="Accesos, capacidad y características de la zona VIP"
-                        rows={3}
-                    />
-                </div>
-            )}
         </SectionShell>
     );
 }
