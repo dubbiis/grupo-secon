@@ -271,6 +271,7 @@ const MapEditor = forwardRef(function MapEditor({
     const [openIconCat, setOpenIconCat] = useState(null);
     const [showIconLabels, setShowIconLabels] = useState(false);
     const [showAddressPanel, setShowAddressPanel] = useState(false);
+    const [satelliteView, setSatelliteView] = useState(false);
     const [textPrompt, setTextPrompt] = useState(null);
     const [textValue, setTextValue] = useState("");
     const [showGrid, setShowGrid] = useState(false);
@@ -1287,6 +1288,28 @@ const MapEditor = forwardRef(function MapEditor({
                         </motion.button>
                     </div>
 
+                    {/* Map / Satellite toggle */}
+                    {showMap && (
+                        <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-lg bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/50">
+                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                onClick={() => setSatelliteView(false)}
+                                className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
+                                    !satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Mapa
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                onClick={() => setSatelliteView(true)}
+                                className={`text-[10px] font-medium px-2 py-1 rounded-md transition-all ${
+                                    satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Satélite
+                            </motion.button>
+                        </div>
+                    )}
+
                     {/* Addresses panel toggle */}
                     {showMap && planAddresses.length > 0 && (
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
@@ -1551,6 +1574,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     command={mapCommand}
                                     onStatus={setMapStatus}
                                     onRouteData={setRouteData}
+                                    satellite={satelliteView}
                                     onMarkerDrag={(place) => {
                                         if (mapMode === "search") {
                                             setMapQuery(place.displayName);

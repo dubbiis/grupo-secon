@@ -54,9 +54,10 @@ function poiIcon(emoji) {
  */
 const NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
 
-export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDrag, interactionDisabled }) {
+export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDrag, interactionDisabled, satellite = false }) {
     const containerRef   = useRef(null);
     const mapRef         = useRef(null);
+    const tileLayerRef   = useRef(null);
     const markersRef     = useRef([]);
     const routeLayersRef = useRef([]);
     const routeLabelsRef = useRef([]);
@@ -85,27 +86,37 @@ export default function LeafletMap({ command, onStatus, onRouteData, onMarkerDra
 
         mapRef.current = map;
 
-        // Base layers: map + satellite
-        const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        tileLayerRef.current = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
             maxZoom: 19,
             crossOrigin: "anonymous",
-        });
-        const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-            attribution: "© Esri, Maxar, Earthstar Geographics",
-            maxZoom: 19,
-            crossOrigin: "anonymous",
-        });
-
-        osmLayer.addTo(map);
-        L.control.layers(
-            { "Mapa": osmLayer, "Satélite": satelliteLayer },
-            null,
-            { position: "topright", collapsed: false }
-        ).addTo(map);
+        }).addTo(map);
 
         return () => { mapRef.current?.remove(); mapRef.current = null; };
     }, []);
+
+    // Switch tile layer when satellite prop changes
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !tileLayerRef.current) return;
+
+        map.removeLayer(tileLayerRef.current);
+
+        tileLayerRef.current = satellite
+            ? L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+                attribution: "© Esri, Maxar, Earthstar Geographics",
+                maxZoom: 19,
+                crossOrigin: "anonymous",
+            }).addTo(map)
+            : L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
+                maxZoom: 19,
+                crossOrigin: "anonymous",
+            }).addTo(map);
+
+        // Ensure tile layer is behind everything
+        tileLayerRef.current.bringToBack();
+    }, [satellite]);
 
     // Disable/enable map interactions (for capture mode)
     useEffect(() => {
