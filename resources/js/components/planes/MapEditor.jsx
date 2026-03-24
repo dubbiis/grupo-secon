@@ -1247,9 +1247,8 @@ const MapEditor = forwardRef(function MapEditor({
                         </motion.button>
                     </div>
 
-                    {/* Map/Search/Route nav + address inputs — same row */}
-                    <div className="flex items-center gap-1.5 basis-full min-w-0">
-                        <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50 flex-shrink-0">
+                    {/* Map/Search/Route/Canvas — navigation pills (first row, next to zoom) */}
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-100/90 to-slate-200/60 border border-slate-300/50">
                             <Shine enableOnHover color="white" opacity={0.3} duration={400} asChild>
                                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                                     onClick={() => { setShowMap(true); setMapMode("search"); }}
@@ -1287,8 +1286,10 @@ const MapEditor = forwardRef(function MapEditor({
                                 <ImagePlus size={12} />
                                 Canvas
                             </motion.button>
-                        </div>
+                    </div>
 
+                    {/* Second row: Satellite + inputs + actions */}
+                    <div className="flex items-center gap-1.5 basis-full min-w-0">
                         {/* Map / Satellite toggle */}
                         {showMap && (
                             <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-lg bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/50 flex-shrink-0">
