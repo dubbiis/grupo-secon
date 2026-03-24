@@ -145,51 +145,11 @@ class GoogleMapsController extends Controller
         $lat = $request->input('lat');
         $lng = $request->input('lng');
 
+        // Cache for 1 hour — same query = instant
         $cacheKey = 'geocode.' . md5($q . $lat . $lng);
         $cached = Cache::get($cacheKey);
         if ($cached) return response()->json($cached);
 
-        $googleKey = config('services.google_maps.key');
-
-        // ── Google Geocoding API (preferred) ──
-        if ($googleKey) {
-            try {
-                $params = [
-                    'address' => $q,
-                    'key' => $googleKey,
-                    'language' => 'es',
-                    'region' => 'es',
-                ];
-                if ($lat && $lng) {
-                    $params['bounds'] = ($lat - 0.5) . ',' . ($lng - 0.5) . '|' . ($lat + 0.5) . ',' . ($lng + 0.5);
-                }
-
-                $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', $params);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    if (($data['status'] ?? '') === 'OK' && !empty($data['results'])) {
-                        $results = collect($data['results'])->take(5)->map(function ($r) {
-                            $parts = explode(',', $r['formatted_address']);
-                            return [
-                                'lat' => (float) $r['geometry']['location']['lat'],
-                                'lng' => (float) $r['geometry']['location']['lng'],
-                                'name' => trim($parts[0] ?? ''),
-                                'subtitle' => trim(implode(', ', array_slice($parts, 1, 2))),
-                                'displayName' => $r['formatted_address'],
-                            ];
-                        })->values()->toArray();
-
-                        Cache::put($cacheKey, $results, 3600);
-                        return response()->json($results);
-                    }
-                }
-            } catch (\Throwable $e) {
-                \Log::warning('Google geocode failed, falling back to Nominatim', ['error' => $e->getMessage()]);
-            }
-        }
-
-        // ── Fallback: Nominatim ──
         // Try structured search first if query looks like "street number, city"
         if (preg_match('/^(.+?)\s+(\d+)\s*[,.]?\s*(.+)$/u', $q, $m)) {
             try {
@@ -223,7 +183,7 @@ class GoogleMapsController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        // Free-form Nominatim search
+        // Fallback: free-form Nominatim search
         try {
             $params = ['q' => $q, 'format' => 'json', 'limit' => 5, 'addressdetails' => 1];
             if ($lat && $lng) {

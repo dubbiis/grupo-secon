@@ -19,7 +19,6 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@inertiajs/react": "^2.3.18",
-        "@react-google-maps/api": "^2.20.8",
         "@vis.gl/react-google-maps": "^1.7.1",
         "@vitejs/plugin-react": "^6.0.1",
         "class-variance-authority": "^0.7.1",

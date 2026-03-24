@@ -8,7 +8,6 @@ import {
     Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
     MapPin, BookOpen, ChevronRight,
 } from "lucide-react";
-import GoogleMapView from "@/components/planes/GoogleMapView";
 import LeafletMap from "@/components/planes/LeafletMap";
 import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
@@ -230,9 +229,6 @@ const MapEditor = forwardRef(function MapEditor({
     eventAddress = "",
     planAddresses = [],
 }, ref) {
-    // Use Google Maps if API key is available, otherwise fallback to Leaflet/OSM
-    const useGoogleMaps = !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
     const iconBtnRef = useRef(null);
@@ -1519,35 +1515,19 @@ const MapEditor = forwardRef(function MapEditor({
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                                {useGoogleMaps ? (
-                                    <GoogleMapView
-                                        command={mapCommand}
-                                        onStatus={setMapStatus}
-                                        onRouteData={setRouteData}
-                                        onMarkerDrag={(place) => {
-                                            if (mapMode === "search") {
-                                                setMapQuery(place.displayName);
-                                            } else if (mapMode === "route") {
-                                                setRouteA(place.displayName);
-                                                setRouteACoords({ lat: place.lat, lng: place.lng });
-                                            }
-                                        }}
-                                    />
-                                ) : (
-                                    <LeafletMap
-                                        command={mapCommand}
-                                        onStatus={setMapStatus}
-                                        onRouteData={setRouteData}
-                                        onMarkerDrag={(place) => {
-                                            if (mapMode === "search") {
-                                                setMapQuery(place.displayName);
-                                            } else if (mapMode === "route") {
-                                                setRouteA(place.displayName);
-                                                setRouteACoords({ lat: place.lat, lng: place.lng });
-                                            }
-                                        }}
-                                    />
-                                )}
+                                <LeafletMap
+                                    command={mapCommand}
+                                    onStatus={setMapStatus}
+                                    onRouteData={setRouteData}
+                                    onMarkerDrag={(place) => {
+                                        if (mapMode === "search") {
+                                            setMapQuery(place.displayName);
+                                        } else if (mapMode === "route") {
+                                            setRouteA(place.displayName);
+                                            setRouteACoords({ lat: place.lat, lng: place.lng });
+                                        }
+                                    }}
+                                />
                                 </div>
 
                                 {/* Route panel — right side */}

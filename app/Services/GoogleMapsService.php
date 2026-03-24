@@ -9,7 +9,7 @@ class GoogleMapsService
 {
     private string $userAgent = 'GrupoSecon/1.0 (planes-seguridad)';
 
-    // ── Geocoding ─────────────────────────────────────
+    // ── Geocoding (Nominatim) ─────────────────────────────────────
 
     public function geocode(string $address): ?array
     {
@@ -17,34 +17,6 @@ class GoogleMapsService
         $cached = Cache::get($key);
         if ($cached !== null) return $cached;
 
-        $googleKey = config('services.google_maps.key');
-
-        // Try Google Geocoding API first
-        if ($googleKey) {
-            try {
-                $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                    'address' => $address,
-                    'key' => $googleKey,
-                    'language' => 'es',
-                    'region' => 'es',
-                ]);
-
-                $data = $response->json();
-                if (($data['status'] ?? '') === 'OK' && !empty($data['results'])) {
-                    $result = [
-                        'lat'          => (float) $data['results'][0]['geometry']['location']['lat'],
-                        'lng'          => (float) $data['results'][0]['geometry']['location']['lng'],
-                        'display_name' => $data['results'][0]['formatted_address'],
-                    ];
-                    Cache::put($key, $result, 60 * 60 * 24 * 30);
-                    return $result;
-                }
-            } catch (\Exception $e) {
-                \Log::warning('Google geocode failed, falling back to Nominatim', ['error' => $e->getMessage()]);
-            }
-        }
-
-        // Fallback: Nominatim
         try {
             $response = Http::withHeaders([
                 'User-Agent'      => $this->userAgent,
