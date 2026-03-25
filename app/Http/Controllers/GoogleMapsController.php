@@ -119,6 +119,26 @@ class GoogleMapsController extends Controller
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
     }
 
+    public function hospitales(Request $request, string $uuid)
+    {
+        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $coords = $this->resolveCoords($request, $plan);
+        if (!$coords) return response()->json(['error' => 'Dirección no encontrada.'], 422);
+
+        $data = $this->maps->getHospitalsOnly($coords['lat'], $coords['lng']);
+        return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
+    }
+
+    public function policia(Request $request, string $uuid)
+    {
+        $plan   = Plan::where('uuid', $uuid)->with('sections')->firstOrFail();
+        $coords = $this->resolveCoords($request, $plan);
+        if (!$coords) return response()->json(['error' => 'Dirección no encontrada.'], 422);
+
+        $data = $this->maps->getPoliceOnly($coords['lat'], $coords['lng']);
+        return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
+    }
+
     /**
      * POIs for map overlay — uses cached backend Overpass queries
      */

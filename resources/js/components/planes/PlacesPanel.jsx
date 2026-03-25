@@ -121,14 +121,40 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     setStatus("error");
                 }
             } else {
-                // Emergencia — single request
-                const res = await fetch(`/planes/${uuid}/maps/${type}`, { method: "POST", headers, body });
-                const json = await res.json();
-                if (!res.ok) { setErrorMsg(json.error || "Error al buscar datos."); setStatus("error"); return; }
-                setData(json);
-                setAddressUsed(json.address_used ?? "");
-                setChecked(autoCheck(json));
-                setStatus("results");
+                // Emergencia — split into 2 requests (hospitales first, then policia)
+                let merged = {};
+                let addr = "";
+
+                // 1. Hospitales
+                try {
+                    const r1 = await fetch(`/planes/${uuid}/maps/hospitales`, { method: "POST", headers, body });
+                    if (r1.ok) {
+                        const j1 = await r1.json();
+                        addr = j1.address_used ?? "";
+                        merged = { ...j1 };
+                        setData({ ...merged });
+                        setAddressUsed(addr);
+                        setChecked(autoCheck(merged));
+                        setStatus("results");
+                    }
+                } catch {}
+
+                // 2. Policía + Guardia Civil
+                try {
+                    const r2 = await fetch(`/planes/${uuid}/maps/policia`, { method: "POST", headers, body });
+                    if (r2.ok) {
+                        const j2 = await r2.json();
+                        merged = { ...merged, ...j2 };
+                        setData({ ...merged });
+                        setChecked(autoCheck(merged));
+                        setStatus("results");
+                    }
+                } catch {}
+
+                if (!merged.hospitales?.length && !merged.policia?.length && !merged.guardia_civil?.length) {
+                    setErrorMsg("No se encontraron recursos de emergencia en esta zona.");
+                    setStatus("error");
+                }
             }
         } catch {
             setErrorMsg("No se pudo conectar. Los campos manuales siguen disponibles.");

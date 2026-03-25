@@ -361,25 +361,19 @@ class GoogleMapsService
             $hospitalRaw = $this->queryHospitals($lat, $lng);
             $policeRaw   = $this->queryPolice($lat, $lng);
 
-            // Separate police from Guardia Civil by name/operator
-            $policia     = [];
-            $guardias    = [];
+            $policia  = [];
+            $guardias = [];
             foreach ($policeRaw as $el) {
                 $tags = $el['tags'] ?? [];
                 $isGC = str_contains(strtolower($tags['name'] ?? ''), 'guardia civil')
                      || str_contains(strtolower($tags['operator'] ?? ''), 'guardia civil');
-                if ($isGC) {
-                    $guardias[] = $el;
-                } else {
-                    $policia[] = $el;
-                }
+                if ($isGC) $guardias[] = $el; else $policia[] = $el;
             }
 
             $hospitals = array_slice($hospitalRaw, 0, 8);
             $policia   = array_slice($policia, 0, 6);
             $guardias  = array_slice($guardias, 0, 4);
 
-            // Batch distance request
             $allElements = array_merge($hospitals, $policia, $guardias);
             $coords      = array_map([$this, 'getCoords'], $allElements);
             $distances   = $this->getDistances($origin, $coords);
@@ -398,5 +392,40 @@ class GoogleMapsService
         $total = count($result['hospitales'] ?? []) + count($result['policia'] ?? []) + count($result['guardia_civil'] ?? []);
         if ($total > 0) Cache::put($key, $result, 60 * 60 * 24 * 7);
         return $result;
+    }
+
+    /** Hospitals only — for split requests */
+    public function getHospitalsOnly(float $lat, float $lng): array
+    {
+        $origin = ['lat' => $lat, 'lng' => $lng];
+        $raw = $this->queryHospitals($lat, $lng);
+        $hospitals = array_slice($raw, 0, 8);
+        $coords = array_map([$this, 'getCoords'], $hospitals);
+        $distances = $this->getDistances($origin, $coords);
+        return ['hospitales' => $this->buildPlaceList($hospitals, 0, $distances)];
+    }
+
+    /** Police only — for split requests */
+    public function getPoliceOnly(float $lat, float $lng): array
+    {
+        $origin = ['lat' => $lat, 'lng' => $lng];
+        $raw = $this->queryPolice($lat, $lng);
+        $policia = [];
+        $guardias = [];
+        foreach ($raw as $el) {
+            $tags = $el['tags'] ?? [];
+            $isGC = str_contains(strtolower($tags['name'] ?? ''), 'guardia civil')
+                 || str_contains(strtolower($tags['operator'] ?? ''), 'guardia civil');
+            if ($isGC) $guardias[] = $el; else $policia[] = $el;
+        }
+        $policia  = array_slice($policia, 0, 6);
+        $guardias = array_slice($guardias, 0, 4);
+        $all = array_merge($policia, $guardias);
+        $coords = array_map([$this, 'getCoords'], $all);
+        $distances = $this->getDistances($origin, $coords);
+        return [
+            'policia'       => $this->buildPlaceList($policia, 0, $distances),
+            'guardia_civil' => $this->buildPlaceList($guardias, count($policia), $distances),
+        ];
     }
 }
