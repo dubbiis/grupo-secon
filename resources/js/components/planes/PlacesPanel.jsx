@@ -69,7 +69,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
     const groups = GROUPS[type] ?? [];
 
-    const search = async () => {
+    const search = async (skipCache = false) => {
         setStatus("loading");
         setErrorMsg("");
         setData(null);
@@ -77,7 +77,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const headers = { "X-CSRF-TOKEN": csrf, "Content-Type": "application/json", "Accept": "application/json" };
-        const body = JSON.stringify({});
+        const body = JSON.stringify({ skip_cache: skipCache });
 
         const autoCheck = (merged) => {
             const c = {};
@@ -174,7 +174,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     </div>
                 ) : (
                     <button
-                        onClick={search}
+                        onClick={() => search(true)}
                         className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
                     >
                         <RefreshCw size={11} />

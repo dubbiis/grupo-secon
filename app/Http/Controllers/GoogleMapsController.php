@@ -62,7 +62,8 @@ class GoogleMapsController extends Controller
             ], 422);
         }
 
-        $data = $this->maps->getTransportData($coords['lat'], $coords['lng']);
+        $skipCache = $request->boolean('skip_cache');
+        $data = $this->maps->getTransportData($coords['lat'], $coords['lng'], $skipCache);
 
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
     }
@@ -112,7 +113,8 @@ class GoogleMapsController extends Controller
             ], 422);
         }
 
-        $data = $this->maps->getEmergencyData($coords['lat'], $coords['lng']);
+        $skipCache = $request->boolean('skip_cache');
+        $data = $this->maps->getEmergencyData($coords['lat'], $coords['lng'], $skipCache);
 
         return response()->json(array_merge(['address_used' => $coords['address_used']], $data));
     }

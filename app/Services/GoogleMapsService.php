@@ -299,10 +299,12 @@ class GoogleMapsService
         });
     }
 
-    public function getTransportData(float $lat, float $lng): array
+    public function getTransportData(float $lat, float $lng, bool $skipCache = false): array
     {
         $key = 'maps.transport.' . md5(round($lat, 2) . ',' . round($lng, 2));
-        return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
+        if (!$skipCache && Cache::has($key)) return Cache::get($key);
+
+        $compute = function () use ($lat, $lng) {
             $origin = ['lat' => $lat, 'lng' => $lng];
 
             $transitRaw = $this->queryTransit($lat, $lng);
@@ -336,17 +338,24 @@ class GoogleMapsService
                 'autobus'    => $this->buildPlaceList($busStops, $tCount, $distances),
                 'parking'    => $this->buildPlaceList($parkings, $tCount + $bCount, $distances),
             ];
-        });
+        };
+
+        $result = $compute();
+        $total = count($result['metro_tren'] ?? []) + count($result['autobus'] ?? []) + count($result['parking'] ?? []);
+        if ($total > 0) Cache::put($key, $result, 60 * 60 * 24 * 7);
+        return $result;
     }
 
     /**
      * Emergency data for section 5:
      * hospitales, policia (Nacional/Local), guardia_civil
      */
-    public function getEmergencyData(float $lat, float $lng): array
+    public function getEmergencyData(float $lat, float $lng, bool $skipCache = false): array
     {
         $key = 'maps.emergency.' . md5(round($lat, 2) . ',' . round($lng, 2));
-        return Cache::remember($key, 60 * 60 * 24 * 7, function () use ($lat, $lng) {
+        if (!$skipCache && Cache::has($key)) return Cache::get($key);
+
+        $compute = function () use ($lat, $lng) {
             $origin = ['lat' => $lat, 'lng' => $lng];
 
             $hospitalRaw = $this->queryHospitals($lat, $lng);
@@ -383,6 +392,11 @@ class GoogleMapsService
                 'policia'       => $this->buildPlaceList($policia, $hCount, $distances),
                 'guardia_civil' => $this->buildPlaceList($guardias, $hCount + $pCount, $distances),
             ];
-        });
+        };
+
+        $result = $compute();
+        $total = count($result['hospitales'] ?? []) + count($result['policia'] ?? []) + count($result['guardia_civil'] ?? []);
+        if ($total > 0) Cache::put($key, $result, 60 * 60 * 24 * 7);
+        return $result;
     }
 }
