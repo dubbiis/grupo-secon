@@ -12,13 +12,23 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [generatedText, setGeneratedText] = useState(section.generated_text ?? "");
+    const [customAnswers, setCustomAnswers] = useState(formData?.custom_answers ?? {});
     const saveTimerRef = useRef(null);
+
+    // formData merged with the local custom answers state — always up to date
+    const fullFormData = { ...formData, custom_answers: customAnswers };
+
+    const handleCustomAnswersChange = (answers) => {
+        setCustomAnswers(answers);
+        // Best-effort propagation to parent (no-op if parent doesn't care)
+        onFormChange?.((prev) => ({ ...prev, custom_answers: answers }));
+    };
 
     const save = (data, text, status) => {
         setSaving(true);
         router.put(
             `/planes/${plan.uuid}/seccion/${section.section_number}`,
-            { form_data: data, generated_text: text, status },
+            { form_data: { ...data, custom_answers: customAnswers }, generated_text: text, status },
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -72,8 +82,8 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                 {showIA && showCustomQuestions && (
                     <CustomQuestions
                         sectionNumber={section.section_number}
-                        customAnswers={formData?.custom_answers ?? {}}
-                        onChange={(answers) => onFormChange((prev) => ({ ...prev, custom_answers: answers }))}
+                        customAnswers={customAnswers}
+                        onChange={handleCustomAnswersChange}
                     />
                 )}
             </div>
@@ -85,7 +95,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
                         <GeneradorIA
                             uuid={plan.uuid}
                             section={section.section_number}
-                            formData={formData}
+                            formData={fullFormData}
                             initialText={generatedText}
                             onTextChange={(txt) => setGeneratedText(txt)}
                             onStatusChange={() => {}}
@@ -97,7 +107,7 @@ export default function SectionShell({ plan, section, formData, onFormChange, sh
             {/* Action buttons — at the bottom */}
             <div className="flex items-center justify-end gap-3">
                 <button
-                    onClick={() => save(formData, generatedText, section.status)}
+                    onClick={() => save(fullFormData, generatedText, section.status)}
                     disabled={saving}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 shadow-sm"
                 >

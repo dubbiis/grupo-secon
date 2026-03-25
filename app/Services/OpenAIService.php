@@ -123,63 +123,55 @@ class OpenAIService
     {
         $context = [];
 
-        // Variables globales del plan (de sección 1)
-        $sec1 = $plan->getSectionByNumber(1);
-        if ($sec1 && $sec1->form_data) {
-            $context = array_merge($context, $sec1->form_data);
-        }
-
-        // Fechas y horarios (sección 2)
-        $sec2 = $plan->getSectionByNumber(2);
-        if ($sec2 && $sec2->form_data) {
-            foreach (['fecha_evento', 'horario_evento', 'num_asistentes', 'montaje_desmontaje'] as $key) {
-                if (!empty($sec2->form_data[$key])) {
-                    $context[$key] = $sec2->form_data[$key];
+        // Include ALL scalar form data from every section (ordered by section number)
+        // This ensures new fields added to any section automatically reach the AI
+        $allSections = $plan->sections->sortBy('section_number');
+        foreach ($allSections as $section) {
+            if (!$section->form_data) continue;
+            foreach ($section->form_data as $key => $value) {
+                if ($key === 'custom_answers') continue; // handled separately in streamGenerate
+                if (is_array($value) || is_object($value)) continue;
+                if ($value !== null && $value !== '') {
+                    $context[$key] = $value;
                 }
             }
         }
 
-        // Aforo, accesos y transporte (sección 4)
-        $sec4 = $plan->getSectionByNumber(4);
-        if ($sec4 && $sec4->form_data) {
-            foreach (['aforo_total', 'num_accesos', 'datos_transporte_googlemaps', 'datos_parkings_googlemaps'] as $key) {
-                if (!empty($sec4->form_data[$key])) {
-                    $context[$key] = $sec4->form_data[$key];
+        // Serialize known array fields to readable text
+        foreach ($allSections as $section) {
+            if (!$section->form_data) continue;
+
+            // accesos_detalle → "Nombre: descripción" lines
+            if (!empty($section->form_data['accesos_detalle']) && is_array($section->form_data['accesos_detalle'])) {
+                $lines = array_map(
+                    fn($a) => trim(($a['nombre'] ?? '') . ': ' . ($a['descripcion'] ?? '')),
+                    $section->form_data['accesos_detalle']
+                );
+                $text = implode("\n", array_filter($lines, fn($l) => strlen($l) > 2));
+                if ($text) $context['accesos_detalle'] = $text;
+            }
+
+            // vips_json → list of VIP names
+            if (!empty($section->form_data['vips_json'])) {
+                $vips = json_decode($section->form_data['vips_json'], true);
+                if (is_array($vips) && count($vips) > 0) {
+                    $context['hay_vips'] = 'Sí';
+                    $context['lista_vips'] = implode(', ', array_column($vips, 'nombre'));
+                } else {
+                    $context['hay_vips'] = 'No';
                 }
             }
         }
 
-        // Recursos de emergencia (sección 5) — usados en sec 7 (análisis de riesgos)
-        $sec5 = $plan->getSectionByNumber(5);
-        if ($sec5 && $sec5->form_data) {
-            foreach (['hospitales_reales', 'comisarias_reales'] as $key) {
-                if (!empty($sec5->form_data[$key])) {
-                    $context[$key] = $sec5->form_data[$key];
-                }
-            }
-        }
-
-        // Perfil del público (sección 6)
-        $sec6 = $plan->getSectionByNumber(6);
-        if ($sec6 && $sec6->form_data) {
-            foreach (['perfil_publico', 'rango_edad', 'ambito_geografico'] as $key) {
-                if (!empty($sec6->form_data[$key])) {
-                    $context[$key] = $sec6->form_data[$key];
-                }
-            }
-            $vips = json_decode($sec6->form_data['vips_json'] ?? '[]', true);
-            $context['hay_vips'] = (!empty($vips) && count($vips) > 0) ? 'Sí' : 'No';
-        }
-
-        // Contexto acumulado de secciones anteriores (para sección 7)
+        // For section 7: also include generated text summary from previous sections
         if ($currentSection === 7) {
-            $sections = $plan->sections()
+            $prevSections = $plan->sections()
                 ->where('section_number', '<', 7)
                 ->whereIn('status', ['listo', 'editado'])
                 ->get();
-            if ($sections->count() > 0) {
+            if ($prevSections->count() > 0) {
                 $resumen = [];
-                foreach ($sections as $s) {
+                foreach ($prevSections as $s) {
                     if ($s->generated_text) {
                         $resumen[] = "### {$s->section_name}\n" . substr($s->generated_text, 0, 500) . '...';
                     }
