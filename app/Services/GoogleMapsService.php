@@ -45,24 +45,50 @@ class GoogleMapsService
 
     // ── Overpass API (places nearby) ─────────────────────────────
 
+    private const OVERPASS_MIRRORS = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter',
+        'https://overpass.private.coffee/api/interpreter',
+    ];
+
     private function overpassRequest(string $query): array
     {
-        try {
-            $response = Http::withHeaders(['User-Agent' => $this->userAgent])
-                ->timeout(30)
-                ->asForm()
-                ->post('https://overpass-api.de/api/interpreter', ['data' => $query]);
+        foreach (self::OVERPASS_MIRRORS as $mirror) {
+            try {
+                $response = Http::withHeaders(['User-Agent' => $this->userAgent])
+                    ->timeout(12)
+                    ->asForm()
+                    ->post($mirror, ['data' => $query]);
 
-            return $response->json()['elements'] ?? [];
-        } catch (\Exception) {
-            return [];
+                if ($response->successful()) {
+                    return $response->json()['elements'] ?? [];
+                }
+            } catch (\Exception) {
+                // Try next mirror
+            }
         }
+        return [];
+    }
+
+    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $r = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+        return $r * 2 * asin(sqrt($a));
+    }
+
+    private function formatDistanceKm(float $lat1, float $lng1, float $lat2, float $lng2): string
+    {
+        $km = $this->haversineKm($lat1, $lng1, $lat2, $lng2);
+        return $km < 1 ? round($km * 1000) . ' m aprox.' : round($km, 1) . ' km aprox.';
     }
 
     private function queryHospitals(float $lat, float $lng): array
     {
         return $this->overpassRequest(
-            "[out:json][timeout:25];(" .
+            "[out:json][timeout:10];(" .
             "node[\"amenity\"~\"hospital|clinic\"](around:5000,{$lat},{$lng});" .
             "way[\"amenity\"~\"hospital|clinic\"](around:5000,{$lat},{$lng});" .
             ");out center tags;"
@@ -72,7 +98,7 @@ class GoogleMapsService
     private function queryPolice(float $lat, float $lng): array
     {
         return $this->overpassRequest(
-            "[out:json][timeout:25];(" .
+            "[out:json][timeout:10];(" .
             "node[\"amenity\"=\"police\"](around:5000,{$lat},{$lng});" .
             "way[\"amenity\"=\"police\"](around:5000,{$lat},{$lng});" .
             ");out center tags;"
@@ -82,7 +108,7 @@ class GoogleMapsService
     private function queryTransit(float $lat, float $lng): array
     {
         return $this->overpassRequest(
-            "[out:json][timeout:25];(" .
+            "[out:json][timeout:10];(" .
             "node[\"public_transport\"=\"station\"](around:1000,{$lat},{$lng});" .
             "node[\"railway\"~\"station|subway_entrance\"](around:1000,{$lat},{$lng});" .
             "node[\"railway\"=\"tram_stop\"](around:800,{$lat},{$lng});" .
@@ -93,7 +119,7 @@ class GoogleMapsService
     private function queryBus(float $lat, float $lng): array
     {
         return $this->overpassRequest(
-            "[out:json][timeout:25];(" .
+            "[out:json][timeout:10];(" .
             "node[\"highway\"=\"bus_stop\"](around:400,{$lat},{$lng});" .
             ");out center tags;"
         );
@@ -102,7 +128,7 @@ class GoogleMapsService
     private function queryParking(float $lat, float $lng): array
     {
         return $this->overpassRequest(
-            "[out:json][timeout:25];(" .
+            "[out:json][timeout:10];(" .
             "node[\"amenity\"=\"parking\"](around:1000,{$lat},{$lng});" .
             "way[\"amenity\"=\"parking\"](around:1000,{$lat},{$lng});" .
             ");out center tags;"
@@ -394,21 +420,52 @@ class GoogleMapsService
         return $result;
     }
 
+    private function buildPlaceListHaversine(array $elements, float $originLat, float $originLng): array
+    {
+        $result = [];
+        foreach ($elements as $el) {
+            $tags = $el['tags'] ?? [];
+            $name = $tags['name'] ?? null;
+            if (!$name) continue;
+            $coords = $this->getCoords($el);
+            $result[] = [
+                'name'          => $name,
+                'address'       => $this->buildAddress($tags),
+                'lat'           => $coords['lat'],
+                'lng'           => $coords['lng'],
+                'distance_text' => $this->formatDistanceKm($originLat, $originLng, $coords['lat'], $coords['lng']),
+                'phone'         => $tags['phone'] ?? $tags['contact:phone'] ?? $tags['emergency:phone'] ?? null,
+            ];
+        }
+        usort($result, fn($a, $b) =>
+            $this->haversineKm($originLat, $originLng, $a['lat'], $a['lng']) <=>
+            $this->haversineKm($originLat, $originLng, $b['lat'], $b['lng'])
+        );
+        return $result;
+    }
+
     /** Hospitals only — for split requests */
     public function getHospitalsOnly(float $lat, float $lng): array
     {
-        $origin = ['lat' => $lat, 'lng' => $lng];
+        $key = 'maps.hospitals_only.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        if (Cache::has($key)) return Cache::get($key);
+
         $raw = $this->queryHospitals($lat, $lng);
         $hospitals = array_slice($raw, 0, 8);
-        $coords = array_map([$this, 'getCoords'], $hospitals);
-        $distances = $this->getDistances($origin, $coords);
-        return ['hospitales' => $this->buildPlaceList($hospitals, 0, $distances)];
+        $result = ['hospitales' => $this->buildPlaceListHaversine($hospitals, $lat, $lng)];
+
+        if (count($result['hospitales']) > 0) {
+            Cache::put($key, $result, 60 * 60 * 24 * 7);
+        }
+        return $result;
     }
 
     /** Police only — for split requests */
     public function getPoliceOnly(float $lat, float $lng): array
     {
-        $origin = ['lat' => $lat, 'lng' => $lng];
+        $key = 'maps.police_only.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        if (Cache::has($key)) return Cache::get($key);
+
         $raw = $this->queryPolice($lat, $lng);
         $policia = [];
         $guardias = [];
@@ -420,12 +477,15 @@ class GoogleMapsService
         }
         $policia  = array_slice($policia, 0, 6);
         $guardias = array_slice($guardias, 0, 4);
-        $all = array_merge($policia, $guardias);
-        $coords = array_map([$this, 'getCoords'], $all);
-        $distances = $this->getDistances($origin, $coords);
-        return [
-            'policia'       => $this->buildPlaceList($policia, 0, $distances),
-            'guardia_civil' => $this->buildPlaceList($guardias, count($policia), $distances),
+
+        $result = [
+            'policia'       => $this->buildPlaceListHaversine($policia, $lat, $lng),
+            'guardia_civil' => $this->buildPlaceListHaversine($guardias, $lat, $lng),
         ];
+
+        if (count($result['policia']) > 0 || count($result['guardia_civil']) > 0) {
+            Cache::put($key, $result, 60 * 60 * 24 * 7);
+        }
+        return $result;
     }
 }
