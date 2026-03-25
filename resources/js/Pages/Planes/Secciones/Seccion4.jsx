@@ -76,7 +76,6 @@ function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded }) {
 export default function Seccion4({ plan, section }) {
     const { t } = useTranslation();
     const [form, setForm] = useState({
-        aforo_total:               "",
         num_accesos:               "",
         descripcion_accesos:       "",
         accesos_detalle:           [],
@@ -126,15 +125,9 @@ export default function Seccion4({ plan, section }) {
 
     return (
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s4.capacity")}</label>
-                    <Input type="number" {...field("aforo_total")} placeholder="Capacidad máxima del recinto" min={1} />
-                </div>
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("s4.accesses")}</label>
-                    <Input type="number" {...field("num_accesos")} placeholder="Número de entradas/salidas" min={1} />
-                </div>
+            <div>
+                <label className="text-sm font-medium mb-1.5 block">{t("s4.accesses")}</label>
+                <Input type="number" {...field("num_accesos")} placeholder="Número de entradas/salidas" min={1} />
             </div>
 
             {/* Access detail cards */}

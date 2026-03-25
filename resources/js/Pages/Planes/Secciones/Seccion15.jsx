@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { router } from "@inertiajs/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/planes/FileUpload";
 import SectionShell from "@/components/planes/SectionShell";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { FileDown, CheckCircle2, Save } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
@@ -73,12 +74,18 @@ export default function Seccion15({ plan, section, files = [] }) {
                         <Save size={14} />
                         {saving ? t("common.saving") : t("common.save")}
                     </Button>
-                    <a href={`/planes/${plan.uuid}/pdf/descargar`} target="_blank">
-                        <Button variant="secon" size="sm" className="gap-1.5">
+                    <Shine enableOnHover color="white" opacity={0.25} duration={500} asChild>
+                        <motion.a
+                            href={`/planes/${plan.uuid}/pdf/descargar`}
+                            target="_blank"
+                            whileHover={{ scale: 1.04, y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white text-sm font-bold shadow-lg shadow-[#208DCA]/30 hover:shadow-xl hover:shadow-[#208DCA]/40 transition-all"
+                        >
                             <FileDown size={14} />
                             Generar PDF
-                        </Button>
-                    </a>
+                        </motion.a>
+                    </Shine>
                 </div>
             </div>
 

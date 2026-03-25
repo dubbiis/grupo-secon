@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
+import { motion } from "framer-motion";
 import { useTranslation } from "@/i18n";
 
 export default function Seccion11({ plan, section, files = [] }) {
@@ -23,18 +24,20 @@ export default function Seccion11({ plan, section, files = [] }) {
                         { value: "imagen", label: "Imagen / Documento" },
                         { value: "texto", label: "Texto / Tabla" },
                     ].map((opt) => (
-                        <button
+                        <motion.button
                             key={opt.value}
                             type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             onClick={() => setForm((prev) => ({ ...prev, tipo_run_of_show: opt.value }))}
-                            className={`flex-1 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                            className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
                                 form.tipo_run_of_show === opt.value
-                                    ? "bg-[#273887] text-slate-900 border-[#273887]"
-                                    : "bg-transparent text-muted-foreground border-input hover:border-[#208DCA]"
+                                    ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-[#208DCA]/50 shadow-md shadow-[#208DCA]/20"
+                                    : "bg-white text-slate-500 border-slate-200 hover:border-[#208DCA]/40 hover:text-slate-700"
                             }`}
                         >
                             {opt.label}
-                        </button>
+                        </motion.button>
                     ))}
                 </div>
             </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
+import { motion } from "framer-motion";
 import { useTranslation } from "@/i18n";
 
 const TIPOS_ASISTENTES = ["Público general", "Artistas / VIPs", "Personal de seguridad", "Proveedores / Técnicos", "Prensa / Acreditados"];
@@ -29,9 +30,11 @@ export default function Seccion10({ plan, section }) {
                     {TIPOS_ASISTENTES.map((tipo) => {
                         const selected = form.tipos_asistentes.split(",").map((s) => s.trim()).filter(Boolean).includes(tipo);
                         return (
-                            <button
+                            <motion.button
                                 key={tipo}
                                 type="button"
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.96 }}
                                 onClick={() => {
                                     const current = form.tipos_asistentes.split(",").map((s) => s.trim()).filter(Boolean);
                                     const updated = selected
@@ -39,14 +42,14 @@ export default function Seccion10({ plan, section }) {
                                         : [...current, tipo];
                                     setForm((prev) => ({ ...prev, tipos_asistentes: updated.join(", ") }));
                                 }}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                                     selected
-                                        ? "bg-[#273887] text-slate-900 border-[#273887]"
-                                        : "bg-transparent text-muted-foreground border-input hover:border-[#208DCA]"
+                                        ? "bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white border-[#208DCA]/50 shadow-sm shadow-[#208DCA]/30"
+                                        : "bg-white text-slate-500 border-slate-200 hover:border-[#208DCA]/50 hover:text-[#208DCA]"
                                 }`}
                             >
                                 {tipo}
-                            </button>
+                            </motion.button>
                         );
                     })}
                 </div>
