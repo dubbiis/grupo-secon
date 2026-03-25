@@ -30,7 +30,8 @@
     "total": "Total",
     "day": "Day",
     "hours": "Hours",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lang_code": "en"
   },
   "auth": {
     "login": "Log in",
@@ -431,16 +432,17 @@
     "text_label": "Run of show (text)"
   },
   "s12": {
-    "desc": "Add the people participating in the event with their photo and role.",
-    "title": "Event people",
-    "person": "Person",
-    "registered": "registered",
-    "add": "Add person",
-    "photo": "Photo",
-    "add_photo": "Add photo",
-    "name": "Name",
+    "desc": "Add event accreditations: upload pre-made images or create them here with photo, name and access zones.",
+    "title": "Event accreditations",
+    "item": "Accreditation",
+    "registered": "accreditations",
+    "add": "Add accreditation",
+    "upload_label": "Upload accreditations",
+    "create_label": "Create accreditations",
+    "photo": "Wristband / accreditation image",
+    "name": "Accreditation name",
     "name_placeholder": "Full name",
-    "role": "Role",
+    "role": "Access zones and permissions",
     "role_placeholder": "E.g.: Director, Staff, Press, VIP..."
   },
   "s13": {
@@ -517,7 +519,7 @@
     "9": "Staff",
     "10": "Transport",
     "11": "Run of Show",
-    "12": "Event People",
+    "12": "Accreditations",
     "13": "Contacts",
     "14": "Annexes",
     "15": "Branding"

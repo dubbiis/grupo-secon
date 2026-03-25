@@ -30,7 +30,8 @@
     "total": "Total",
     "day": "Día",
     "hours": "Horas",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lang_code": "es"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -431,16 +432,17 @@
     "text_label": "Run of show (texto)"
   },
   "s12": {
-    "desc": "Anade las personas que participan en el evento con su foto y cargo.",
-    "title": "Personas del evento",
-    "person": "Persona",
-    "registered": "registrados",
-    "add": "Anadir persona",
-    "photo": "Foto",
-    "add_photo": "Anadir foto",
-    "name": "Nombre",
+    "desc": "Añade las acreditaciones del evento: sube las imágenes si ya las tienes hechas, o créalas aquí con foto, nombre y zonas de acceso.",
+    "title": "Acreditaciones del evento",
+    "item": "Acreditación",
+    "registered": "acreditaciones",
+    "add": "Añadir acreditación",
+    "upload_label": "Subir acreditaciones",
+    "create_label": "Crear acreditaciones",
+    "photo": "Imagen de pulsera / acreditación",
+    "name": "Nombre de la acreditación",
     "name_placeholder": "Nombre completo",
-    "role": "Cargo",
+    "role": "Zonas de acceso y permisos",
     "role_placeholder": "Ej: Director, Staff, Prensa, VIP..."
   },
   "s13": {
@@ -517,7 +519,7 @@
     "9": "Personal",
     "10": "Transporte",
     "11": "Run of Show",
-    "12": "Personas del evento",
+    "12": "Acreditaciones",
     "13": "Contactos",
     "14": "Anexos",
     "15": "Branding"
