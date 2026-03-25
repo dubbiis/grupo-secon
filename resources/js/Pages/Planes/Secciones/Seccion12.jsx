@@ -44,23 +44,24 @@ function PhotoUpload({ person, uuid, onUploaded }) {
 
     return (
         <div
-            className="w-36 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden flex-shrink-0"
+            className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden"
             onClick={() => inputRef.current?.click()}
-            title={t("s12.add_photo")}
+            title="Subir imagen de pulsera / acreditación"
         >
             {displayUrl ? (
-                <img src={displayUrl} alt="foto" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                <img src={displayUrl} alt="acreditación" className="absolute inset-0 w-full h-full object-contain rounded-xl p-1" />
             ) : uploading ? (
-                <div className="text-[9px] text-[#208DCA] animate-pulse">{t("files.uploading")}</div>
+                <div className="text-xs text-[#208DCA] animate-pulse">{t("files.uploading")}</div>
             ) : (
                 <>
-                    <User size={16} className="text-slate-400 group-hover:text-[#208DCA]/50 transition-colors" />
-                    <span className="text-[9px] text-slate-400 text-center leading-tight">Pulsera / acreditación</span>
+                    <User size={22} className="text-slate-300 group-hover:text-[#208DCA]/40 transition-colors" />
+                    <span className="text-xs text-slate-400 group-hover:text-[#208DCA]/60 transition-colors">Imagen de pulsera / acreditación</span>
+                    <span className="text-[10px] text-slate-300">PNG, JPG — formato apaisado recomendado</span>
                 </>
             )}
             {displayUrl && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <ImagePlus size={16} className="text-white" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                    <ImagePlus size={18} className="text-white" />
                 </div>
             )}
             <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
@@ -130,22 +131,22 @@ function AcreditacionCard({ person, idx, onUpdate, onRemove, uuid, isOpen, onTog
                             <div className="grid grid-cols-1 gap-3">
                                 <div>
                                     <label className="text-[10px] font-semibold text-slate-500 mb-1 block uppercase tracking-wide">
-                                        {t("s12.name")} <span className="text-[#208DCA]">*</span>
+                                        Nombre de la acreditación <span className="text-[#208DCA]">*</span>
                                     </label>
                                     <Input
                                         value={person.nombre ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...person, nombre: e.target.value })}
-                                        placeholder={t("s12.name_placeholder")}
+                                        placeholder="Nombre completo"
                                     />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-semibold text-slate-500 mb-1 block uppercase tracking-wide">
-                                        {t("s12.role")}
+                                        Zonas de acceso y permisos
                                     </label>
                                     <Input
                                         value={person.cargo ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...person, cargo: e.target.value })}
-                                        placeholder={t("s12.role_placeholder")}
+                                        placeholder="Ej: Director, Staff, Prensa, VIP..."
                                     />
                                 </div>
                             </div>
