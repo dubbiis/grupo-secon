@@ -67,8 +67,13 @@ resources/js/components/animate-ui/
 - Streaming IA via SSE (`response()->stream()` con `Content-Type: text/event-stream`)
 - CSRF: meta tag en `app.blade.php`, frontend lee con `document.querySelector('meta[name="csrf-token"]')`
 - Cambios IA: enviar `texto_actual` desde el frontend (no usar `generated_text` de BD)
-- Sección 7 (riesgos): flujo de 2 pasos — identificar riesgos (JSON) → analizar cada uno (5 llamadas SSE secuenciales)
+- Sección 7 (riesgos): flujo de 2 pasos — identificar riesgos (JSON) → analizar cada uno con SSE secuencial, un panel por riesgo
 - Sección 9 (planificación): parsear solo hoja "Overview Event", ignorar Data/Staff
+- `buildContext` en OpenAIService: escanea **todas** las secciones dinámicamente (sin whitelist hardcoded). Cualquier campo scalar nuevo llega a la IA automáticamente. Arrays conocidos: `accesos_detalle` → líneas texto, `vips_json` → lista nombres.
+- Custom answers (preguntas adicionales): SectionShell mantiene `customAnswers` en estado local propio, siempre los mezcla en `fullFormData` antes de enviar a GeneradorIA y al PUT de guardar. No depender del `onFormChange` del padre para esto.
+- Overpass API emergencias: 3 mirrors en fallback (`overpass-api.de` → `overpass.kumi.systems` → `overpass.private.coffee`), timeout 12s por mirror. Cache Laravel 7 días. Frontend hace 2 peticiones secuenciales (hospitales + policía), nunca una sola.
+- Distancias a recursos de emergencia: fórmula **haversine** en PHP (no llamar Valhalla ni ninguna API de routing para esto).
+- Geocoding: cadena CartoCiudad → Photon → Nominatim. Photon no soporta `lang=es`, usar `lang=default`.
 
 ### Git
 - Rama: `master`
@@ -148,13 +153,55 @@ while (true) {
 
 | # | Sección | Tipo | Notas |
 |---|---------|------|-------|
-| 1-6 | Formulario + IA | SectionShell + GeneradorIA | Formulario arriba, generador abajo |
-| 7 | Análisis riesgos | Custom (2 pasos) | Identificar → analizar 5 riesgos secuencial |
-| 8 | Dispositivo seguridad | Upload + MapEditor | Planos + editor canvas/mapa |
-| 9 | Planificación | Excel import + editor | Parsea "Overview Event", drag reorder, auto-calc horas |
-| 10 | Transporte | SectionShell + IA | — |
-| 11 | Run of show | Upload | Imagen o texto |
-| 12 | Acreditaciones | Loop items | Nombre, cantidad, imagen |
-| 13 | Contactos | Loop items | Nombre, cargo, email, tlf |
-| 14 | Anexos | Loop + upload | Documentos adjuntos |
-| 15 | Branding/PDF | Custom | Paleta, tipografía, logo, portada |
+| 1 | Objetivo | SectionShell + IA | Evento, recinto, redactor, info adicional libre |
+| 2 | Descripción | SectionShell + IA | Fechas dinámicas por día (montaje/evento/desmontaje), aforo previsto + aforo espacio |
+| 3 | Titulares | SectionShell + IA | Loop de espacios/titulares con contacto |
+| 4 | Accesos | SectionShell + IA | Aforo, accesos, transporte, parking, acceso vehículos emergencia (textarea libre) |
+| 5 | Recursos sanitarios | SectionShell + IA + Mapa | Búsqueda auto hospitales/policía (2 peticiones), mapa rutas emergencia |
+| 6 | Perfil público | SectionShell + IA | Tipo público, VIPs con perfil IA y foto |
+| 7 | Análisis riesgos | Custom 2 pasos | Identificar (JSON) → panel expandible por riesgo con SSE individual; guardar/confirmar al pie |
+| 8 | Dispositivo seguridad | Upload + MapEditor | Planos múltiples nombrados (nombre + descripción + FileUpload independiente por plano) |
+| 9 | Planificación | Excel import + editor | Parsea hoja "Overview Event", drag reorder Reorder.Item, auto-calc horas |
+| 10 | Transporte | SectionShell + IA | Perfiles asistentes (pills toggle), vehículos, parking |
+| 11 | Run of show | Toggle upload/texto | Imagen/PDF o tabla de texto libre |
+| 12 | Acreditaciones | Toggle upload/crear | Subir imágenes ya hechas (acreditacion_img) o crear: foto banner pulsera (w-full h-32) + nombre + zonas acceso |
+| 13 | Contactos | Loop items | Nombre, cargo, email, teléfono, empresa |
+| 14 | Anexos | Loop + upload | Cada anexo tiene FileUpload independiente con `category="anexo_{id}"` |
+| 15 | Branding/PDF | Custom | Paleta colores, tipografía, logo cliente, imagen portada, descarga PDF |
+
+### Notas importantes por sección
+
+**Sec 7**: `riskTexts` es array de strings, uno por riesgo. El texto final para BD = `riskTexts.join("\n\n---\n\n")`. Al cargar, se parsea con `split("\n\n---\n\n")`.
+
+**Sec 8**: Cada plano tiene `{ id: randomString, nombre, descripcion }`. FileUpload usa `category="plano_{id}"` para que los archivos sean independientes por plano.
+
+**Sec 12**: Modo "subir" → FileUpload con `category="acreditacion_img"`. Modo "crear" → AcreditacionCard con PhotoUpload (banner horizontal completo, `object-contain`) + nombre + zonas acceso. El campo `cargo` del modelo almacena las zonas de acceso.
+
+**Sec 14**: Igual que sec 8, cada anexo tiene `id` propio y `category="anexo_{id}"`.
+
+**Sec 2**: Los días de montaje, evento y desmontaje son rangos de fechas. Se generan DayScheduleCard individuales con horario por día. Los campos de BD son `fecha_inicio_montaje`, `fecha_fin_montaje`, `fecha_inicio_evento`, `fecha_fin_evento`, `fecha_inicio_desmontaje`, `fecha_fin_desmontaje`, plus `horarios_montaje`, `horarios_evento`, `horarios_desmontaje` como JSON.
+
+---
+
+## Trampas conocidas
+
+### 1. Overpass API — timeout en búsqueda de emergencias
+La sección 5 se quedaba en "Buscando…" indefinidamente. Causa: Overpass `overpass-api.de` tiene picos de carga que generan 504. Solución: 3 mirrors en fallback, timeout 12s por mirror, cache 7 días en Laravel, y peticiones separadas (hospitales/policía) para reducir el tamaño de cada query. **No volver a una sola petición combinada.**
+
+### 2. Custom answers no llegaban a la IA
+Las preguntas adicionales ("Información adicional") se guardaban en el estado del componente padre pero `SectionShell` recibía `onFormChange={() => {}}` en secciones como Sec 8 o Sec 14. Las respuestas nunca llegaban a `GeneradorIA`. Solución: `SectionShell` mantiene su propio estado `customAnswers` independiente del padre, siempre lo mezcla en `fullFormData` antes de enviarlo. **No depender de que el padre propague `custom_answers`.**
+
+### 3. buildContext no incluía campos nuevos
+`OpenAIService::buildContext()` tenía una whitelist hardcoded de campos. Cualquier campo nuevo añadido a un formulario no llegaba a la IA. Solución: escaneo dinámico de todos los `form_data` de todas las secciones, skipping arrays y el campo `custom_answers` (que se maneja aparte).
+
+### 4. Photon geocoding con `lang=es` falla
+Photon (komoot) no soporta `lang=es` — devuelve error silencioso o resultados incorrectos. Usar `lang=default`. Documentado en el GoogleMapsService.
+
+### 5. Valhalla (routing API) para distancias → muy lento
+Se usaba Valhalla para calcular distancias a hospitales/policía. Con 10+ resultados tardaba 30+ segundos. Solución: fórmula haversine en PHP puro. Es suficiente para mostrar "a X km en línea recta".
+
+### 6. `t("common.lang_code")` en Seccion2 — key faltante
+`formatDay()` en Seccion2.jsx llama `t("common.lang_code") || "es"` para el locale de fechas. La key no existía en los JSON, `t()` devolvía la key misma ("common.lang_code") que es truthy, anulando el `|| "es"`. El locale de formato de fechas quedaba roto. Solución: añadir `"lang_code": "es"/"en"` en los JSON de i18n.
+
+### 7. Geocoding CartoCiudad — retry sin número de portal
+CartoCiudad falla silenciosamente con números de portal que no existen en su BD. Implementado retry automático: si no hay resultados, reintentar la misma dirección sin el número de calle antes de pasar al siguiente proveedor de la cadena.
