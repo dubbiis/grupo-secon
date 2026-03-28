@@ -23,12 +23,12 @@ class PlanFile extends Model
 
     public function getUrlAttribute(): string
     {
-        return Storage::url($this->file_path);
+        return Storage::disk('public')->url($this->file_path);
     }
 
     public function getAbsolutePathAttribute(): string
     {
-        return Storage::path($this->file_path);
+        return Storage::disk('public')->path($this->file_path);
     }
 
     protected static function boot()
@@ -36,7 +36,7 @@ class PlanFile extends Model
         parent::boot();
 
         static::deleting(function ($file) {
-            Storage::delete($file->file_path);
+            Storage::disk('public')->delete($file->file_path);
         });
     }
 }
