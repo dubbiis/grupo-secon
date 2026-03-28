@@ -169,7 +169,18 @@ export default function Seccion12({ plan, section, files = [] }) {
     const [openIdx, setOpenIdx] = useState(null);
 
     const acreditacionFiles = files.filter((f) => f.file_category === "acreditacion_img");
-    const formData = { modo, personas_json: JSON.stringify(items, null, 2) };
+
+    // Build readable summary for AI
+    const acreditacionesResumen = items.length > 0
+        ? items.map((p, i) => `${i + 1}. ${p.nombre || "Sin nombre"} — Zonas: ${p.cargo || "No especificadas"}`).join("\n")
+        : "No se han creado acreditaciones todavía.";
+
+    const formData = {
+        modo,
+        personas_json: JSON.stringify(items, null, 2),
+        acreditaciones_resumen: acreditacionesResumen,
+        num_acreditaciones: items.length,
+    };
 
     const addItem = () => {
         const newItems = [...items, { nombre: "", cargo: "", foto_id: null, foto_url: null }];

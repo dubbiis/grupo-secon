@@ -17,7 +17,23 @@ export default function Seccion13({ plan, section }) {
         catch { return []; }
     });
 
-    const formData = { contactos_json: JSON.stringify(items, null, 2) };
+    // Build readable summary for AI
+    const contactosResumen = items.length > 0
+        ? items.map((c, i) => {
+            const parts = [c.nombre || "Sin nombre"];
+            if (c.cargo) parts.push(c.cargo);
+            if (c.empresa) parts.push(c.empresa);
+            if (c.telefono) parts.push(`Tel: ${c.telefono}`);
+            if (c.email) parts.push(c.email);
+            return `${i + 1}. ${parts.join(" — ")}`;
+        }).join("\n")
+        : "No se han añadido contactos todavía.";
+
+    const formData = {
+        contactos_json: JSON.stringify(items, null, 2),
+        contactos_resumen: contactosResumen,
+        num_contactos: items.length,
+    };
 
     const { t } = useTranslation();
     return (

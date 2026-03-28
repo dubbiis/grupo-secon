@@ -85,10 +85,10 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                     isActive
                                         ? "bg-gradient-to-br from-[#273887] to-[#208DCA] text-white shadow-md shadow-[#208DCA]/20"
                                         : isDone
-                                            ? "bg-green-500/15 text-green-400 border border-green-500/20"
+                                            ? "bg-green-500/15 text-green-500 border border-green-500/30 shadow-sm shadow-green-500/10"
                                             : "bg-slate-200 text-slate-900 border border-slate-200 group-hover:border-slate-200 group-hover:text-slate-900"
                                 )}>
-                                    {isDone && !isActive ? <Check size={9} strokeWidth={3} /> : section.section_number}
+                                    {section.section_number}
                                 </span>
 
                                 {/* Section name */}

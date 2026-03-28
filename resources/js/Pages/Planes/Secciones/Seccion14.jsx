@@ -22,7 +22,22 @@ export default function Seccion14({ plan, section, files = [] }) {
         } catch { return []; }
     });
 
-    const formData = { anexos_json: JSON.stringify(items) };
+    // Build readable summary for AI
+    const anexosResumen = items.length > 0
+        ? items.map((a, i) => {
+            const itemFiles = files.filter((f) => f.file_category === `anexo_${a.id}`);
+            const fileInfo = itemFiles.length > 0
+                ? `(${itemFiles.length} archivo${itemFiles.length > 1 ? "s" : ""}: ${itemFiles.map((f) => f.original_name).join(", ")})`
+                : "(sin archivo adjunto)";
+            return `${i + 1}. ${a.nombre || "Sin nombre"}${a.descripcion ? ` — ${a.descripcion}` : ""} ${fileInfo}`;
+        }).join("\n")
+        : "No se han añadido anexos todavía.";
+
+    const formData = {
+        anexos_json: JSON.stringify(items),
+        anexos_resumen: anexosResumen,
+        num_anexos: items.length,
+    };
 
     const addItem = () => {
         const a = newAnexo();

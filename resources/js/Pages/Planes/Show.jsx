@@ -102,7 +102,13 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
 
                 <div className="flex-1 min-w-0">
                     <h1 className="text-sm font-semibold text-slate-900 truncate leading-tight">{plan.title}</h1>
-                    <p className="text-[10px] text-slate-400 font-mono leading-tight">{plan.uuid}</p>
+                    {currentSection ? (
+                        <p className="text-[10px] text-slate-500 font-medium leading-tight truncate">
+                            {t("common.section")} {currentSection.section_number} — {currentSection.section_name}
+                        </p>
+                    ) : (
+                        <p className="text-[10px] text-slate-400 font-mono leading-tight">{plan.uuid}</p>
+                    )}
                 </div>
 
                 {/* Progress mini bar */}
