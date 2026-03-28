@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Services\Pdf;
+
+use App\Models\Plan;
+
+class CoverPageBuilder
+{
+    public function __construct(
+        private TcpdfInstance $pdf,
+        private Plan $plan,
+        private string $lang,
+    ) {}
+
+    public function build(): void
+    {
+        // Cover page has NO background template
+        $this->pdf->enableBackground(false);
+        $this->pdf->AddPage();
+
+        $pageW = 210;
+        $pageH = 297;
+
+        // Logo centered at top
+        $logoPath = public_path('images/logo-secon.svg');
+        if (file_exists($logoPath)) {
+            $logoW = 50;
+            $logoX = ($pageW - $logoW) / 2;
+            $this->pdf->ImageSVG($logoPath, $logoX, 25, $logoW);
+        }
+
+        // "PLAN DE SEGURIDAD" / "SECURITY PLAN" title
+        $this->pdf->SetY(80);
+        FontManager::apply($this->pdf, 'cover_title');
+        $title = PdfTranslations::get('cover_title', $this->lang);
+        $this->pdf->MultiCell(0, 22, $title, 0, 'C', false, 1, 20, null, true);
+
+        // Blue separator line
+        $lineY = $this->pdf->GetY() + 5;
+        $lineW = 40;
+        $lineX = ($pageW - $lineW) / 2;
+        $this->pdf->SetDrawColor(34, 58, 129);
+        $this->pdf->SetLineWidth(0.8);
+        $this->pdf->Line($lineX, $lineY, $lineX + $lineW, $lineY);
+
+        // Event name
+        $this->pdf->SetY($lineY + 10);
+        FontManager::apply($this->pdf, 'cover_event');
+        $eventName = $this->getEventName();
+        $this->pdf->MultiCell(0, 14, strtoupper($eventName), 0, 'C', false, 1, 20, null, true);
+
+        // Location
+        $this->pdf->SetY($this->pdf->GetY() + 3);
+        FontManager::apply($this->pdf, 'cover_location');
+        $location = $this->getLocation();
+        $this->pdf->MultiCell(0, 10, strtoupper($location), 0, 'C', false, 1, 20, null, true);
+
+        // Cover image (from section 15 uploads)
+        $this->addCoverImage();
+
+        // Re-enable background for subsequent pages
+        $this->pdf->enableBackground(true);
+    }
+
+    private function getEventName(): string
+    {
+        $sec1 = $this->plan->sections->firstWhere('section_number', 1);
+        if ($sec1 && $sec1->form_data) {
+            return $sec1->form_data['nombre_evento'] ?? $this->plan->title ?? '';
+        }
+        return $this->plan->title ?? '';
+    }
+
+    private function getLocation(): string
+    {
+        $sec1 = $this->plan->sections->firstWhere('section_number', 1);
+        if ($sec1 && $sec1->form_data) {
+            $parts = array_filter([
+                $sec1->form_data['nombre_recinto'] ?? '',
+                $sec1->form_data['direccion_evento'] ?? '',
+            ]);
+            return implode(', ', $parts);
+        }
+        return '';
+    }
+
+    private function addCoverImage(): void
+    {
+        $coverFile = $this->plan->files
+            ->where('section_number', 15)
+            ->where('file_category', 'portada')
+            ->first();
+
+        if (!$coverFile || !file_exists($coverFile->absolute_path)) {
+            return;
+        }
+
+        $mime = $coverFile->mime_type ?? '';
+        if (!str_starts_with($mime, 'image/')) {
+            return;
+        }
+
+        $y = $this->pdf->GetY() + 15;
+        $maxW = 170;
+        $maxH = 297 - $y - 20;
+
+        $this->pdf->Image(
+            $coverFile->absolute_path,
+            20, $y, $maxW, $maxH,
+            '', '', '', false, 300, '', false, false, 0, 'CM'
+        );
+    }
+}

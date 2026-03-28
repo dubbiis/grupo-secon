@@ -16,8 +16,12 @@ class PlanPdfController extends Controller
 
         Gate::authorize('view', $plan);
 
-        $pdf = (new PdfService())->generate($plan);
-        return $pdf->stream("plan-{$uuid}.pdf");
+        $pdfContent = (new PdfService())->generate($plan);
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="plan-' . $uuid . '.pdf"',
+        ]);
     }
 
     public function download(string $uuid)
@@ -28,7 +32,11 @@ class PlanPdfController extends Controller
 
         Gate::authorize('view', $plan);
 
-        $pdf = (new PdfService())->generate($plan);
-        return $pdf->download("plan-{$uuid}.pdf");
+        $pdfContent = (new PdfService())->generate($plan);
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="plan-' . $uuid . '.pdf"',
+        ]);
     }
 }
