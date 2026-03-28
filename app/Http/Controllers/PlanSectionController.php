@@ -91,6 +91,9 @@ class PlanSectionController extends Controller
         // Marcar como generando
         $planSection->update(['status' => 'generando']);
 
+        // Reload sections so buildContext sees the freshly saved form_data
+        $plan->load('sections');
+
         $openAI = new OpenAIService();
         $lang = $request->input('lang', 'es');
         $context = $openAI->buildContext($plan, $section);
