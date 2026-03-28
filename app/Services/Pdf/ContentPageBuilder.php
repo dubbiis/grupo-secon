@@ -107,6 +107,9 @@ class ContentPageBuilder
      */
     private function renderFormattedText(string $text): void
     {
+        // Strip markdown bold markers — PDF uses font weight via styles, not inline markup
+        $text = preg_replace('/\*{1,2}([^*]+)\*{1,2}/', '$1', $text);
+
         $paragraphs = preg_split('/\n\s*\n/', $text);
 
         foreach ($paragraphs as $paragraph) {
