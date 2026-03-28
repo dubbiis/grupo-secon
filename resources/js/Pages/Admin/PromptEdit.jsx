@@ -17,6 +17,9 @@ const COMMON_VARS = [
     "perfil_publico", "hay_vips", "nombre_redactor", "num_habilitacion",
     "espacios_json", "vips_json", "hospitales_reales", "comisarias_reales",
     "datos_transporte_googlemaps", "contexto_secciones_anteriores",
+    "acreditaciones_resumen", "num_acreditaciones",
+    "contactos_resumen", "num_contactos",
+    "anexos_resumen", "num_anexos",
 ];
 
 // Valores de ejemplo realistas para la previsualización
@@ -46,6 +49,12 @@ const EXAMPLE_VALUES = {
     comisarias_reales:    "Comisaría de Hortaleza (2,1 km, 5 min) · Comisaría de Barajas (5,3 km, 10 min)",
     datos_transporte_googlemaps: "Metro L8 (Campo de las Naciones, 350m) · Bus 122, 140 · Parking: 1.200 plazas en Recinto Ferial IFEMA",
     contexto_secciones_anteriores: "[Resumen de secciones 1-6 del plan de seguridad del evento]",
+    acreditaciones_resumen: "1. Staff General — Zonas: Backstage, Zona técnica\n2. VIP — Zonas: Zona VIP, Backstage\n3. Prensa — Zonas: Zona prensa, Pit fotográfico",
+    num_acreditaciones: "3",
+    contactos_resumen: "1. Carlos Martínez — Director de Seguridad — Grupo Secon — Tel: +34 600 000 001 — carlos@gruposecon.com\n2. Ana García — Jefa de Producción — Live Nation — Tel: +34 600 000 002 — ana@livenation.es",
+    num_contactos: "2",
+    anexos_resumen: "1. Contrato de servicios de seguridad (1 archivo: contrato_seguridad.pdf)\n2. Licencia municipal de actividad (1 archivo: licencia_madrid.pdf)\n3. Póliza de responsabilidad civil (sin archivo adjunto)",
+    num_anexos: "3",
 };
 
 function applyExamples(template) {
