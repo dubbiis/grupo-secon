@@ -11,8 +11,9 @@ class PdfService
     {
         $plan->load(['sections' => fn($q) => $q->orderBy('section_number'), 'files']);
 
-        $branding = $plan->branding ?? [];
-        $lang = $branding['language'] ?? 'es';
+        // Language from section 15 form_data
+        $sec15 = $plan->sections->firstWhere('section_number', 15);
+        $lang = $sec15?->form_data['language'] ?? 'es';
 
         return (new PlanPdfBuilder())->build($plan, $lang);
     }

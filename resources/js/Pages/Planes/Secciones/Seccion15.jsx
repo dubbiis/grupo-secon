@@ -2,41 +2,22 @@ import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/planes/FileUpload";
-import SectionShell from "@/components/planes/SectionShell";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
-import { FileDown, CheckCircle2, Save } from "lucide-react";
+import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
+import { FileDown, CheckCircle2, Save, Eye, Globe } from "lucide-react";
 import { useTranslation } from "@/i18n";
-
-const PALETAS = [
-    { id: "secon", label: "Secon Oficial", colors: ["#273887", "#208DCA", "#FFFFFF"] },
-    { id: "elegante", label: "Elegante", colors: ["#1A1A1A", "#C9A96E", "#F5F5F5"] },
-    { id: "energia", label: "Energía", colors: ["#CC0000", "#1A1A1A", "#FFFFFF"] },
-    { id: "naturaleza", label: "Naturaleza", colors: ["#2E7D32", "#81C784", "#F5F5F5"] },
-    { id: "moderno", label: "Moderno", colors: ["#6B21A8", "#06B6D4", "#FFFFFF"] },
-];
-
-const TIPOGRAFIAS = [
-    { id: "roboto", label: "Roboto (Moderna)" },
-    { id: "georgia", label: "Georgia (Clásica)" },
-    { id: "arial", label: "Arial (Neutra)" },
-    { id: "merriweather", label: "Merriweather (Formal)" },
-    { id: "montserrat", label: "Montserrat (Corporativa)" },
-];
 
 export default function Seccion15({ plan, section, files = [] }) {
     const { t } = useTranslation();
     const [form, setForm] = useState({
         titulo_pdf: plan.title ?? "",
-        paleta: "secon",
-        tipografia: "roboto",
+        language: "es",
         ...section.form_data,
     });
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
-    const logoFiles = files.filter((f) => f.file_category === "logo");
     const portadaFiles = files.filter((f) => f.file_category === "portada");
 
     const handleSave = () => {
@@ -54,126 +35,131 @@ export default function Seccion15({ plan, section, files = [] }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-start justify-between">
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-2">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 uppercase tracking-wide">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
+                    {t("common.section")} 15
+                </span>
+                <AnimatePresence>
+                    {saved && (
+                        <motion.span
+                            initial={{ opacity: 0, scale: 0.8, x: -8 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, x: -8 }}
+                            className="inline-flex items-center gap-1 text-xs text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
+                        >
+                            <CheckCircle2 size={11} />
+                            {t("common.saved")}
+                        </motion.span>
+                    )}
+                </AnimatePresence>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
+
+            {/* Form card */}
+            <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-6 shadow-xl shadow-slate-200/50">
+
+                <p className="text-sm text-slate-500">
+                    Configura el título y la imagen de portada del PDF final. El documento se genera con la tipografía y diseño corporativo de Grupo Secon.
+                </p>
+
+                {/* PDF Title */}
                 <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                            Sección 15
-                        </span>
-                        {saved && (
-                            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                className="text-xs text-green-600 flex items-center gap-1">
-                                <CheckCircle2 size={12} /> Guardado
-                            </motion.span>
-                        )}
-                    </div>
-                    <h2 className="text-xl font-bold">{section.section_name}</h2>
+                    <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
+                        Título del PDF
+                    </label>
+                    <Input
+                        value={form.titulo_pdf}
+                        onChange={(e) => setForm((prev) => ({ ...prev, titulo_pdf: e.target.value }))}
+                        placeholder="Nombre del evento o título del plan"
+                    />
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
-                        <Save size={14} />
-                        {saving ? t("common.saving") : t("common.save")}
-                    </Button>
+
+                {/* Language */}
+                <div>
+                    <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
+                        <Globe size={11} className="inline mr-1 -mt-0.5" />
+                        Idioma del documento
+                    </label>
+                    <div className="flex items-center gap-2">
+                        {[
+                            { value: "es", label: "Español" },
+                            { value: "en", label: "English" },
+                        ].map(({ value, label }) => (
+                            <motion.button
+                                key={value}
+                                type="button"
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => setForm((prev) => ({ ...prev, language: value }))}
+                                className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl border transition-all ${
+                                    form.language === value
+                                        ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm shadow-[#208DCA]/10"
+                                        : "bg-white border-slate-200 text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                                }`}
+                            >
+                                {label}
+                            </motion.button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Cover image */}
+                <div>
+                    <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
+                        Imagen de portada
+                        <span className="text-slate-400 normal-case tracking-normal font-normal ml-1">(opcional)</span>
+                    </label>
+                    <FileUpload
+                        uuid={plan.uuid}
+                        sectionNumber={15}
+                        category="portada"
+                        accept="image/*"
+                        multiple={false}
+                        existingFiles={portadaFiles}
+                        label="Subir imagen de portada"
+                        description="JPG o PNG — se mostrará en la primera página del documento"
+                    />
+                </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-between gap-3">
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 shadow-sm"
+                >
+                    <Save size={14} />
+                    {saving ? "..." : t("common.save")}
+                </button>
+
+                <div className="flex items-center gap-3">
+                    <Shine enableOnHover color="white" opacity={0.25} duration={500} asChild>
+                        <motion.a
+                            href={`/planes/${plan.uuid}/pdf/previsualizar`}
+                            target="_blank"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-600 border border-slate-200 text-sm font-medium hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all"
+                        >
+                            <Eye size={14} />
+                            Previsualizar
+                        </motion.a>
+                    </Shine>
                     <Shine enableOnHover color="white" opacity={0.25} duration={500} asChild>
                         <motion.a
                             href={`/planes/${plan.uuid}/pdf/descargar`}
                             target="_blank"
                             whileHover={{ scale: 1.04, y: -1 }}
                             whileTap={{ scale: 0.97 }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white text-sm font-bold shadow-lg shadow-[#208DCA]/30 hover:shadow-xl hover:shadow-[#208DCA]/40 transition-all"
+                            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white text-sm font-bold shadow-lg shadow-[#208DCA]/30 hover:shadow-xl hover:shadow-[#208DCA]/40 transition-all"
                         >
                             <FileDown size={14} />
-                            Generar PDF
+                            Descargar PDF
                         </motion.a>
                     </Shine>
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("section15.pdf_title_label")}</label>
-                    <Input
-                        value={form.titulo_pdf}
-                        onChange={(e) => setForm((prev) => ({ ...prev, titulo_pdf: e.target.value }))}
-                        placeholder={t("section15.pdf_title_placeholder")}
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("section15.color_palette")}</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                        {PALETAS.map((p) => (
-                            <button
-                                key={p.id}
-                                type="button"
-                                onClick={() => setForm((prev) => ({ ...prev, paleta: p.id }))}
-                                className={`relative rounded-lg border-2 overflow-hidden transition-all ${
-                                    form.paleta === p.id ? "border-[#208DCA] scale-105 shadow-md" : "border-input hover:border-muted-foreground"
-                                }`}
-                            >
-                                <div className="flex h-10">
-                                    {p.colors.map((c, i) => (
-                                        <div key={i} className="flex-1" style={{ backgroundColor: c }} />
-                                    ))}
-                                </div>
-                                <p className="text-xs text-center py-1.5 font-medium">{p.label}</p>
-                                {form.paleta === p.id && (
-                                    <div className="absolute top-1 right-1 w-4 h-4 bg-[#208DCA] rounded-full flex items-center justify-center">
-                                        <CheckCircle2 size={10} className="text-white" />
-                                    </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div>
-                    <label className="text-sm font-medium mb-1.5 block">{t("section15.typography")}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {TIPOGRAFIAS.map((tip) => (
-                            <button
-                                key={tip.id}
-                                type="button"
-                                onClick={() => setForm((prev) => ({ ...prev, tipografia: tip.id }))}
-                                className={`px-4 py-2.5 rounded-lg border text-sm transition-all text-left ${
-                                    form.tipografia === tip.id
-                                        ? "bg-[#273887]/10 border-[#273887] text-[#273887] font-medium"
-                                        : "border-input text-muted-foreground hover:border-muted-foreground"
-                                }`}
-                            >
-                                {tip.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="text-sm font-medium mb-1.5 block">{t("section15.client_logo")}</label>
-                        <FileUpload
-                            uuid={plan.uuid}
-                            sectionNumber={15}
-                            category="logo"
-                            accept="image/*"
-                            multiple={false}
-                            existingFiles={logoFiles}
-                            label="Subir logo"
-                            description="PNG o SVG con fondo transparente recomendado"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium mb-1.5 block">{t("section15.cover_image")}</label>
-                        <FileUpload
-                            uuid={plan.uuid}
-                            sectionNumber={15}
-                            category="portada"
-                            accept="image/*"
-                            multiple={false}
-                            existingFiles={portadaFiles}
-                            label="Subir imagen de portada"
-                            description="JPG o PNG — formato apaisado recomendado"
-                        />
-                    </div>
                 </div>
             </div>
         </div>
