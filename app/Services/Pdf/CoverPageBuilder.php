@@ -91,8 +91,21 @@ class CoverPageBuilder
             ->where('file_category', 'portada')
             ->first();
 
-        if (!$coverFile || !file_exists($coverFile->absolute_path)) {
+        if (!$coverFile) {
+            \Log::info('PDF cover: no portada file found for plan ' . $this->plan->uuid);
             return;
+        }
+
+        $path = $coverFile->absolute_path;
+        \Log::info("PDF cover: file_path={$coverFile->file_path}, absolute={$path}, exists=" . (file_exists($path) ? 'yes' : 'no'));
+
+        if (!file_exists($path)) {
+            // Try with Storage disk directly
+            $path = storage_path('app/public/' . $coverFile->file_path);
+            \Log::info("PDF cover: retry path={$path}, exists=" . (file_exists($path) ? 'yes' : 'no'));
+            if (!file_exists($path)) {
+                return;
+            }
         }
 
         $mime = $coverFile->mime_type ?? '';
@@ -102,7 +115,7 @@ class CoverPageBuilder
 
         // Full page background image (0,0 to 210x297)
         $this->pdf->Image(
-            $coverFile->absolute_path,
+            $path,
             0, 0, 210, 297,
             '', '', '', false, 300, '', false, false, 0, 'CM'
         );
