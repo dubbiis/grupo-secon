@@ -29,7 +29,7 @@ class SectionMapper
             ['pdf_num' => 12, 'type' => 'app_section',  'app_sections' => [12], 'has_images' => true],
             ['pdf_num' => 13, 'type' => 'app_section',  'app_sections' => [11], 'has_images' => true],
             ['pdf_num' => 14, 'type' => 'app_section',  'app_sections' => [13]],
-            ['pdf_num' => 15, 'type' => 'app_section',  'app_sections' => [14], 'has_images' => true],
+            ['pdf_num' => 15, 'type' => 'annexes',       'app_sections' => [14]],
         ];
     }
 }

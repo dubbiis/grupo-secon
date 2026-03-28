@@ -52,10 +52,18 @@ class ContentPageBuilder
                 break;
 
             case 'composite':
-                $this->renderAppSections($section['app_sections']);
+                // Risk tables go BEFORE the analysis text
                 if (!empty($section['merge_pdf'])) {
                     $this->mergeRiskTables();
+                    // New page for the analysis text after the tables
+                    $this->pdf->AddPage();
+                    $this->pdf->SetY(25);
                 }
+                $this->renderAppSections($section['app_sections']);
+                break;
+
+            case 'annexes':
+                $this->renderAnnexes($section['app_sections'], $pdfNum);
                 break;
         }
     }
@@ -158,6 +166,123 @@ class ContentPageBuilder
         // Re-enable background and reload the base template
         $this->pdf->enableBackground(true);
         $this->pdf->reloadBackgroundTemplate();
+    }
+
+    /**
+     * Render annexes section:
+     * 1. AI-generated introductory text
+     * 2. For each annex: name as subsection + embedded file (PDF pages, images)
+     */
+    private function renderAnnexes(array $appSections, int $pdfNum): void
+    {
+        // 1. Render AI intro text
+        $this->renderAppSections($appSections);
+
+        // 2. Get annexes list from form_data
+        $appSection = $this->plan->sections->firstWhere('section_number', 14);
+        if (!$appSection || empty($appSection->form_data['anexos_json'])) {
+            return;
+        }
+
+        $anexos = json_decode($appSection->form_data['anexos_json'], true);
+        if (!is_array($anexos) || empty($anexos)) {
+            return;
+        }
+
+        // 3. Render each annex with its files
+        foreach ($anexos as $i => $anexo) {
+            $nombre = $anexo['nombre'] ?? ('Anexo ' . ($i + 1));
+            $descripcion = $anexo['descripcion'] ?? '';
+            $anexoId = $anexo['id'] ?? '';
+
+            // Get files for this annex
+            $anexoFiles = $this->plan->files
+                ->where('section_number', 14)
+                ->where('file_category', "anexo_{$anexoId}");
+
+            // New page for each annex
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+
+            // Annex title as subsection
+            FontManager::apply($this->pdf, 'subsection');
+            $annexNum = $pdfNum . '.' . ($i + 1);
+            $this->pdf->MultiCell(0, 8, "{$annexNum} {$nombre}", 0, 'L', false, 1, 20, null, true);
+
+            if ($descripcion) {
+                $this->pdf->SetY($this->pdf->GetY() + 2);
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell(0, 6, $descripcion, 0, 'L', false, 1, 20, null, true);
+            }
+
+            $this->pdf->SetY($this->pdf->GetY() + 5);
+
+            // Embed each file
+            foreach ($anexoFiles as $file) {
+                if (!file_exists($file->absolute_path)) continue;
+
+                $mime = $file->mime_type ?? '';
+
+                if ($mime === 'application/pdf') {
+                    // Import PDF pages
+                    $this->embedPdfFile($file->absolute_path);
+                } elseif (str_starts_with($mime, 'image/')) {
+                    // Embed image
+                    $this->embedImage($file->absolute_path);
+                } else {
+                    // For other file types (Word, Excel), just show the filename
+                    FontManager::apply($this->pdf, 'body');
+                    $icon = $this->getFileIcon($mime);
+                    $this->pdf->MultiCell(
+                        0, 6,
+                        "{$icon} {$file->original_name}",
+                        0, 'L', false, 1, 20, null, true
+                    );
+                    $this->pdf->SetY($this->pdf->GetY() + 3);
+                }
+            }
+        }
+    }
+
+    private function embedPdfFile(string $path): void
+    {
+        $this->pdf->enableBackground(false);
+
+        $pageCount = $this->pdf->setSourceFile($path);
+        for ($i = 1; $i <= $pageCount; $i++) {
+            $this->pdf->AddPage();
+            $tpl = $this->pdf->importPage($i);
+            $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
+        }
+
+        $this->pdf->enableBackground(true);
+        $this->pdf->reloadBackgroundTemplate();
+    }
+
+    private function embedImage(string $path): void
+    {
+        $remainingSpace = 297 - $this->pdf->GetY() - 22;
+        if ($remainingSpace < 60) {
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+        }
+
+        $this->pdf->Image(
+            $path,
+            20, $this->pdf->GetY(),
+            170, 0,
+            '', '', '', false, 300, '', false, false, 0
+        );
+
+        $this->pdf->SetY($this->pdf->GetY() + 10);
+    }
+
+    private function getFileIcon(string $mime): string
+    {
+        if (str_contains($mime, 'word') || str_contains($mime, 'document')) return '[DOC]';
+        if (str_contains($mime, 'excel') || str_contains($mime, 'spreadsheet')) return '[XLS]';
+        if (str_contains($mime, 'presentation') || str_contains($mime, 'powerpoint')) return '[PPT]';
+        return '[FILE]';
     }
 
     private function renderSectionImages(array $appSections): void
