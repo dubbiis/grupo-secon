@@ -21,6 +21,9 @@ class CoverPageBuilder
         $pageW = 210;
         $pageH = 297;
 
+        // Cover image as FULL PAGE BACKGROUND (behind everything)
+        $this->addCoverBackground();
+
         // Logo centered at top
         $logoPath = public_path('images/logo-secon.svg');
         if (file_exists($logoPath)) {
@@ -55,9 +58,6 @@ class CoverPageBuilder
         $location = $this->getLocation();
         $this->pdf->MultiCell(0, 10, strtoupper($location), 0, 'C', false, 1, 20, null, true);
 
-        // Cover image (from section 15 uploads)
-        $this->addCoverImage();
-
         // Re-enable background for subsequent pages
         $this->pdf->enableBackground(true);
     }
@@ -84,7 +84,7 @@ class CoverPageBuilder
         return '';
     }
 
-    private function addCoverImage(): void
+    private function addCoverBackground(): void
     {
         $coverFile = $this->plan->files
             ->where('section_number', 15)
@@ -100,13 +100,10 @@ class CoverPageBuilder
             return;
         }
 
-        $y = $this->pdf->GetY() + 15;
-        $maxW = 170;
-        $maxH = 297 - $y - 20;
-
+        // Full page background image (0,0 to 210x297)
         $this->pdf->Image(
             $coverFile->absolute_path,
-            20, $y, $maxW, $maxH,
+            0, 0, 210, 297,
             '', '', '', false, 300, '', false, false, 0, 'CM'
         );
     }
