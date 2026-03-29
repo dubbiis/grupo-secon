@@ -290,9 +290,14 @@ class ContentPageBuilder
                 ->where('section_number', 14)
                 ->where('file_category', "anexo_{$anexoId}");
 
-            // New page for each annex
-            $this->pdf->AddPage();
-            $this->pdf->SetY(25);
+            // Only break page if not enough space for title + description
+            $remainingSpace = 297 - $this->pdf->GetY() - 22;
+            if ($remainingSpace < 45) {
+                $this->pdf->AddPage();
+                $this->pdf->SetY(25);
+            } else {
+                $this->pdf->SetY($this->pdf->GetY() + 8);
+            }
 
             // Annex title as subsection
             FontManager::apply($this->pdf, 'subsection');
