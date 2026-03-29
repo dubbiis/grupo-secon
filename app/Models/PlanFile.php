@@ -23,7 +23,7 @@ class PlanFile extends Model
 
     public function getUrlAttribute(): string
     {
-        return Storage::disk('public')->url($this->file_path);
+        return "/archivos/{$this->id}";
     }
 
     public function getAbsolutePathAttribute(): string

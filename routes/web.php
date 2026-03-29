@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     // Archivos
     Route::post('/planes/{uuid}/seccion/{section}/archivo', [PlanFileController::class, 'store'])->name('planes.archivo.store');
     Route::delete('/planes/archivos/{file}', [PlanFileController::class, 'destroy'])->name('planes.archivo.destroy');
+    Route::get('/archivos/{file}', [PlanFileController::class, 'serve'])->name('planes.archivo.serve');
 
     // PDF
     Route::get('/planes/{uuid}/pdf/previsualizar', [PlanPdfController::class, 'preview'])->name('planes.pdf.preview');

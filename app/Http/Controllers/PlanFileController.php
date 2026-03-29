@@ -48,6 +48,20 @@ class PlanFileController extends Controller
         ]);
     }
 
+    public function serve(PlanFile $file)
+    {
+        $path = Storage::disk('public')->path($file->file_path);
+
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Content-Type' => $file->mime_type ?? 'application/octet-stream',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
     public function destroy(PlanFile $file)
     {
         Gate::authorize('delete', $file->plan);
