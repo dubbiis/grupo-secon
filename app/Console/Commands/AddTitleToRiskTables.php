@@ -67,7 +67,7 @@ class AddTitleToRiskTables extends Command
                 // Offset the table content to avoid overlapping the logo area
                 // Table starts at y=35 on first page (after title), y=20 on subsequent
                 if ($i === 1) {
-                    $pdf->useTemplate($tableTpl, 0, 30, 210, 255);
+                    $pdf->useTemplate($tableTpl, 0, 38, 210, 247);
                 } else {
                     $pdf->useTemplate($tableTpl, 0, 15, 210, 270);
                 }
@@ -76,7 +76,7 @@ class AddTitleToRiskTables extends Command
                 if ($i === 1) {
                     $pdf->SetFont('helveticaneueblackcondensed', '', 20);
                     $pdf->SetTextColor(34, 58, 129);
-                    $pdf->SetXY(20, 18);
+                    $pdf->SetXY(20, 25);
                     $pdf->Cell(170, 10, $config['title'], 0, 0, 'L');
                 }
             }
