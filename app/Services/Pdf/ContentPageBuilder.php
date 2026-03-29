@@ -131,50 +131,106 @@ class ContentPageBuilder
     }
 
     /**
-     * Render text with basic formatting:
-     * - Lines starting with a number+dot (e.g. "9.1") are rendered as subsections
-     * - Lines that are all caps and short are rendered as labels
-     * - Everything else is body text
+     * Render text with typography matching the design spec:
+     *
+     * - Subsection headers (e.g. "3.1 EVENT: ACG") → Bold #223A81
+     * - Labels ending with ":" (short, e.g. "Datos del Evento:") → Heavy #727070
+     * - ALL CAPS short lines → Heavy #727070
+     * - List items starting with "- " or "• " → Roman #727070, indented
+     * - Short standalone lines (titles without ":") → Medium #727070
+     * - Everything else → Roman #727070 (body paragraph)
      */
     private function renderFormattedText(string $text): void
     {
-        // Strip markdown bold markers — PDF uses font weight via styles, not inline markup
+        // Strip markdown bold/italic markers
         $text = preg_replace('/\*{1,2}([^*]+)\*{1,2}/', '$1', $text);
 
-        $paragraphs = preg_split('/\n\s*\n/', $text);
+        // Split into individual lines (not double-newline paragraphs) for finer control
+        $lines = explode("\n", $text);
+        $i = 0;
+        $totalLines = count($lines);
 
-        foreach ($paragraphs as $paragraph) {
-            $paragraph = trim($paragraph);
-            if (empty($paragraph)) continue;
+        while ($i < $totalLines) {
+            $line = trim($lines[$i]);
 
-            // Check if it's a subsection header (e.g. "9.1 FUNCIONES...")
-            if (preg_match('/^\d+\.\d+\s+/', $paragraph)) {
-                FontManager::apply($this->pdf, 'subsection');
-                $this->pdf->MultiCell(0, 7, $paragraph, 0, 'L', false, 1, 20, null, true);
+            // Skip empty lines (add small spacing)
+            if ($line === '') {
                 $this->pdf->SetY($this->pdf->GetY() + 2);
+                $i++;
                 continue;
             }
 
-            // Check if it's a short label line (all caps, under 60 chars)
-            if (mb_strlen($paragraph) < 60 && $paragraph === mb_strtoupper($paragraph)) {
-                FontManager::apply($this->pdf, 'label');
-                $this->pdf->MultiCell(0, 7, $paragraph, 0, 'L', false, 1, 20, null, true);
+            // 1. Subsection header: starts with number.number (e.g. "3.1 EVENT:")
+            if (preg_match('/^\d+\.\d+\s+/', $line)) {
+                FontManager::apply($this->pdf, 'subsection');
+                $this->pdf->MultiCell(0, 7, $line, 0, 'L', false, 1, 20, null, true);
+                $this->pdf->SetY($this->pdf->GetY() + 2);
+                $i++;
+                continue;
+            }
+
+            // 2. List item: starts with "- " or "• " or "· "
+            if (preg_match('/^[-•·]\s+/', $line)) {
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell(0, 6, $line, 0, 'L', false, 1, 25, null, true); // indent to 25mm
                 $this->pdf->SetY($this->pdf->GetY() + 1);
+                $i++;
                 continue;
             }
 
-            // Check if it's a bold label (e.g. "Coordinador del servicio")
-            if (mb_strlen($paragraph) < 80 && !str_contains($paragraph, '.') && !str_contains($paragraph, ',')) {
+            // 3. Label: short line ending with ":" (e.g. "Datos del Evento:", "Dates:")
+            if (mb_strlen($line) < 80 && preg_match('/:\s*$/', $line)) {
                 FontManager::apply($this->pdf, 'label');
-                $this->pdf->MultiCell(0, 7, $paragraph, 0, 'L', false, 1, 20, null, true);
+                $this->pdf->MultiCell(0, 7, $line, 0, 'L', false, 1, 20, null, true);
                 $this->pdf->SetY($this->pdf->GetY() + 1);
+                $i++;
                 continue;
             }
 
-            // Regular body text
+            // 4. ALL CAPS short line (e.g. section-level headings in the text)
+            if (mb_strlen($line) < 80 && $line === mb_strtoupper($line) && mb_strlen($line) > 3) {
+                FontManager::apply($this->pdf, 'label');
+                $this->pdf->MultiCell(0, 7, $line, 0, 'L', false, 1, 20, null, true);
+                $this->pdf->SetY($this->pdf->GetY() + 2);
+                $i++;
+                continue;
+            }
+
+            // 5. Short standalone line without periods (subtitle/category name)
+            if (mb_strlen($line) < 80 && !str_contains($line, '.') && !preg_match('/^\d/', $line)) {
+                // Check if next line is a list or empty (confirms this is a heading)
+                $nextLine = trim($lines[$i + 1] ?? '');
+                $nextIsList = preg_match('/^[-•·]\s+/', $nextLine);
+                $nextIsEmpty = $nextLine === '';
+                if ($nextIsList || $nextIsEmpty) {
+                    FontManager::apply($this->pdf, 'sub_label');
+                    $this->pdf->MultiCell(0, 7, $line, 0, 'L', false, 1, 20, null, true);
+                    $this->pdf->SetY($this->pdf->GetY() + 1);
+                    $i++;
+                    continue;
+                }
+            }
+
+            // 6. Regular body text — collect consecutive body lines into a paragraph
+            $paragraph = $line;
+            while ($i + 1 < $totalLines) {
+                $nextLine = trim($lines[$i + 1]);
+                // Stop if next line is empty, a list item, a label, or a header
+                if ($nextLine === '' ||
+                    preg_match('/^[-•·]\s+/', $nextLine) ||
+                    preg_match('/:\s*$/', $nextLine) && mb_strlen($nextLine) < 80 ||
+                    preg_match('/^\d+\.\d+\s+/', $nextLine) ||
+                    ($nextLine === mb_strtoupper($nextLine) && mb_strlen($nextLine) < 80 && mb_strlen($nextLine) > 3)) {
+                    break;
+                }
+                $i++;
+                $paragraph .= ' ' . $nextLine;
+            }
+
             FontManager::apply($this->pdf, 'body');
             $this->pdf->MultiCell(0, 6, $paragraph, 0, 'L', false, 1, 20, null, true);
             $this->pdf->SetY($this->pdf->GetY() + 3);
+            $i++;
         }
     }
 
