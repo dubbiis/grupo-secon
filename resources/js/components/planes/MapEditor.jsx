@@ -6,7 +6,7 @@ import {
     Trash2, Download, Map, Search, Save, X, ImagePlus, Layers,
     ChevronDown, Check, MousePointer, Grid, ZoomIn, ZoomOut,
     Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
-    MapPin, BookOpen, ChevronRight,
+    MapPin, BookOpen, ChevronRight, Camera,
 } from "lucide-react";
 import LeafletMap from "@/components/planes/LeafletMap";
 import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
@@ -1286,6 +1286,22 @@ const MapEditor = forwardRef(function MapEditor({
                                 <ImagePlus size={12} />
                                 Canvas
                             </motion.button>
+                            {showMap && (
+                                <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
+                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                                        onClick={() => startCaptureRef.current?.()}
+                                        className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all ${
+                                            captureFlash
+                                                ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50"
+                                                : "bg-white/80 text-slate-600 hover:bg-white hover:shadow-md"
+                                        }`}
+                                        title="Capturar mapa como imagen"
+                                    >
+                                        <Camera size={12} />
+                                        Captura
+                                    </motion.button>
+                                </Shine>
+                            )}
                     </div>
 
                     {/* Second row: Satellite + inputs + actions */}
