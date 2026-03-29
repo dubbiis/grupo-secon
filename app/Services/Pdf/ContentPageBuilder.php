@@ -174,8 +174,8 @@ class ContentPageBuilder
                 continue;
             }
 
-            // 2. List item: starts with "- " or "• " or "· "
-            if (preg_match('/^[-•·]\s+/', $line)) {
+            // 2. List item: starts with "- ", "• ", "· " or numbered "1. ", "2. " etc.
+            if (preg_match('/^[-•·]\s+/', $line) || preg_match('/^\d+\.\s+\S/', $line)) {
                 FontManager::apply($this->pdf, 'body');
                 $this->pdf->MultiCell(0, 6, $line, 0, 'L', false, 1, 25, null, true); // indent to 25mm
                 $this->pdf->SetY($this->pdf->GetY() + 1);
@@ -223,7 +223,8 @@ class ContentPageBuilder
                 // Stop if next line is empty, a list item, a label, or a header
                 if ($nextLine === '' ||
                     preg_match('/^[-•·]\s+/', $nextLine) ||
-                    preg_match('/:\s*$/', $nextLine) && mb_strlen($nextLine) < 80 ||
+                    preg_match('/^\d+\.\s+\S/', $nextLine) ||
+                    (preg_match('/:\s*$/', $nextLine) && mb_strlen($nextLine) < 80) ||
                     preg_match('/^\d+\.\d+\s+/', $nextLine) ||
                     ($nextLine === mb_strtoupper($nextLine) && mb_strlen($nextLine) < 80 && mb_strlen($nextLine) > 3)) {
                     break;
