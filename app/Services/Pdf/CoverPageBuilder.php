@@ -16,6 +16,9 @@ class CoverPageBuilder
     public function build(): void
     {
         $this->pdf->enableBackground(false);
+        $this->pdf->setPrintFooter(false); // No footer on cover
+        $this->pdf->SetMargins(0, 0, 0);
+        $this->pdf->SetAutoPageBreak(false, 0);
         $this->pdf->AddPage();
 
         $pageW = 210;
@@ -57,6 +60,10 @@ class CoverPageBuilder
         $location = $this->getLocation();
         $this->pdf->MultiCell(0, 10, strtoupper($location), 0, 'C', false, 1, 20, null, true);
 
+        // Restore margins and settings for content pages
+        $this->pdf->SetMargins(20, 25, 20);
+        $this->pdf->SetAutoPageBreak(true, 22);
+        $this->pdf->setPrintFooter(true);
         $this->pdf->enableBackground(true);
     }
 
