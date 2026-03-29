@@ -769,7 +769,8 @@ class ContentPageBuilder
     }
 
     /**
-     * Render a visual timeline for section 2 (schedule phases).
+     * Render the schedule timeline for section 2 — mirrors the web app's timeline.
+     * Shows each day as a row: colored dot + phase badge + day name + date + hours
      */
     private function renderScheduleTimeline(): void
     {
@@ -778,89 +779,133 @@ class ContentPageBuilder
 
         $fd = $appSection->form_data;
 
-        $phases = [];
-        if (!empty($fd['montaje_inicio'])) {
-            $phases[] = [
-                'label' => $this->lang === 'en' ? 'SETUP' : 'MONTAJE',
-                'start' => $fd['montaje_inicio'],
-                'end'   => $fd['montaje_fin'] ?? $fd['montaje_inicio'],
-                'color' => [32, 141, 202], // #208DCA
-            ];
-        }
-        if (!empty($fd['fecha_inicio'])) {
-            $phases[] = [
-                'label' => $this->lang === 'en' ? 'EVENT' : 'EVENTO',
-                'start' => $fd['fecha_inicio'],
-                'end'   => $fd['fecha_fin'] ?? $fd['fecha_inicio'],
-                'color' => [34, 58, 129], // #223A81
-            ];
-        }
-        if (!empty($fd['desmontaje_inicio'])) {
-            $phases[] = [
-                'label' => $this->lang === 'en' ? 'TEARDOWN' : 'DESMONTAJE',
-                'start' => $fd['desmontaje_inicio'],
-                'end'   => $fd['desmontaje_fin'] ?? $fd['desmontaje_inicio'],
-                'color' => [114, 112, 112], // #727070
-            ];
+        // Collect all days with their phase, date, and schedule
+        $days = [];
+
+        $phaseConfigs = [
+            ['key' => 'montaje', 'horarios' => 'horarios_montaje', 'start' => 'montaje_inicio', 'end' => 'montaje_fin',
+             'label' => $this->lang === 'en' ? 'SETUP' : 'MONTAJE', 'color' => [245, 158, 11], 'dotColor' => [245, 158, 11]], // amber
+            ['key' => 'evento', 'horarios' => 'horarios_evento', 'start' => 'fecha_inicio', 'end' => 'fecha_fin',
+             'label' => $this->lang === 'en' ? 'EVENT' : 'EVENTO', 'color' => [34, 58, 129], 'dotColor' => [32, 141, 202]], // blue
+            ['key' => 'desmontaje', 'horarios' => 'horarios_desmontaje', 'start' => 'desmontaje_inicio', 'end' => 'desmontaje_fin',
+             'label' => $this->lang === 'en' ? 'TEARDOWN' : 'DESMONTAJE', 'color' => [239, 68, 68], 'dotColor' => [239, 68, 68]], // red
+        ];
+
+        foreach ($phaseConfigs as $phase) {
+            $startDate = $fd[$phase['start']] ?? '';
+            $endDate = $fd[$phase['end']] ?? $startDate;
+            if (!$startDate) continue;
+
+            $horarios = $fd[$phase['horarios']] ?? [];
+            if (is_string($horarios)) {
+                $horarios = json_decode($horarios, true) ?? [];
+            }
+
+            // Generate each day in the range
+            $current = strtotime($startDate);
+            $end = strtotime($endDate);
+            while ($current <= $end) {
+                $dateKey = date('Y-m-d', $current);
+                $schedule = $horarios[$dateKey] ?? [];
+                $days[] = [
+                    'phase'  => $phase['label'],
+                    'color'  => $phase['color'],
+                    'dot'    => $phase['dotColor'],
+                    'date'   => $dateKey,
+                    'inicio' => $schedule['inicio'] ?? '',
+                    'fin'    => $schedule['fin'] ?? '',
+                ];
+                $current = strtotime('+1 day', $current);
+            }
         }
 
-        if (empty($phases)) return;
+        if (empty($days)) return;
 
-        $this->ensureSpace(35);
+        // Sort by date
+        usort($days, fn($a, $b) => strcmp($a['date'], $b['date']));
+
+        $this->ensureSpace(30);
 
         // Title
         FontManager::apply($this->pdf, 'label');
-        $tlTitle = $this->lang === 'en' ? 'Event Timeline:' : 'Cronograma del Evento:';
-        $this->pdf->MultiCell(0, 7, $tlTitle, 0, 'L', false, 1, 20, null, true);
+        $title = $this->lang === 'en' ? 'Timeline:' : 'Línea temporal:';
+        $this->pdf->MultiCell(0, 7, $title, 0, 'L', false, 1, 20, null, true);
         $this->pdf->SetY($this->pdf->GetY() + 3);
 
-        // Calculate date range
-        $allDates = [];
-        foreach ($phases as $p) {
-            $allDates[] = strtotime($p['start']);
-            $allDates[] = strtotime($p['end']);
-        }
-        $minDate = min($allDates);
-        $maxDate = max($allDates);
-        $totalDays = max(1, ($maxDate - $minDate) / 86400 + 1);
-
-        $barX = 20;
-        $barW = 170;
-        $barH = 8;
+        $rowH = 9;
+        $lineX = 25; // vertical line position
+        $contentX = 30;
         $y = $this->pdf->GetY();
 
-        foreach ($phases as $phase) {
-            $startDay = (strtotime($phase['start']) - $minDate) / 86400;
-            $endDay = (strtotime($phase['end']) - $minDate) / 86400 + 1;
+        foreach ($days as $idx => $day) {
+            $this->ensureSpace($rowH + 4);
+            $y = $this->pdf->GetY();
 
-            $x = $barX + ($startDay / $totalDays) * $barW;
-            $w = max(10, (($endDay - $startDay) / $totalDays) * $barW);
-
-            // Bar
-            $this->pdf->SetFillColor($phase['color'][0], $phase['color'][1], $phase['color'][2]);
-            $this->pdf->RoundedRect($x, $y, $w, $barH, 1.5, '1111', 'F');
-
-            // Label inside bar
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 7);
-            $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetXY($x, $y);
-            $this->pdf->Cell($w, $barH, $phase['label'], 0, 0, 'C');
-
-            // Dates below
-            $this->pdf->SetFont(FontManager::ROMAN, '', 7);
-            $this->pdf->SetTextColor(114, 112, 112);
-            $dateStr = date('d/m', strtotime($phase['start']));
-            if ($phase['start'] !== $phase['end']) {
-                $dateStr .= ' - ' . date('d/m', strtotime($phase['end']));
+            // Vertical connecting line (between dots)
+            if ($idx < count($days) - 1) {
+                $this->pdf->SetDrawColor($day['dot'][0], $day['dot'][1], $day['dot'][2]);
+                $this->pdf->SetLineWidth(0.5);
+                $this->pdf->Line($lineX, $y + 4, $lineX, $y + $rowH + 2);
             }
-            $this->pdf->SetXY($x, $y + $barH + 1);
-            $this->pdf->Cell($w, 4, $dateStr, 0, 0, 'C');
 
-            $y += $barH + 7;
+            // Dot
+            $this->pdf->SetFillColor($day['dot'][0], $day['dot'][1], $day['dot'][2]);
+            $this->pdf->Circle($lineX, $y + 3.5, 1.8, 0, 360, 'F');
+
+            // Row background
+            $this->pdf->SetFillColor(255, 251, 235); // light amber bg
+            $this->pdf->RoundedRect($contentX, $y, 155, $rowH, 1.5, '1111', 'F');
+
+            // Phase badge
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 7);
+            $badgeW = $this->pdf->GetStringWidth($day['phase']) + 6;
+            $this->pdf->SetFillColor($day['color'][0], $day['color'][1], $day['color'][2]);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->RoundedRect($contentX + 3, $y + 1.5, $badgeW, $rowH - 3, 1, '1111', 'F');
+            $this->pdf->SetXY($contentX + 3, $y + 1.5);
+            $this->pdf->Cell($badgeW, $rowH - 3, $day['phase'], 0, 0, 'C');
+
+            // Day name + date
+            $dayName = $this->formatDayName($day['date']);
+            $this->pdf->SetFont(FontManager::ROMAN, '', 8);
+            $this->pdf->SetTextColor(114, 112, 112);
+            $this->pdf->SetXY($contentX + $badgeW + 6, $y);
+            $this->pdf->Cell(50, $rowH, $dayName, 0, 0, 'L');
+
+            // Hours on the right
+            if ($day['inicio'] || $day['fin']) {
+                $hoursStr = $day['inicio'] . '  —  ' . $day['fin'];
+                $this->pdf->SetFont(FontManager::ROMAN, '', 8);
+                $this->pdf->SetXY($contentX + 110, $y);
+                $this->pdf->Cell(40, $rowH, $hoursStr, 0, 0, 'R');
+            }
+
+            $this->pdf->SetY($y + $rowH + 1);
         }
 
-        $this->pdf->SetY($y + 3);
+        $this->pdf->SetY($this->pdf->GetY() + 3);
         FontManager::apply($this->pdf, 'body');
+    }
+
+    /**
+     * Format a date as "Lun 22 jun" or "Mon 22 Jun"
+     */
+    private function formatDayName(string $date): string
+    {
+        $ts = strtotime($date);
+        if (!$ts) return $date;
+
+        if ($this->lang === 'en') {
+            return date('D j M', $ts);
+        }
+
+        $dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        $meses = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        $dow = (int) date('w', $ts);
+        $day = date('j', $ts);
+        $month = (int) date('n', $ts);
+
+        return $dias[$dow] . ' ' . $day . ' ' . $meses[$month];
     }
 
     /**
