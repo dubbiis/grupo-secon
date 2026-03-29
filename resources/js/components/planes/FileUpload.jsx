@@ -78,7 +78,7 @@ export default function FileUpload({
     const deleteFile = async (fileId) => {
         setDeletedIds((prev) => [...prev, fileId]);
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-        await fetch(`/planes/${uuid}/archivos/${fileId}`, {
+        await fetch(`/planes/archivos/${fileId}`, {
             method: "DELETE",
             headers: { "X-CSRF-TOKEN": csrfToken, "Accept": "application/json" },
         });
