@@ -34,7 +34,10 @@ class ContentPageBuilder
         $minSpace = 45;
         $remainingSpace = 297 - $this->pdf->GetY() - 22; // 22mm bottom margin for footer
 
-        if ($this->isFirstSection || $remainingSpace < $minSpace) {
+        // Composite sections (risk tables) and annexes always start on a new page
+        $forceNewPage = $type === 'composite' || $type === 'annexes';
+
+        if ($this->isFirstSection || $forceNewPage || $remainingSpace < $minSpace) {
             $this->pdf->AddPage();
             $this->pdf->SetY(25);
         } else {
