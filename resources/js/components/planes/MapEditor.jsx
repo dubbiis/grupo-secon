@@ -947,6 +947,8 @@ const MapEditor = forwardRef(function MapEditor({
     };
 
     // ── Export ───────────────────────────────────────────────────
+    const [savedPreviewUrl, setSavedPreviewUrl] = useState(null);
+
     const handleSave = async () => {
         const canvas = canvasRef.current;
         if (!hasBg) return;
@@ -971,7 +973,17 @@ const MapEditor = forwardRef(function MapEditor({
             const res = await fetch(`/planes/${uuid}/seccion/${sectionNumber}/archivo`, {
                 method: "POST", headers: { "X-CSRF-TOKEN": csrfToken }, body: fd,
             });
-            if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); onSaved?.(); }
+            if (res.ok) {
+                const data = await res.json();
+                setSaved(true);
+                // Show preview of saved image
+                setSavedPreviewUrl(data.url || canvas.toDataURL("image/png"));
+                setTimeout(() => setSaved(false), 3000);
+                onSaved?.(data);
+                // Reload files in Inertia
+                const { router } = await import("@inertiajs/react");
+                router.reload({ only: ["files"] });
+            }
         } finally { setSaving(false); }
     };
 
@@ -999,6 +1011,45 @@ const MapEditor = forwardRef(function MapEditor({
         circle: "cursor-crosshair",
         text: "cursor-text",
     }[tool] ?? "cursor-crosshair";
+
+    // If we have a saved preview, show it instead of the editor
+    if (savedPreviewUrl && mode === "section") {
+        return (
+            <div className="space-y-2">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="rounded-2xl border border-green-200 bg-green-50/50 overflow-hidden"
+                >
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-green-200/50">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-green-500/15 flex items-center justify-center">
+                                <Check size={12} className="text-green-600" />
+                            </div>
+                            <span className="text-sm font-medium text-green-700">Imagen guardada en el plan</span>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSavedPreviewUrl(null)}
+                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#208DCA] hover:border-[#208DCA]/30 transition-all"
+                        >
+                            <ImagePlus size={12} />
+                            Crear otra imagen
+                        </motion.button>
+                    </div>
+                    <div className="p-4">
+                        <img
+                            src={savedPreviewUrl}
+                            alt="Imagen guardada"
+                            className="w-full max-h-[400px] object-contain rounded-xl border border-slate-200 shadow-sm"
+                        />
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className={`flex flex-col gap-2 w-full h-full ${openIconCat ? "" : "overflow-hidden"} ${fullscreen ? "fixed inset-0 z-[9999] bg-[#F8FAFC] p-4" : ""}`} onClick={() => setContextMenu(null)}>
