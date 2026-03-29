@@ -84,6 +84,18 @@ Route::middleware('auth')->group(function () {
         $result['storage_public_path'] = storage_path('app/public');
         $result['storage_public_exists'] = is_dir(storage_path('app/public'));
         $result['symlink_exists'] = is_link(public_path('storage'));
+        $result['symlink_target'] = is_link(public_path('storage')) ? readlink(public_path('storage')) : null;
+        $result['public_storage_path'] = public_path('storage');
+        $result['app_url'] = config('app.url');
+        $result['public_disk_url'] = config('filesystems.disks.public.url');
+        // List actual files in storage
+        $storageFiles = [];
+        try {
+            $storageFiles = \Storage::disk('public')->allFiles('planes/' . $uuid);
+        } catch (\Throwable $e) {
+            $storageFiles = ['error' => $e->getMessage()];
+        }
+        $result['actual_storage_files'] = $storageFiles;
         return response()->json($result, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     });
 
