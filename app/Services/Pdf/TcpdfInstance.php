@@ -18,7 +18,8 @@ class TcpdfInstance extends Fpdi
         $this->SetAutoPageBreak(true, 22);
         $this->SetMargins(20, 25, 20);
         $this->setPrintHeader(false);
-        $this->setPrintFooter(false);
+        $this->setPrintFooter(true);
+        $this->setFooterMargin(10);
     }
 
     public function setBackgroundTemplate(string $templatePath): void
