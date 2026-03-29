@@ -351,12 +351,6 @@ class ContentPageBuilder
 
     private function embedImage(string $path): void
     {
-        $remainingSpace = 297 - $this->pdf->GetY() - 22;
-        if ($remainingSpace < 60) {
-            $this->pdf->AddPage();
-            $this->pdf->SetY(25);
-        }
-
         // Convert WebP to PNG (TCPDF doesn't support WebP)
         $imagePath = $path;
         $mime = mime_content_type($path) ?: '';
@@ -369,14 +363,32 @@ class ContentPageBuilder
             $imagePath = $tmpPath;
         }
 
+        $imgSize = @getimagesize($imagePath);
+        if (!$imgSize) return;
+
+        $maxW = 170;
+        $imgRatio = $imgSize[1] / $imgSize[0];
+        $drawH = $maxW * $imgRatio;
+        $maxPageH = 297 - 25 - 22;
+        if ($drawH > $maxPageH) {
+            $drawH = $maxPageH;
+            $maxW = $drawH / $imgRatio;
+        }
+
+        $remainingSpace = 297 - $this->pdf->GetY() - 22;
+        if ($remainingSpace < $drawH + 5) {
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+        }
+
         $this->pdf->Image(
             $imagePath,
             20, $this->pdf->GetY(),
-            170, 0,
+            $maxW, $drawH,
             '', '', '', false, 300, '', false, false, 0
         );
 
-        $this->pdf->SetY($this->pdf->GetY() + 10);
+        $this->pdf->SetY($this->pdf->GetY() + $drawH + 5);
     }
 
     private function getFileIcon(string $mime): string
@@ -397,25 +409,49 @@ class ContentPageBuilder
             foreach ($files as $file) {
                 if (!file_exists($file->absolute_path)) continue;
 
-                // Check if there's enough space on current page
+                $path = $file->absolute_path;
+                $mime = $file->mime_type ?? '';
+
+                // Convert WebP to PNG
+                if (str_contains($mime, 'webp')) {
+                    $img = @imagecreatefromwebp($path);
+                    if (!$img) continue;
+                    $tmpPath = sys_get_temp_dir() . '/sec_img_' . md5($path) . '.png';
+                    imagepng($img, $tmpPath);
+                    imagedestroy($img);
+                    $path = $tmpPath;
+                }
+
+                // Get real image dimensions to calculate height in PDF
+                $imgSize = @getimagesize($path);
+                if (!$imgSize) continue;
+
+                $maxW = 170; // mm
+                $imgRatio = $imgSize[1] / $imgSize[0]; // height/width
+                $drawH = $maxW * $imgRatio;
+
+                // Cap height to page area
+                $maxPageH = 297 - 25 - 22; // top margin - bottom margin
+                if ($drawH > $maxPageH) {
+                    $drawH = $maxPageH;
+                    $maxW = $drawH / $imgRatio;
+                }
+
+                // Check if there's enough space; if not, new page
                 $remainingSpace = 297 - $this->pdf->GetY() - 22;
-                if ($remainingSpace < 60) {
+                if ($remainingSpace < $drawH + 5) {
                     $this->pdf->AddPage();
                     $this->pdf->SetY(25);
                 }
 
-                $maxW = 170;
-                $maxH = min($remainingSpace, 180);
-
                 $this->pdf->Image(
-                    $file->absolute_path,
+                    $path,
                     20, $this->pdf->GetY(),
-                    $maxW, 0, // 0 height = auto-proportional
+                    $maxW, $drawH,
                     '', '', '', false, 300, '', false, false, 0
                 );
 
-                // Move Y down (approximate, since we don't know actual image height easily)
-                $this->pdf->SetY($this->pdf->GetY() + 10);
+                $this->pdf->SetY($this->pdf->GetY() + $drawH + 5);
             }
         }
     }
