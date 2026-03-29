@@ -34,24 +34,29 @@ class ContentPageBuilder
         $minSpace = 45;
         $remainingSpace = 297 - $this->pdf->GetY() - 22; // 22mm bottom margin for footer
 
-        // Composite sections (risk tables) and annexes always start on a new page
-        $forceNewPage = $type === 'composite' || $type === 'annexes';
-
-        if ($this->isFirstSection || $forceNewPage || $remainingSpace < $minSpace) {
-            $this->pdf->AddPage();
-            $this->pdf->SetY(25);
+        // Composite (risk tables) — title is already in the PDF, skip title + page break
+        if ($type === 'composite') {
+            $this->isFirstSection = false;
+            // handled entirely in the switch below
         } else {
-            // Continue on same page with spacing
-            $this->pdf->SetY($this->pdf->GetY() + 12);
-        }
-        $this->isFirstSection = false;
+            // Annexes always start on a new page
+            $forceNewPage = $type === 'annexes';
 
-        // Section title — use app section name for app sections, translated title for fixed
-        FontManager::apply($this->pdf, 'section_title');
-        $sectionTitle = $this->getSectionTitle($section);
-        $title = "{$pdfNum}. " . mb_strtoupper($sectionTitle);
-        $this->pdf->MultiCell(0, 10, $title, 0, 'L', false, 1, 20, null, true);
-        $this->pdf->SetY($this->pdf->GetY() + 5);
+            if ($this->isFirstSection || $forceNewPage || $remainingSpace < $minSpace) {
+                $this->pdf->AddPage();
+                $this->pdf->SetY(25);
+            } else {
+                $this->pdf->SetY($this->pdf->GetY() + 12);
+            }
+            $this->isFirstSection = false;
+
+            // Section title
+            FontManager::apply($this->pdf, 'section_title');
+            $sectionTitle = $this->getSectionTitle($section);
+            $title = "{$pdfNum}. " . mb_strtoupper($sectionTitle);
+            $this->pdf->MultiCell(0, 10, $title, 0, 'L', false, 1, 20, null, true);
+            $this->pdf->SetY($this->pdf->GetY() + 5);
+        }
 
         // Content based on type
         switch ($type) {
