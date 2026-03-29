@@ -61,16 +61,18 @@ class TcpdfInstance extends Fpdi
 
     public function drawFooter(): void
     {
-        $this->SetY(-12);
-        $this->SetFont('helveticaneueroman', '', 9);
+        // Position text centered vertically on the blue bar (~last 8mm of page)
+        $this->SetY(-8);
+        $this->SetFont('helveticaneueroman', '', 8);
         $this->SetTextColor(255, 255, 255);
 
-        // Event name centered
-        $this->Cell(0, 5, strtoupper($this->eventName), 0, 0, 'C');
+        // Event name centered (skip logo area on the left ~25mm)
+        $this->SetX(30);
+        $this->Cell(150, 4, strtoupper($this->eventName), 0, 0, 'C');
 
         // Page number right
-        $this->SetX(-30);
-        $this->Cell(10, 5, (string) $this->getAliasNumPage(), 0, 0, 'R');
+        $this->SetX(-25);
+        $this->Cell(15, 4, (string) $this->getAliasNumPage(), 0, 0, 'R');
     }
 
     // Prevent TCPDF default header/footer
