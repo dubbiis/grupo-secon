@@ -24,6 +24,17 @@ class PlanFileController extends Controller
         $file = $request->file('file');
         $category = $request->input('file_category');
         $dir = "planes/{$uuid}/sec{$section}";
+
+        // For single-file categories (portada, logo, vip_foto, acreditacion, etc.),
+        // delete previous files with the same category to avoid duplicates
+        $singleFileCategories = ['portada', 'logo', 'excel', 'run_of_show'];
+        if (in_array($category, $singleFileCategories) || str_starts_with($category, 'vip_foto') || str_starts_with($category, 'acceso_foto')) {
+            PlanFile::where('plan_id', $plan->id)
+                ->where('section_number', $section)
+                ->where('file_category', $category)
+                ->each(fn($old) => $old->delete());
+        }
+
         $path = $file->store($dir, 'public');
 
         $planFile = PlanFile::create([
