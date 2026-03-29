@@ -173,7 +173,7 @@ class ContentPageBuilder
 
             // Regular body text
             FontManager::apply($this->pdf, 'body');
-            $this->pdf->MultiCell(0, 6, $paragraph, 0, 'J', false, 1, 20, null, true);
+            $this->pdf->MultiCell(0, 6, $paragraph, 0, 'L', false, 1, 20, null, true);
             $this->pdf->SetY($this->pdf->GetY() + 3);
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Services\Pdf;
 
 use App\Models\Plan;
+use Illuminate\Support\Facades\Storage;
 
 class CoverPageBuilder
 {
@@ -14,14 +15,12 @@ class CoverPageBuilder
 
     public function build(): void
     {
-        // Cover page has NO background template
         $this->pdf->enableBackground(false);
         $this->pdf->AddPage();
 
         $pageW = 210;
-        $pageH = 297;
 
-        // Cover image as FULL PAGE BACKGROUND (behind everything)
+        // Cover image as FULL PAGE BACKGROUND
         $this->addCoverBackground();
 
         // Logo centered at top
@@ -58,7 +57,6 @@ class CoverPageBuilder
         $location = $this->getLocation();
         $this->pdf->MultiCell(0, 10, strtoupper($location), 0, 'C', false, 1, 20, null, true);
 
-        // Re-enable background for subsequent pages
         $this->pdf->enableBackground(true);
     }
 
@@ -86,79 +84,48 @@ class CoverPageBuilder
 
     private function addCoverBackground(): void
     {
-        // Get the latest portada file that actually exists on disk
         $coverFile = $this->plan->files
             ->where('section_number', 15)
             ->where('file_category', 'portada')
             ->sortByDesc('id')
-            ->first(fn($f) => file_exists(\Storage::disk('public')->path($f->file_path)));
+            ->first();
 
         if (!$coverFile) {
-            \Log::info('PDF cover: no portada file found for plan ' . $this->plan->uuid);
+            \Log::warning('PDF cover: no portada record in DB for plan ' . $this->plan->uuid);
             return;
         }
 
-        $path = $coverFile->absolute_path;
-        \Log::info("PDF cover: file_path={$coverFile->file_path}, absolute={$path}, exists=" . (file_exists($path) ? 'yes' : 'no'));
+        // Resolve path using Storage disk
+        $path = Storage::disk('public')->path($coverFile->file_path);
 
         if (!file_exists($path)) {
-            // Try with Storage disk directly
-            $path = storage_path('app/public/' . $coverFile->file_path);
-            \Log::info("PDF cover: retry path={$path}, exists=" . (file_exists($path) ? 'yes' : 'no'));
-            if (!file_exists($path)) {
-                return;
-            }
-        }
-
-        $mime = $coverFile->mime_type ?? '';
-        if (!str_starts_with($mime, 'image/')) {
+            \Log::warning("PDF cover: file not on disk: {$path} (file_path={$coverFile->file_path})");
             return;
         }
 
-        // TCPDF doesn't support WebP — convert to PNG on the fly
+        $mime = $coverFile->mime_type ?? mime_content_type($path) ?? '';
+
+        // Convert WebP to PNG (TCPDF doesn't support WebP)
         $imagePath = $path;
         if (str_contains($mime, 'webp')) {
             $img = @imagecreatefromwebp($path);
-            if (!$img) return;
+            if (!$img) {
+                \Log::warning("PDF cover: imagecreatefromwebp failed for {$path}");
+                return;
+            }
             $tmpPath = sys_get_temp_dir() . '/cover_' . md5($path) . '.png';
-            imagepng($img, $tmpPath);
+            imagepng($img, $tmpPath, 1);
             imagedestroy($img);
             $imagePath = $tmpPath;
         }
 
-        // Full page background — cover mode (fill page, crop overflow)
-        // Get image dimensions to calculate cover scaling
-        $imgSize = @getimagesize($imagePath);
-        if ($imgSize) {
-            $imgW = $imgSize[0];
-            $imgH = $imgSize[1];
-            $pageW = 210;
-            $pageH = 297;
+        // Full page cover — stretch to fill A4 (210x297mm)
+        $this->pdf->Image(
+            $imagePath,
+            0, 0, 210, 297,
+            '', '', '', false, 300, '', false, false, 0
+        );
 
-            // Scale to cover: the larger ratio wins
-            $scaleW = $pageW / $imgW;
-            $scaleH = $pageH / $imgH;
-            $scale = max($scaleW, $scaleH);
-
-            $drawW = $imgW * $scale;
-            $drawH = $imgH * $scale;
-
-            // Center the overflow
-            $drawX = ($pageW - $drawW) / 2;
-            $drawY = ($pageH - $drawH) / 2;
-
-            $this->pdf->Image(
-                $imagePath,
-                $drawX, $drawY, $drawW, $drawH,
-                '', '', '', false, 300, '', false, false, 0
-            );
-        } else {
-            // Fallback: stretch to page
-            $this->pdf->Image(
-                $imagePath,
-                0, 0, 210, 297,
-                '', '', '', false, 300, '', false, false, 0
-            );
-        }
+        \Log::info("PDF cover: rendered {$imagePath} as full-page background");
     }
 }
