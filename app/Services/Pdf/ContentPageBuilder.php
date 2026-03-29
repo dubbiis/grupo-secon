@@ -59,9 +59,7 @@ class ContentPageBuilder
                 $this->renderAppSections($section['app_sections']);
                 // Structured item rendering for specific sections
                 $appSec = $section['app_sections'][0] ?? null;
-                if ($appSec === 3) {
-                    $this->renderEspaciosCards();
-                } elseif ($appSec === 4) {
+                if ($appSec === 4) {
                     $this->renderAccesosCards();
                 } elseif ($appSec === 6) {
                     $this->renderVipCards();
