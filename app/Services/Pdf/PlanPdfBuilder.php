@@ -27,7 +27,7 @@ class PlanPdfBuilder
         (new CoverPageBuilder($pdf, $plan, $lang))->build();
 
         // 2. Index page (with background)
-        (new IndexPageBuilder($pdf, $lang))->build();
+        (new IndexPageBuilder($pdf, $plan, $lang))->build();
 
         // 3. Content pages (with background)
         (new ContentPageBuilder($pdf, $plan, $lang))->build();

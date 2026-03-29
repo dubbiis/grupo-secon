@@ -31,10 +31,11 @@ class ContentPageBuilder
         // New page for each section
         $this->pdf->AddPage();
 
-        // Section title
+        // Section title — use app section name for app sections, translated title for fixed
         $this->pdf->SetY(25);
         FontManager::apply($this->pdf, 'section_title');
-        $title = "{$pdfNum}. " . PdfTranslations::sectionTitle($pdfNum, $this->lang);
+        $sectionTitle = $this->getSectionTitle($section);
+        $title = "{$pdfNum}. " . mb_strtoupper($sectionTitle);
         $this->pdf->MultiCell(0, 10, $title, 0, 'L', false, 1, 20, null, true);
         $this->pdf->SetY($this->pdf->GetY() + 5);
 
@@ -66,6 +67,25 @@ class ContentPageBuilder
                 $this->renderAnnexes($section['app_sections'], $pdfNum);
                 break;
         }
+    }
+
+    private function getSectionTitle(array $section): string
+    {
+        $type = $section['type'];
+
+        if ($type === 'fixed_text') {
+            return PdfTranslations::sectionTitle($section['pdf_num'], $this->lang);
+        }
+
+        $appSections = $section['app_sections'] ?? [];
+        if (!empty($appSections)) {
+            $appSection = $this->plan->sections->firstWhere('section_number', $appSections[0]);
+            if ($appSection && $appSection->section_name) {
+                return $appSection->section_name;
+            }
+        }
+
+        return PdfTranslations::sectionTitle($section['pdf_num'], $this->lang);
     }
 
     private function renderAppSections(array $appSections): void
