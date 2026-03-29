@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { BarChart2, Zap, DollarSign, Hash, TrendingUp, Clock } from "lucide-react";
+import { BarChart2, Zap, DollarSign, Hash, TrendingUp, Clock, HardDrive, FileImage, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { useTranslation } from "@/i18n";
@@ -51,7 +51,14 @@ function formatCost(n) {
     return `${val.toFixed(2)} €`;
 }
 
-export default function Stats({ totals, byModel, bySection, recent, daily }) {
+function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0) + " " + units[i];
+}
+
+export default function Stats({ totals, byModel, bySection, recent, daily, storage }) {
     const { t } = useTranslation();
     const totalCalls = parseInt(totals?.total_calls ?? 0);
     const totalTokens = parseInt(totals?.total_tokens ?? 0);
@@ -192,6 +199,81 @@ export default function Stats({ totals, byModel, bySection, recent, daily }) {
                                 </tbody>
                             </table>
                         </div>
+                    </motion.div>
+                )}
+
+                {/* Almacenamiento de archivos */}
+                {storage && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+                        className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <HardDrive size={14} className="text-[#208DCA]" />
+                                <h3 className="text-sm font-semibold text-slate-800">Almacenamiento de archivos</h3>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                                <span className="flex items-center gap-1">
+                                    <FileImage size={12} />
+                                    {storage.total_files} archivos en disco
+                                </span>
+                                <span className="font-mono font-bold text-slate-800">{formatBytes(storage.total_bytes)}</span>
+                            </div>
+                        </div>
+
+                        {/* Warning if files missing */}
+                        {storage.db_files > storage.total_files && (
+                            <div className="px-5 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
+                                <AlertTriangle size={13} className="text-amber-500 flex-shrink-0" />
+                                <p className="text-xs text-amber-700">
+                                    {storage.db_files - storage.total_files} archivo{storage.db_files - storage.total_files > 1 ? "s" : ""} registrado{storage.db_files - storage.total_files > 1 ? "s" : ""} en BD pero no encontrado{storage.db_files - storage.total_files > 1 ? "s" : ""} en disco.
+                                    Posiblemente perdidos en un rebuild del contenedor.
+                                </p>
+                            </div>
+                        )}
+
+                        {storage.plans?.length > 0 ? (
+                            <div className="divide-y divide-slate-100">
+                                {storage.plans.map((p) => {
+                                    const pct = storage.total_bytes > 0 ? (p.size_bytes / storage.total_bytes) * 100 : 0;
+                                    const missing = p.files_total - p.files_exist;
+                                    return (
+                                        <div key={p.uuid} className="px-5 py-3 flex items-center gap-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-medium text-slate-800 truncate">{p.title || p.uuid}</span>
+                                                    <span className="text-[10px] text-slate-400 font-mono flex-shrink-0">{p.uuid}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                                                        <motion.div
+                                                            className="h-full rounded-full bg-gradient-to-r from-[#273887] to-[#208DCA]"
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${pct}%` }}
+                                                            transition={{ duration: 0.7, ease: "easeOut" }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-500 w-12 text-right flex-shrink-0">
+                                                        {p.files_exist} arch.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs font-mono text-slate-700 w-20 text-right flex-shrink-0 font-bold">
+                                                {formatBytes(p.size_bytes)}
+                                            </span>
+                                            {missing > 0 && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-600 flex-shrink-0">
+                                                    {missing} perdido{missing > 1 ? "s" : ""}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="px-5 py-8 text-center text-slate-400 text-sm">
+                                No hay archivos subidos en ningún plan.
+                            </div>
+                        )}
                     </motion.div>
                 )}
 

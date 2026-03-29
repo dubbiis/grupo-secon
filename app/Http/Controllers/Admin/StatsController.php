@@ -70,12 +70,48 @@ class StatsController extends Controller
         ->orderBy('date')
         ->get();
 
+        // Storage usage per plan
+        $storagePlans = Plan::withCount('files')
+            ->with('files:id,plan_id,file_path,mime_type,original_name')
+            ->having('files_count', '>', 0)
+            ->get()
+            ->map(function ($plan) {
+                $totalBytes = 0;
+                $fileCount = 0;
+                foreach ($plan->files as $file) {
+                    $path = \Storage::disk('public')->path($file->file_path);
+                    if (file_exists($path)) {
+                        $totalBytes += filesize($path);
+                        $fileCount++;
+                    }
+                }
+                return [
+                    'uuid'        => $plan->uuid,
+                    'title'       => $plan->title,
+                    'files_total' => $plan->files->count(),
+                    'files_exist' => $fileCount,
+                    'size_bytes'  => $totalBytes,
+                ];
+            })
+            ->sortByDesc('size_bytes')
+            ->values();
+
+        $storageTotalBytes = $storagePlans->sum('size_bytes');
+        $storageTotalFiles = $storagePlans->sum('files_exist');
+        $storageDbFiles = $storagePlans->sum('files_total');
+
         return Inertia::render('Admin/Stats', [
             'totals'    => $totals,
             'byModel'   => $byModel,
             'bySection' => $bySection,
             'recent'    => $recent,
             'daily'     => $daily,
+            'storage'   => [
+                'total_bytes' => $storageTotalBytes,
+                'total_files' => $storageTotalFiles,
+                'db_files'    => $storageDbFiles,
+                'plans'       => $storagePlans,
+            ],
         ]);
     }
 }
