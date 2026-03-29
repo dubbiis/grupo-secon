@@ -57,13 +57,20 @@ class ContentPageBuilder
         switch ($type) {
             case 'app_section':
                 $this->renderAppSections($section['app_sections']);
-                if (!empty($section['has_images'])) {
-                    // VIP section (app sec 6) gets special card-style rendering
-                    if (in_array(6, $section['app_sections'])) {
-                        $this->renderVipCards();
-                    } else {
-                        $this->renderSectionImages($section['app_sections']);
-                    }
+                // Structured item rendering for specific sections
+                $appSec = $section['app_sections'][0] ?? null;
+                if ($appSec === 3) {
+                    $this->renderEspaciosCards();
+                } elseif ($appSec === 4) {
+                    $this->renderAccesosCards();
+                } elseif ($appSec === 6) {
+                    $this->renderVipCards();
+                } elseif ($appSec === 12) {
+                    $this->renderAcreditacionCards();
+                } elseif ($appSec === 13) {
+                    $this->renderContactosCards();
+                } elseif (!empty($section['has_images'])) {
+                    $this->renderSectionImages($section['app_sections']);
                 }
                 break;
 
@@ -411,6 +418,212 @@ class ContentPageBuilder
         if (str_contains($mime, 'excel') || str_contains($mime, 'spreadsheet')) return '[XLS]';
         if (str_contains($mime, 'presentation') || str_contains($mime, 'powerpoint')) return '[PPT]';
         return '[FILE]';
+    }
+
+    // ── Structured item renderers ──────────────────────────────
+
+    /**
+     * Sec 3: Espacios — name + type + address + contact info
+     */
+    private function renderEspaciosCards(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 3);
+        if (!$appSection) return;
+
+        $espacios = json_decode($appSection->form_data['espacios_json'] ?? '[]', true);
+        if (!is_array($espacios) || empty($espacios)) return;
+
+        foreach ($espacios as $i => $espacio) {
+            $nombre = $espacio['nombre_espacio'] ?? '';
+            if (!$nombre) continue;
+
+            $this->ensureSpace(30);
+
+            FontManager::apply($this->pdf, 'subsection');
+            $this->pdf->MultiCell(0, 7, ($i + 1) . '. ' . $nombre, 0, 'L', false, 1, 20, null, true);
+            $this->pdf->SetY($this->pdf->GetY() + 1);
+
+            $details = [];
+            if (!empty($espacio['tipo_espacio'])) $details[] = "Tipo: {$espacio['tipo_espacio']}";
+            if (!empty($espacio['direccion'])) $details[] = "Dirección: {$espacio['direccion']}";
+            if (!empty($espacio['persona_contacto'])) $details[] = "Contacto: {$espacio['persona_contacto']}";
+            if (!empty($espacio['telefono'])) $details[] = "Teléfono: {$espacio['telefono']}";
+            if (!empty($espacio['email'])) $details[] = "Email: {$espacio['email']}";
+
+            if ($details) {
+                FontManager::apply($this->pdf, 'body');
+                foreach ($details as $detail) {
+                    $this->pdf->MultiCell(0, 6, "- {$detail}", 0, 'L', false, 1, 25, null, true);
+                }
+            }
+            $this->pdf->SetY($this->pdf->GetY() + 4);
+        }
+    }
+
+    /**
+     * Sec 4: Accesos — name + description + photo (indexed by position)
+     */
+    private function renderAccesosCards(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 4);
+        if (!$appSection) return;
+
+        $accesos = $appSection->form_data['accesos_detalle'] ?? [];
+        if (!is_array($accesos) || empty($accesos)) return;
+
+        foreach ($accesos as $i => $acceso) {
+            $nombre = $acceso['nombre'] ?? "Acceso " . ($i + 1);
+            $descripcion = $acceso['descripcion'] ?? '';
+
+            $this->ensureSpace(40);
+
+            // Title
+            FontManager::apply($this->pdf, 'subsection');
+            $this->pdf->MultiCell(0, 7, ($i + 1) . '. ' . $nombre, 0, 'L', false, 1, 20, null, true);
+            $this->pdf->SetY($this->pdf->GetY() + 1);
+
+            // Description
+            if ($descripcion) {
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell(0, 6, $descripcion, 0, 'L', false, 1, 20, null, true);
+                $this->pdf->SetY($this->pdf->GetY() + 3);
+            }
+
+            // Photo for this access point
+            $photo = $this->plan->files
+                ->where('section_number', 4)
+                ->where('file_category', "acceso_foto_{$i}")
+                ->sortByDesc('id')
+                ->first();
+
+            if ($photo && file_exists($photo->absolute_path)) {
+                $this->renderItemImage($photo->absolute_path, $photo->mime_type ?? '');
+            }
+
+            $this->pdf->SetY($this->pdf->GetY() + 5);
+        }
+    }
+
+    /**
+     * Sec 12: Acreditaciones — photo (landscape) + name + access zones
+     */
+    private function renderAcreditacionCards(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 12);
+        if (!$appSection) return;
+
+        $items = json_decode($appSection->form_data['personas_json'] ?? '[]', true);
+        if (!is_array($items) || empty($items)) return;
+
+        foreach ($items as $i => $item) {
+            $nombre = $item['nombre'] ?? '';
+            $cargo = $item['cargo'] ?? '';
+            if (!$nombre && !$cargo) continue;
+
+            $this->ensureSpace(35);
+
+            // Title
+            FontManager::apply($this->pdf, 'subsection');
+            $this->pdf->MultiCell(0, 7, ($i + 1) . '. ' . ($nombre ?: 'Acreditación ' . ($i + 1)), 0, 'L', false, 1, 20, null, true);
+
+            if ($cargo) {
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell(0, 6, "Zonas de acceso: {$cargo}", 0, 'L', false, 1, 20, null, true);
+            }
+            $this->pdf->SetY($this->pdf->GetY() + 2);
+
+            // Photo — find by foto_id stored in the item
+            if (!empty($item['foto_id'])) {
+                $photo = $this->plan->files->firstWhere('id', $item['foto_id']);
+                if ($photo && file_exists($photo->absolute_path)) {
+                    $this->renderItemImage($photo->absolute_path, $photo->mime_type ?? '', 120); // landscape, wider
+                }
+            }
+
+            $this->pdf->SetY($this->pdf->GetY() + 5);
+        }
+    }
+
+    /**
+     * Sec 13: Contactos — name + role + phone + email + company
+     */
+    private function renderContactosCards(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 13);
+        if (!$appSection) return;
+
+        $items = json_decode($appSection->form_data['contactos_json'] ?? '[]', true);
+        if (!is_array($items) || empty($items)) return;
+
+        foreach ($items as $i => $item) {
+            $nombre = $item['nombre'] ?? '';
+            if (!$nombre) continue;
+
+            $this->ensureSpace(25);
+
+            FontManager::apply($this->pdf, 'subsection');
+            $this->pdf->MultiCell(0, 7, ($i + 1) . '. ' . $nombre, 0, 'L', false, 1, 20, null, true);
+
+            $details = [];
+            if (!empty($item['cargo'])) $details[] = $item['cargo'];
+            if (!empty($item['empresa'])) $details[] = $item['empresa'];
+            if (!empty($item['telefono'])) $details[] = "Tel: {$item['telefono']}";
+            if (!empty($item['email'])) $details[] = $item['email'];
+
+            if ($details) {
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell(0, 6, implode(' · ', $details), 0, 'L', false, 1, 25, null, true);
+            }
+
+            $this->pdf->SetY($this->pdf->GetY() + 4);
+        }
+    }
+
+    // ── Helper methods ──────────────────────────────────────────
+
+    /**
+     * Ensure minimum vertical space, jump to new page if needed.
+     */
+    private function ensureSpace(float $mm): void
+    {
+        $remaining = 297 - $this->pdf->GetY() - 22;
+        if ($remaining < $mm) {
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+        }
+    }
+
+    /**
+     * Render an image from a file path, with WebP conversion and proper sizing.
+     */
+    private function renderItemImage(string $path, string $mime, float $maxW = 170): void
+    {
+        // Convert WebP
+        $imagePath = $path;
+        if (str_contains($mime, 'webp')) {
+            $img = @imagecreatefromwebp($path);
+            if (!$img) return;
+            $tmpPath = sys_get_temp_dir() . '/item_' . md5($path) . '.png';
+            imagepng($img, $tmpPath);
+            imagedestroy($img);
+            $imagePath = $tmpPath;
+        }
+
+        $imgSize = @getimagesize($imagePath);
+        if (!$imgSize) return;
+
+        $imgRatio = $imgSize[1] / $imgSize[0];
+        $drawH = $maxW * $imgRatio;
+        $maxPageH = 297 - 25 - 22;
+        if ($drawH > $maxPageH) {
+            $drawH = $maxPageH;
+            $maxW = $drawH / $imgRatio;
+        }
+
+        $this->ensureSpace($drawH + 5);
+
+        $this->pdf->Image($imagePath, 20, $this->pdf->GetY(), $maxW, $drawH, '', '', '', false, 300, '', false, false, 0);
+        $this->pdf->SetY($this->pdf->GetY() + $drawH + 3);
     }
 
     /**
