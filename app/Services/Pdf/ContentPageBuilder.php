@@ -55,7 +55,12 @@ class ContentPageBuilder
             case 'app_section':
                 $this->renderAppSections($section['app_sections']);
                 if (!empty($section['has_images'])) {
-                    $this->renderSectionImages($section['app_sections']);
+                    // VIP section (app sec 6) gets special card-style rendering
+                    if (in_array(6, $section['app_sections'])) {
+                        $this->renderVipCards();
+                    } else {
+                        $this->renderSectionImages($section['app_sections']);
+                    }
                 }
                 break;
 
@@ -402,6 +407,88 @@ class ContentPageBuilder
         if (str_contains($mime, 'excel') || str_contains($mime, 'spreadsheet')) return '[XLS]';
         if (str_contains($mime, 'presentation') || str_contains($mime, 'powerpoint')) return '[PPT]';
         return '[FILE]';
+    }
+
+    /**
+     * Render VIP cards: small photo (passport-size) + name + description for each VIP.
+     * Only renders one photo per VIP (the latest uploaded).
+     */
+    private function renderVipCards(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 6);
+        if (!$appSection) return;
+
+        $vipsJson = $appSection->form_data['vips_json'] ?? '[]';
+        $vips = json_decode($vipsJson, true);
+        if (!is_array($vips) || empty($vips)) return;
+
+        // Get all VIP photos, grouped by index
+        $vipPhotos = $this->plan->files
+            ->where('section_number', 6)
+            ->filter(fn($f) => str_starts_with($f->file_category ?? '', 'vip_foto'));
+
+        foreach ($vips as $i => $vip) {
+            $nombre = $vip['nombre'] ?? '';
+            $descripcion = $vip['descripcion'] ?? '';
+            if (!$nombre && !$descripcion) continue;
+
+            // Check space: photo (30mm) + text needs ~45mm
+            $remainingSpace = 297 - $this->pdf->GetY() - 22;
+            if ($remainingSpace < 50) {
+                $this->pdf->AddPage();
+                $this->pdf->SetY(25);
+            }
+
+            $startY = $this->pdf->GetY();
+
+            // Match photo to VIP: try indexed category first, then take by position
+            $photo = $vipPhotos->firstWhere('file_category', "vip_foto_{$i}");
+            if (!$photo) {
+                // Fallback: take the i-th photo with generic 'vip_foto' category
+                $genericPhotos = $vipPhotos->where('file_category', 'vip_foto')->values();
+                $photo = $genericPhotos->get($i);
+            }
+
+            $photoW = 25; // mm — passport size
+            $photoH = 30;
+            $textX = 20; // default left margin
+
+            if ($photo && file_exists($photo->absolute_path)) {
+                $path = $photo->absolute_path;
+                $mime = $photo->mime_type ?? '';
+
+                // Convert WebP
+                if (str_contains($mime, 'webp')) {
+                    $img = @imagecreatefromwebp($path);
+                    if ($img) {
+                        $tmpPath = sys_get_temp_dir() . '/vip_' . md5($path) . '.png';
+                        imagepng($img, $tmpPath);
+                        imagedestroy($img);
+                        $path = $tmpPath;
+                    }
+                }
+
+                $this->pdf->Image($path, 20, $startY, $photoW, $photoH, '', '', '', false, 150, '', false, false, 0);
+                $textX = 20 + $photoW + 5; // text starts after photo
+            }
+
+            // Name
+            FontManager::apply($this->pdf, 'subsection');
+            $this->pdf->SetXY($textX, $startY);
+            $textW = 210 - $textX - 20;
+            $this->pdf->MultiCell($textW, 7, $nombre, 0, 'L', false, 1, $textX, null, true);
+
+            // Description
+            if ($descripcion) {
+                FontManager::apply($this->pdf, 'body');
+                $this->pdf->MultiCell($textW, 6, $descripcion, 0, 'L', false, 1, $textX, null, true);
+            }
+
+            // Move Y to below whichever is taller: photo or text
+            $textEndY = $this->pdf->GetY();
+            $photoEndY = $startY + $photoH;
+            $this->pdf->SetY(max($textEndY, $photoEndY) + 8);
+        }
     }
 
     private function renderSectionImages(array $appSections): void
