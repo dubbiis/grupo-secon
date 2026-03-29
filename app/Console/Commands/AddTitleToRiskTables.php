@@ -8,12 +8,13 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 class AddTitleToRiskTables extends Command
 {
     protected $signature = 'pdf:add-risk-titles';
-    protected $description = 'Add section title to risk table PDFs (ES and EN)';
+    protected $description = 'Generate risk table PDFs with title + base template (logo + footer bar)';
 
     public function handle(): int
     {
         $fontsPath = config('pdf.fonts_path') . '/';
         $assetsPath = storage_path('app/pdf-assets');
+        $baseTplPath = config('pdf.base_template');
 
         $versions = [
             'es' => [
@@ -29,15 +30,9 @@ class AddTitleToRiskTables extends Command
         ];
 
         foreach ($versions as $lang => $config) {
-            // If original backup doesn't exist, create it from current file
             if (!file_exists($config['source'])) {
-                $currentFile = $config['output'];
-                if (!file_exists($currentFile)) {
-                    $this->error("No source file found for {$lang}: {$currentFile}");
-                    continue;
-                }
-                copy($currentFile, $config['source']);
-                $this->info("Backed up original: {$config['source']}");
+                $this->error("Original file not found: {$config['source']}");
+                continue;
             }
 
             $pdf = new Fpdi('P', 'mm', 'A4', true, 'UTF-8');
@@ -46,27 +41,48 @@ class AddTitleToRiskTables extends Command
             $pdf->SetMargins(0, 0, 0);
             $pdf->SetAutoPageBreak(false, 0);
 
-            // Register font
+            // Register fonts
             $pdf->AddFont('helveticaneueblackcondensed', '', $fontsPath . 'helveticaneueblackcondensed.php');
+            $pdf->AddFont('helveticaneueroman', '', $fontsPath . 'helveticaneueroman.php');
 
-            $pageCount = $pdf->setSourceFile($config['source']);
+            // Import base template
+            $pdf->setSourceFile($baseTplPath);
+            $baseTpl = $pdf->importPage(1);
 
-            for ($i = 1; $i <= $pageCount; $i++) {
+            // Import risk tables
+            $tablePageCount = $pdf->setSourceFile($config['source']);
+
+            for ($i = 1; $i <= $tablePageCount; $i++) {
                 $pdf->AddPage();
-                $tpl = $pdf->importPage($i);
-                $pdf->useTemplate($tpl, 0, 0, 210, 297);
 
-                // Add title only on first page
+                // 1. Paint base template first (logo + blue bar)
+                // Re-import base template (source file changed)
+                $pdf->setSourceFile($baseTplPath);
+                $bgTpl = $pdf->importPage(1);
+                $pdf->useTemplate($bgTpl, 0, 0, 210, 297);
+
+                // 2. Paint the risk table page on top
+                $pdf->setSourceFile($config['source']);
+                $tableTpl = $pdf->importPage($i);
+                // Offset the table content to avoid overlapping the logo area
+                // Table starts at y=35 on first page (after title), y=20 on subsequent
+                if ($i === 1) {
+                    $pdf->useTemplate($tableTpl, 0, 30, 210, 255);
+                } else {
+                    $pdf->useTemplate($tableTpl, 0, 15, 210, 270);
+                }
+
+                // 3. Add title on first page
                 if ($i === 1) {
                     $pdf->SetFont('helveticaneueblackcondensed', '', 20);
-                    $pdf->SetTextColor(34, 58, 129); // #223A81
-                    $pdf->SetXY(20, 15);
+                    $pdf->SetTextColor(34, 58, 129);
+                    $pdf->SetXY(20, 18);
                     $pdf->Cell(170, 10, $config['title'], 0, 0, 'L');
                 }
             }
 
             $pdf->Output($config['output'], 'F');
-            $this->info("Generated: {$config['output']} ({$pageCount} pages, {$lang})");
+            $this->info("Generated: {$config['output']} ({$tablePageCount} pages, {$lang})");
         }
 
         $this->info('Done.');
