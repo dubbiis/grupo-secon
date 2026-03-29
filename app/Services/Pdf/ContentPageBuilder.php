@@ -297,9 +297,9 @@ class ContentPageBuilder
         $this->pdf->setSourceFile($baseTplPath);
         $bgTpl = $this->pdf->importPage(1);
 
-        // 3. Disable auto background — we apply it manually per page
-        //    Keep footer enabled but it won't draw (useBackground=false)
+        // 3. Disable auto background + auto page break during table import
         $this->pdf->enableBackground(false);
+        $this->pdf->SetAutoPageBreak(false, 0);
 
         // 4. Render each page: base template + table content + title (1st) + footer
         foreach ($tableTemplates as $idx => $tpl) {
@@ -331,6 +331,7 @@ class ContentPageBuilder
         }
 
         // 5. Restore
+        $this->pdf->SetAutoPageBreak(true, 22);
         $this->pdf->enableBackground(true);
         $this->pdf->reloadBackgroundTemplate();
     }
