@@ -66,6 +66,27 @@ Route::middleware('auth')->group(function () {
     // Herramientas standalone
     Route::get('/editor-mapas', fn() => inertia('EditorMapas'))->name('editor-mapas');
 
+    // Debug: temporary diagnostic endpoint for file storage
+    Route::get('/debug/files/{uuid}', function (string $uuid) {
+        $plan = \App\Models\Plan::where('uuid', $uuid)->with('files')->firstOrFail();
+        $result = ['plan' => $uuid, 'files_count' => $plan->files->count(), 'files' => []];
+        foreach ($plan->files as $f) {
+            $abs = $f->absolute_path;
+            $result['files'][] = [
+                'category' => $f->file_category,
+                'file_path' => $f->file_path,
+                'absolute_path' => $abs,
+                'exists' => file_exists($abs),
+                'url' => $f->url,
+                'mime' => $f->mime_type,
+            ];
+        }
+        $result['storage_public_path'] = storage_path('app/public');
+        $result['storage_public_exists'] = is_dir(storage_path('app/public'));
+        $result['symlink_exists'] = is_link(public_path('storage'));
+        return response()->json($result, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    });
+
     // Admin
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/prompts', [PromptController::class, 'index'])->name('prompts.index');
