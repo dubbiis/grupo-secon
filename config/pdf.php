@@ -6,8 +6,8 @@ return [
     'base_template' => storage_path('app/pdf-assets/base-template.pdf'),
 
     'risk_tables' => [
-        'es' => storage_path('app/pdf-assets/risk-tables-es.pdf'),
-        'en' => storage_path('app/pdf-assets/risk-tables-en.pdf'),
+        'es' => storage_path('app/pdf-assets/risk-tables-es-original.pdf'),
+        'en' => storage_path('app/pdf-assets/risk-tables-en-original.pdf'),
     ],
 
     'logo' => public_path('images/logo-secon.svg'),

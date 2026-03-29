@@ -282,30 +282,55 @@ class ContentPageBuilder
             return;
         }
 
-        // Import all templates first before adding pages
-        $this->pdf->enableBackground(false);
-        $this->pdf->setPrintFooter(false);
+        // Use originals — apply base template + title + footer dynamically
+        $baseTplPath = config('pdf.base_template');
+        $fontsPath = config('pdf.fonts_path') . '/';
 
+        // 1. Import all risk table pages first
         $pageCount = $this->pdf->setSourceFile($riskTablePath);
-        $templates = [];
+        $tableTemplates = [];
         for ($i = 1; $i <= $pageCount; $i++) {
-            $templates[] = $this->pdf->importPage($i);
+            $tableTemplates[] = $this->pdf->importPage($i);
         }
 
-        // Now add pages and apply templates
-        foreach ($templates as $idx => $tpl) {
-            $this->pdf->AddPage();
-            $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
+        // 2. Import base template
+        $this->pdf->setSourceFile($baseTplPath);
+        $bgTpl = $this->pdf->importPage(1);
 
+        // 3. Disable auto background — we apply it manually per page
+        //    Keep footer enabled but it won't draw (useBackground=false)
+        $this->pdf->enableBackground(false);
+
+        // 4. Render each page: base template + table content + title (1st) + footer
+        foreach ($tableTemplates as $idx => $tpl) {
+            $this->pdf->AddPage();
+
+            // Base template (logo + blue bar)
+            $this->pdf->useTemplate($bgTpl, 0, 0, 210, 297);
+
+            // Table content — offset down to leave room for logo/title
             if ($idx === 0) {
+                $this->pdf->useTemplate($tpl, 0, 38, 210, 247);
+            } else {
+                $this->pdf->useTemplate($tpl, 0, 15, 210, 270);
+            }
+
+            // Title on first page
+            if ($idx === 0) {
+                FontManager::apply($this->pdf, 'section_title');
+                $title = $this->lang === 'en'
+                    ? '7. RISK ASSESSMENT AND PREVENTIVE MEASURES'
+                    : '7. ANÁLISIS DE RIESGOS Y MEDIDAS PREVENTIVAS';
+                $this->pdf->SetXY(20, 25);
+                $this->pdf->Cell(170, 10, $title, 0, 0, 'L');
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // Draw dynamic footer manually on the blue bar
+            // Footer
             $this->pdf->drawFooter();
         }
 
-        $this->pdf->setPrintFooter(true);
+        // 5. Restore
         $this->pdf->enableBackground(true);
         $this->pdf->reloadBackgroundTemplate();
     }
