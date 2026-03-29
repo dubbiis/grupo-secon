@@ -86,10 +86,12 @@ class CoverPageBuilder
 
     private function addCoverBackground(): void
     {
+        // Get the latest portada file that actually exists on disk
         $coverFile = $this->plan->files
             ->where('section_number', 15)
             ->where('file_category', 'portada')
-            ->first();
+            ->sortByDesc('id')
+            ->first(fn($f) => file_exists(\Storage::disk('public')->path($f->file_path)));
 
         if (!$coverFile) {
             \Log::info('PDF cover: no portada file found for plan ' . $this->plan->uuid);
@@ -113,9 +115,20 @@ class CoverPageBuilder
             return;
         }
 
+        // TCPDF doesn't support WebP — convert to PNG on the fly
+        $imagePath = $path;
+        if (str_contains($mime, 'webp')) {
+            $img = @imagecreatefromwebp($path);
+            if (!$img) return;
+            $tmpPath = sys_get_temp_dir() . '/cover_' . md5($path) . '.png';
+            imagepng($img, $tmpPath);
+            imagedestroy($img);
+            $imagePath = $tmpPath;
+        }
+
         // Full page background image (0,0 to 210x297)
         $this->pdf->Image(
-            $path,
+            $imagePath,
             0, 0, 210, 297,
             '', '', '', false, 300, '', false, false, 0, 'CM'
         );

@@ -270,8 +270,20 @@ class ContentPageBuilder
             $this->pdf->SetY(25);
         }
 
+        // Convert WebP to PNG (TCPDF doesn't support WebP)
+        $imagePath = $path;
+        $mime = mime_content_type($path) ?: '';
+        if (str_contains($mime, 'webp')) {
+            $img = @imagecreatefromwebp($path);
+            if (!$img) return;
+            $tmpPath = sys_get_temp_dir() . '/embed_' . md5($path) . '.png';
+            imagepng($img, $tmpPath);
+            imagedestroy($img);
+            $imagePath = $tmpPath;
+        }
+
         $this->pdf->Image(
-            $path,
+            $imagePath,
             20, $this->pdf->GetY(),
             170, 0,
             '', '', '', false, 300, '', false, false, 0
