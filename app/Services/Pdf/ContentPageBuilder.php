@@ -206,8 +206,9 @@ class ContentPageBuilder
                 $tableLines = [];
                 while ($i < $totalLines && str_contains(trim($lines[$i]), '|')) {
                     $tl = trim($lines[$i]);
-                    // Skip separator lines (|---|---|)
-                    if (!preg_match('/^\|[\s\-:]+\|$/', $tl) && !preg_match('/^\|[-\s|:]+\|$/', $tl)) {
+                    // Skip separator lines (|---|---|, | --- | --- |, etc.)
+                    $stripped = preg_replace('/[\s\-:|]/', '', $tl);
+                    if ($stripped !== '') {
                         $tableLines[] = $tl;
                     }
                     $i++;
@@ -666,7 +667,7 @@ class ContentPageBuilder
 
     /**
      * Render a markdown table with styled header and rows.
-     * @param string[] $tableLines Lines containing "|col1|col2|..."
+     * Column widths are proportional to content length.
      */
     private function renderTable(array $tableLines): void
     {
@@ -675,8 +676,19 @@ class ContentPageBuilder
         // Parse cells from each line
         $rows = [];
         foreach ($tableLines as $line) {
-            $cells = array_map('trim', explode('|', trim($line, '| ')));
-            $cells = array_values(array_filter($cells, fn($c) => $c !== ''));
+            // Split by | and clean up
+            $parts = explode('|', $line);
+            $cells = [];
+            foreach ($parts as $p) {
+                $trimmed = trim($p);
+                if ($trimmed !== '' || count($cells) > 0) {
+                    $cells[] = $trimmed;
+                }
+            }
+            // Remove trailing empty cell
+            while (!empty($cells) && $cells[count($cells) - 1] === '') {
+                array_pop($cells);
+            }
             if (!empty($cells)) {
                 $rows[] = $cells;
             }
@@ -685,60 +697,73 @@ class ContentPageBuilder
         if (empty($rows)) return;
 
         $numCols = count($rows[0]);
-        $pageW = 170; // usable width (210 - 20 - 20 margins)
-        $colW = $pageW / max($numCols, 1);
-        $rowH = 7;
-        $headerH = 8;
-
-        // Check if table fits on current page
-        $tableH = $headerH + (count($rows) - 1) * $rowH + 10;
-        $this->ensureSpace($tableH);
-
+        $totalW = 170; // usable width
         $startX = 20;
+        $rowH = 8;
 
-        // Colors
-        $headerBg = [34, 58, 129]; // #223A81
-        $headerText = [255, 255, 255];
-        $rowBg1 = [245, 247, 250];
-        $rowBg2 = [255, 255, 255];
-        $borderColor = [220, 220, 220];
+        // Calculate column widths based on max content length per column
+        $maxLens = array_fill(0, $numCols, 0);
+        foreach ($rows as $row) {
+            foreach ($row as $colIdx => $cell) {
+                if ($colIdx < $numCols) {
+                    $maxLens[$colIdx] = max($maxLens[$colIdx], mb_strlen($cell));
+                }
+            }
+        }
+        $totalLen = max(1, array_sum($maxLens));
+        $colWidths = [];
+        foreach ($maxLens as $len) {
+            $colWidths[] = max(15, ($len / $totalLen) * $totalW); // min 15mm per col
+        }
+        // Normalize to exactly totalW
+        $sum = array_sum($colWidths);
+        $colWidths = array_map(fn($w) => $w * ($totalW / $sum), $colWidths);
 
-        $this->pdf->SetDrawColor($borderColor[0], $borderColor[1], $borderColor[2]);
+        // Check space
+        $tableH = count($rows) * $rowH + 10;
+        $this->ensureSpace(min($tableH, 80));
 
         foreach ($rows as $rowIdx => $cells) {
             $isHeader = ($rowIdx === 0);
             $y = $this->pdf->GetY();
 
-            // Pad cells if row has fewer columns
+            // Page break if needed
+            if (297 - $y - 22 < $rowH + 2) {
+                $this->pdf->AddPage();
+                $y = 25;
+                $this->pdf->SetY($y);
+            }
+
+            // Pad cells
             while (count($cells) < $numCols) {
                 $cells[] = '';
             }
 
             if ($isHeader) {
-                $this->pdf->SetFillColor($headerBg[0], $headerBg[1], $headerBg[2]);
-                $this->pdf->SetTextColor($headerText[0], $headerText[1], $headerText[2]);
-                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
-                $h = $headerH;
+                $this->pdf->SetFillColor(34, 58, 129);
+                $this->pdf->SetTextColor(255, 255, 255);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
             } else {
-                $bg = ($rowIdx % 2 === 0) ? $rowBg1 : $rowBg2;
+                $bg = ($rowIdx % 2 === 0) ? [240, 243, 248] : [255, 255, 255];
                 $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
                 $this->pdf->SetTextColor(114, 112, 112);
-                $this->pdf->SetFont(FontManager::ROMAN, '', 9);
-                $h = $rowH;
+                $this->pdf->SetFont(FontManager::ROMAN, '', 8);
             }
 
             $x = $startX;
             foreach ($cells as $colIdx => $cell) {
+                if ($colIdx >= $numCols) break;
+                $w = $colWidths[$colIdx];
                 $this->pdf->SetXY($x, $y);
-                $border = ($isHeader) ? 0 : 'B';
-                $this->pdf->Cell($colW, $h, $cell, $border, 0, 'C', true);
-                $x += $colW;
+                // Use MultiCell for wrapping, but cap height
+                $align = $isHeader ? 'C' : ($colIdx === $numCols - 1 ? 'L' : 'C');
+                $this->pdf->Cell($w, $rowH, $cell, 0, 0, $align, true);
+                $x += $w;
             }
 
-            $this->pdf->SetY($y + $h);
+            $this->pdf->SetY($y + $rowH);
         }
 
-        // Restore body style
         FontManager::apply($this->pdf, 'body');
         $this->pdf->SetY($this->pdf->GetY() + 5);
     }
@@ -754,27 +779,27 @@ class ContentPageBuilder
         $fd = $appSection->form_data;
 
         $phases = [];
-        if (!empty($fd['fecha_inicio_montaje'])) {
+        if (!empty($fd['montaje_inicio'])) {
             $phases[] = [
                 'label' => $this->lang === 'en' ? 'SETUP' : 'MONTAJE',
-                'start' => $fd['fecha_inicio_montaje'],
-                'end'   => $fd['fecha_fin_montaje'] ?? $fd['fecha_inicio_montaje'],
+                'start' => $fd['montaje_inicio'],
+                'end'   => $fd['montaje_fin'] ?? $fd['montaje_inicio'],
                 'color' => [32, 141, 202], // #208DCA
             ];
         }
-        if (!empty($fd['fecha_inicio_evento'])) {
+        if (!empty($fd['fecha_inicio'])) {
             $phases[] = [
                 'label' => $this->lang === 'en' ? 'EVENT' : 'EVENTO',
-                'start' => $fd['fecha_inicio_evento'],
-                'end'   => $fd['fecha_fin_evento'] ?? $fd['fecha_inicio_evento'],
+                'start' => $fd['fecha_inicio'],
+                'end'   => $fd['fecha_fin'] ?? $fd['fecha_inicio'],
                 'color' => [34, 58, 129], // #223A81
             ];
         }
-        if (!empty($fd['fecha_inicio_desmontaje'])) {
+        if (!empty($fd['desmontaje_inicio'])) {
             $phases[] = [
                 'label' => $this->lang === 'en' ? 'TEARDOWN' : 'DESMONTAJE',
-                'start' => $fd['fecha_inicio_desmontaje'],
-                'end'   => $fd['fecha_fin_desmontaje'] ?? $fd['fecha_inicio_desmontaje'],
+                'start' => $fd['desmontaje_inicio'],
+                'end'   => $fd['desmontaje_fin'] ?? $fd['desmontaje_inicio'],
                 'color' => [114, 112, 112], // #727070
             ];
         }
