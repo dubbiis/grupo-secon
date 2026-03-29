@@ -50,6 +50,9 @@ class PlanFileController extends Controller
 
     public function serve(PlanFile $file)
     {
+        // Only the plan owner or an admin can view files
+        Gate::authorize('view', $file->plan);
+
         $path = Storage::disk('public')->path($file->file_path);
 
         if (!file_exists($path)) {
@@ -58,7 +61,7 @@ class PlanFileController extends Controller
 
         return response()->file($path, [
             'Content-Type' => $file->mime_type ?? 'application/octet-stream',
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control' => 'private, max-age=86400',
         ]);
     }
 
