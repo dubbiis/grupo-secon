@@ -282,27 +282,29 @@ class ContentPageBuilder
             return;
         }
 
-        // Disable auto background — tables already have base template baked in
+        // Import all templates first before adding pages
         $this->pdf->enableBackground(false);
-        // Disable auto footer — we draw it manually on each table page
         $this->pdf->setPrintFooter(false);
 
         $pageCount = $this->pdf->setSourceFile($riskTablePath);
+        $templates = [];
         for ($i = 1; $i <= $pageCount; $i++) {
+            $templates[] = $this->pdf->importPage($i);
+        }
+
+        // Now add pages and apply templates
+        foreach ($templates as $idx => $tpl) {
             $this->pdf->AddPage();
-            $tpl = $this->pdf->importPage($i);
             $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
 
-            // Record page number for composite section (first table page)
-            if ($i === 1) {
+            if ($idx === 0) {
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // Draw dynamic footer (event name + page number) on the blue bar
+            // Draw dynamic footer manually on the blue bar
             $this->pdf->drawFooter();
         }
 
-        // Restore background and footer for subsequent pages
         $this->pdf->setPrintFooter(true);
         $this->pdf->enableBackground(true);
         $this->pdf->reloadBackgroundTemplate();
