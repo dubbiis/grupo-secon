@@ -92,16 +92,23 @@ class ContentPageBuilder
                 break;
 
             case 'composite':
-                // Risk tables go BEFORE the analysis text
                 if (!empty($section['merge_pdf'])) {
                     $this->mergeRiskTables();
                 }
-                // Only render analysis text if it exists
-                $appSection = $this->plan->sections->firstWhere('section_number', $section['app_sections'][0] ?? 0);
-                if ($appSection && !empty($appSection->generated_text)) {
+                // Analysis text on next page only if it exists
+                $compositeSection = $this->plan->sections->firstWhere('section_number', $section['app_sections'][0] ?? 0);
+                if ($compositeSection && !empty($compositeSection->generated_text)) {
+                    // Let the next buildSection call handle the page break
+                    // We set isFirstSection=true so the next section forces AddPage
+                    $this->isFirstSection = true;
+                    // Render analysis as a sub-part of section 7
                     $this->pdf->AddPage();
                     $this->pdf->SetY(25);
-                    $this->renderAppSections($section['app_sections']);
+                    FontManager::apply($this->pdf, 'section_title');
+                    $subTitle = "{$pdfNum}.1 " . mb_strtoupper($this->lang === 'en' ? 'DETAILED ANALYSIS' : 'ANÁLISIS DETALLADO');
+                    $this->pdf->MultiCell(0, 10, $subTitle, 0, 'L', false, 1, 20, null, true);
+                    $this->pdf->SetY($this->pdf->GetY() + 5);
+                    $this->renderFormattedText($compositeSection->generated_text);
                 }
                 break;
 
