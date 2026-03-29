@@ -95,11 +95,14 @@ class ContentPageBuilder
                 // Risk tables go BEFORE the analysis text
                 if (!empty($section['merge_pdf'])) {
                     $this->mergeRiskTables();
-                    // New page for the analysis text after the tables
+                }
+                // Only render analysis text if it exists
+                $appSection = $this->plan->sections->firstWhere('section_number', $section['app_sections'][0] ?? 0);
+                if ($appSection && !empty($appSection->generated_text)) {
                     $this->pdf->AddPage();
                     $this->pdf->SetY(25);
+                    $this->renderAppSections($section['app_sections']);
                 }
-                $this->renderAppSections($section['app_sections']);
                 break;
 
             case 'annexes':
