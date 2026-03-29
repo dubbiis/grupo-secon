@@ -74,7 +74,9 @@ class ContentPageBuilder
                 $this->renderAppSections($section['app_sections']);
                 // Structured item rendering for specific sections
                 $appSec = $section['app_sections'][0] ?? null;
-                if ($appSec === 4) {
+                if ($appSec === 2) {
+                    $this->renderScheduleTimeline();
+                } elseif ($appSec === 4) {
                     $this->renderAccesosCards();
                 } elseif ($appSec === 6) {
                     $this->renderVipCards();
@@ -198,6 +200,24 @@ class ContentPageBuilder
                 continue;
             }
 
+            // 0. Markdown table: line starts and contains "|"
+            if (str_contains($line, '|') && preg_match('/\|.*\|/', $line)) {
+                // Collect all table lines
+                $tableLines = [];
+                while ($i < $totalLines && str_contains(trim($lines[$i]), '|')) {
+                    $tl = trim($lines[$i]);
+                    // Skip separator lines (|---|---|)
+                    if (!preg_match('/^\|[\s\-:]+\|$/', $tl) && !preg_match('/^\|[-\s|:]+\|$/', $tl)) {
+                        $tableLines[] = $tl;
+                    }
+                    $i++;
+                }
+                if (!empty($tableLines)) {
+                    $this->renderTable($tableLines);
+                }
+                continue;
+            }
+
             // 1. Subsection header: starts with number.number (e.g. "3.1 EVENT:")
             if (preg_match('/^\d+\.\d+\s+/', $line)) {
                 FontManager::apply($this->pdf, 'subsection');
@@ -255,6 +275,7 @@ class ContentPageBuilder
                 $nextLine = trim($lines[$i + 1]);
                 // Stop if next line is empty, a list item, a label, or a header
                 if ($nextLine === '' ||
+                    (str_contains($nextLine, '|') && preg_match('/\|.*\|/', $nextLine)) ||
                     preg_match('/^[-•·]\s+/', $nextLine) ||
                     preg_match('/^\d+\.\s+\S/', $nextLine) ||
                     (preg_match('/:\s*$/', $nextLine) && mb_strlen($nextLine) < 80) ||
@@ -642,6 +663,180 @@ class ContentPageBuilder
     }
 
     // ── Helper methods ──────────────────────────────────────────
+
+    /**
+     * Render a markdown table with styled header and rows.
+     * @param string[] $tableLines Lines containing "|col1|col2|..."
+     */
+    private function renderTable(array $tableLines): void
+    {
+        if (empty($tableLines)) return;
+
+        // Parse cells from each line
+        $rows = [];
+        foreach ($tableLines as $line) {
+            $cells = array_map('trim', explode('|', trim($line, '| ')));
+            $cells = array_values(array_filter($cells, fn($c) => $c !== ''));
+            if (!empty($cells)) {
+                $rows[] = $cells;
+            }
+        }
+
+        if (empty($rows)) return;
+
+        $numCols = count($rows[0]);
+        $pageW = 170; // usable width (210 - 20 - 20 margins)
+        $colW = $pageW / max($numCols, 1);
+        $rowH = 7;
+        $headerH = 8;
+
+        // Check if table fits on current page
+        $tableH = $headerH + (count($rows) - 1) * $rowH + 10;
+        $this->ensureSpace($tableH);
+
+        $startX = 20;
+
+        // Colors
+        $headerBg = [34, 58, 129]; // #223A81
+        $headerText = [255, 255, 255];
+        $rowBg1 = [245, 247, 250];
+        $rowBg2 = [255, 255, 255];
+        $borderColor = [220, 220, 220];
+
+        $this->pdf->SetDrawColor($borderColor[0], $borderColor[1], $borderColor[2]);
+
+        foreach ($rows as $rowIdx => $cells) {
+            $isHeader = ($rowIdx === 0);
+            $y = $this->pdf->GetY();
+
+            // Pad cells if row has fewer columns
+            while (count($cells) < $numCols) {
+                $cells[] = '';
+            }
+
+            if ($isHeader) {
+                $this->pdf->SetFillColor($headerBg[0], $headerBg[1], $headerBg[2]);
+                $this->pdf->SetTextColor($headerText[0], $headerText[1], $headerText[2]);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
+                $h = $headerH;
+            } else {
+                $bg = ($rowIdx % 2 === 0) ? $rowBg1 : $rowBg2;
+                $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
+                $this->pdf->SetTextColor(114, 112, 112);
+                $this->pdf->SetFont(FontManager::ROMAN, '', 9);
+                $h = $rowH;
+            }
+
+            $x = $startX;
+            foreach ($cells as $colIdx => $cell) {
+                $this->pdf->SetXY($x, $y);
+                $border = ($isHeader) ? 0 : 'B';
+                $this->pdf->Cell($colW, $h, $cell, $border, 0, 'C', true);
+                $x += $colW;
+            }
+
+            $this->pdf->SetY($y + $h);
+        }
+
+        // Restore body style
+        FontManager::apply($this->pdf, 'body');
+        $this->pdf->SetY($this->pdf->GetY() + 5);
+    }
+
+    /**
+     * Render a visual timeline for section 2 (schedule phases).
+     */
+    private function renderScheduleTimeline(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 2);
+        if (!$appSection || !$appSection->form_data) return;
+
+        $fd = $appSection->form_data;
+
+        $phases = [];
+        if (!empty($fd['fecha_inicio_montaje'])) {
+            $phases[] = [
+                'label' => $this->lang === 'en' ? 'SETUP' : 'MONTAJE',
+                'start' => $fd['fecha_inicio_montaje'],
+                'end'   => $fd['fecha_fin_montaje'] ?? $fd['fecha_inicio_montaje'],
+                'color' => [32, 141, 202], // #208DCA
+            ];
+        }
+        if (!empty($fd['fecha_inicio_evento'])) {
+            $phases[] = [
+                'label' => $this->lang === 'en' ? 'EVENT' : 'EVENTO',
+                'start' => $fd['fecha_inicio_evento'],
+                'end'   => $fd['fecha_fin_evento'] ?? $fd['fecha_inicio_evento'],
+                'color' => [34, 58, 129], // #223A81
+            ];
+        }
+        if (!empty($fd['fecha_inicio_desmontaje'])) {
+            $phases[] = [
+                'label' => $this->lang === 'en' ? 'TEARDOWN' : 'DESMONTAJE',
+                'start' => $fd['fecha_inicio_desmontaje'],
+                'end'   => $fd['fecha_fin_desmontaje'] ?? $fd['fecha_inicio_desmontaje'],
+                'color' => [114, 112, 112], // #727070
+            ];
+        }
+
+        if (empty($phases)) return;
+
+        $this->ensureSpace(35);
+
+        // Title
+        FontManager::apply($this->pdf, 'label');
+        $tlTitle = $this->lang === 'en' ? 'Event Timeline:' : 'Cronograma del Evento:';
+        $this->pdf->MultiCell(0, 7, $tlTitle, 0, 'L', false, 1, 20, null, true);
+        $this->pdf->SetY($this->pdf->GetY() + 3);
+
+        // Calculate date range
+        $allDates = [];
+        foreach ($phases as $p) {
+            $allDates[] = strtotime($p['start']);
+            $allDates[] = strtotime($p['end']);
+        }
+        $minDate = min($allDates);
+        $maxDate = max($allDates);
+        $totalDays = max(1, ($maxDate - $minDate) / 86400 + 1);
+
+        $barX = 20;
+        $barW = 170;
+        $barH = 8;
+        $y = $this->pdf->GetY();
+
+        foreach ($phases as $phase) {
+            $startDay = (strtotime($phase['start']) - $minDate) / 86400;
+            $endDay = (strtotime($phase['end']) - $minDate) / 86400 + 1;
+
+            $x = $barX + ($startDay / $totalDays) * $barW;
+            $w = max(10, (($endDay - $startDay) / $totalDays) * $barW);
+
+            // Bar
+            $this->pdf->SetFillColor($phase['color'][0], $phase['color'][1], $phase['color'][2]);
+            $this->pdf->RoundedRect($x, $y, $w, $barH, 1.5, '1111', 'F');
+
+            // Label inside bar
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 7);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetXY($x, $y);
+            $this->pdf->Cell($w, $barH, $phase['label'], 0, 0, 'C');
+
+            // Dates below
+            $this->pdf->SetFont(FontManager::ROMAN, '', 7);
+            $this->pdf->SetTextColor(114, 112, 112);
+            $dateStr = date('d/m', strtotime($phase['start']));
+            if ($phase['start'] !== $phase['end']) {
+                $dateStr .= ' - ' . date('d/m', strtotime($phase['end']));
+            }
+            $this->pdf->SetXY($x, $y + $barH + 1);
+            $this->pdf->Cell($w, 4, $dateStr, 0, 0, 'C');
+
+            $y += $barH + 7;
+        }
+
+        $this->pdf->SetY($y + 3);
+        FontManager::apply($this->pdf, 'body');
+    }
 
     /**
      * Ensure minimum vertical space, jump to new page if needed.
