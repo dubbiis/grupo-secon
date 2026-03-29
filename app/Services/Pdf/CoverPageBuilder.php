@@ -126,11 +126,39 @@ class CoverPageBuilder
             $imagePath = $tmpPath;
         }
 
-        // Full page background image (0,0 to 210x297)
-        $this->pdf->Image(
-            $imagePath,
-            0, 0, 210, 297,
-            '', '', '', false, 300, '', false, false, 0, 'CM'
-        );
+        // Full page background — cover mode (fill page, crop overflow)
+        // Get image dimensions to calculate cover scaling
+        $imgSize = @getimagesize($imagePath);
+        if ($imgSize) {
+            $imgW = $imgSize[0];
+            $imgH = $imgSize[1];
+            $pageW = 210;
+            $pageH = 297;
+
+            // Scale to cover: the larger ratio wins
+            $scaleW = $pageW / $imgW;
+            $scaleH = $pageH / $imgH;
+            $scale = max($scaleW, $scaleH);
+
+            $drawW = $imgW * $scale;
+            $drawH = $imgH * $scale;
+
+            // Center the overflow
+            $drawX = ($pageW - $drawW) / 2;
+            $drawY = ($pageH - $drawH) / 2;
+
+            $this->pdf->Image(
+                $imagePath,
+                $drawX, $drawY, $drawW, $drawH,
+                '', '', '', false, 300, '', false, false, 0
+            );
+        } else {
+            // Fallback: stretch to page
+            $this->pdf->Image(
+                $imagePath,
+                0, 0, 210, 297,
+                '', '', '', false, 300, '', false, false, 0
+            );
+        }
     }
 }
