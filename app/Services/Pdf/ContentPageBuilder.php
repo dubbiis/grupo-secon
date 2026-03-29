@@ -14,13 +14,20 @@ class ContentPageBuilder
         private string $lang,
     ) {}
 
-    public function build(): void
+    private array $sectionPages = [];
+
+    /**
+     * @return array<int, int> Map of pdf_num => starting page number
+     */
+    public function build(): array
     {
         $mapping = SectionMapper::getMapping();
 
         foreach ($mapping as $section) {
             $this->buildSection($section);
         }
+
+        return $this->sectionPages;
     }
 
     private bool $isFirstSection = true;
@@ -37,7 +44,7 @@ class ContentPageBuilder
         // Composite (risk tables) — title is already in the PDF, skip title + page break
         if ($type === 'composite') {
             $this->isFirstSection = false;
-            // handled entirely in the switch below
+            // Page number will be recorded when mergeRiskTables adds the first page
         } else {
             // Annexes always start on a new page
             $forceNewPage = $type === 'annexes';
@@ -49,6 +56,9 @@ class ContentPageBuilder
                 $this->pdf->SetY($this->pdf->GetY() + 12);
             }
             $this->isFirstSection = false;
+
+            // Record starting page for this section
+            $this->sectionPages[$pdfNum] = $this->pdf->getPage();
 
             // Section title
             FontManager::apply($this->pdf, 'section_title');
@@ -272,6 +282,11 @@ class ContentPageBuilder
             $this->pdf->AddPage();
             $tpl = $this->pdf->importPage($i);
             $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
+
+            // Record page number for composite section (first table page)
+            if ($i === 1) {
+                $this->sectionPages[7] = $this->pdf->getPage();
+            }
 
             // Draw dynamic footer (event name + page number) on the blue bar
             $this->pdf->drawFooter();

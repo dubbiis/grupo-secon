@@ -26,11 +26,15 @@ class PlanPdfBuilder
         // 1. Cover page (no background)
         (new CoverPageBuilder($pdf, $plan, $lang))->build();
 
-        // 2. Index page (with background)
-        (new IndexPageBuilder($pdf, $plan, $lang))->build();
+        // 2. Index page (with background) — page numbers filled in after content
+        $indexBuilder = new IndexPageBuilder($pdf, $plan, $lang);
+        $indexBuilder->build();
 
-        // 3. Content pages (with background)
-        (new ContentPageBuilder($pdf, $plan, $lang))->build();
+        // 3. Content pages (with background) — returns section start pages
+        $sectionPages = (new ContentPageBuilder($pdf, $plan, $lang))->build();
+
+        // 4. Fill in page numbers in the index
+        $indexBuilder->fillPageNumbers($sectionPages);
 
         return $pdf->Output('', 'S');
     }
