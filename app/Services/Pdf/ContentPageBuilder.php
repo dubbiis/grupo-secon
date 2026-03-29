@@ -23,16 +23,27 @@ class ContentPageBuilder
         }
     }
 
+    private bool $isFirstSection = true;
+
     private function buildSection(array $section): void
     {
         $pdfNum = $section['pdf_num'];
         $type = $section['type'];
 
-        // New page for each section
-        $this->pdf->AddPage();
+        // Minimum space needed: title (~15mm) + 5 lines of body text (~30mm) = ~45mm
+        $minSpace = 45;
+        $remainingSpace = 297 - $this->pdf->GetY() - 22; // 22mm bottom margin for footer
+
+        if ($this->isFirstSection || $remainingSpace < $minSpace) {
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+        } else {
+            // Continue on same page with spacing
+            $this->pdf->SetY($this->pdf->GetY() + 12);
+        }
+        $this->isFirstSection = false;
 
         // Section title — use app section name for app sections, translated title for fixed
-        $this->pdf->SetY(25);
         FontManager::apply($this->pdf, 'section_title');
         $sectionTitle = $this->getSectionTitle($section);
         $title = "{$pdfNum}. " . mb_strtoupper($sectionTitle);
