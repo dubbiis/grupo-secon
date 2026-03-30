@@ -815,11 +815,15 @@ const MapEditor = forwardRef(function MapEditor({
             const mapW = Math.round(rect.width);
             const mapH = Math.round(rect.height);
 
-            // Static Maps API: ALWAYS use current center/zoom for exact viewport match
+            // Static Maps API: scale down to fit 640px max while keeping aspect ratio
+            const ratio = Math.min(640 / mapW, 640 / mapH, 1);
+            const staticW = Math.round(mapW * ratio);
+            const staticH = Math.round(mapH * ratio);
+
             const params = new URLSearchParams({
                 center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
                 zoom: Math.round(mapState?.zoom || 13),
-                size: `${Math.min(mapW, 640)}x${Math.min(mapH, 640)}`,
+                size: `${staticW}x${staticH}`,
                 maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
             });
 
