@@ -51,7 +51,7 @@ export default function AddressAutocomplete({
     const dropdownRef = useRef(null);
     const sessionTokenRef = useRef(null);
 
-    // Load Places library (new API)
+    // Load Places library
     const placesLib = useMapsLibrary("places");
 
     const getSessionToken = useCallback(() => {
@@ -61,7 +61,6 @@ export default function AddressAutocomplete({
         return sessionTokenRef.current;
     }, [placesLib]);
 
-    // Update dropdown position
     useEffect(() => {
         if (open && inputRef.current) {
             const rect = inputRef.current.getBoundingClientRect();
@@ -69,9 +68,73 @@ export default function AddressAutocomplete({
         }
     }, [open]);
 
+    // ── Search: try new API, fallback to Geocoder ────────────────
+
+    const searchWithAutocomplete = useCallback(
+        async (query) => {
+            if (!placesLib?.AutocompleteSuggestion) return null;
+
+            const request = {
+                input: query,
+                sessionToken: getSessionToken(),
+                language: "es",
+            };
+
+            if (biasLat && biasLng && window.google?.maps?.LatLng) {
+                request.locationBias = new google.maps.Circle({
+                    center: new google.maps.LatLng(biasLat, biasLng),
+                    radius: 50000,
+                });
+            }
+
+            const { suggestions } = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+            return (suggestions || [])
+                .filter((s) => s.placePrediction)
+                .map((s) => {
+                    const p = s.placePrediction;
+                    return {
+                        placeId: p.placeId,
+                        name: p.mainText?.text || p.text?.text || "",
+                        subtitle: p.secondaryText?.text || "",
+                        displayName: p.text?.text || "",
+                        types: p.types || [],
+                    };
+                });
+        },
+        [placesLib, biasLat, biasLng, getSessionToken]
+    );
+
+    const searchWithGeocoder = useCallback(
+        async (query) => {
+            if (!window.google?.maps?.Geocoder) return [];
+
+            const geocoder = new google.maps.Geocoder();
+            return new Promise((resolve) => {
+                geocoder.geocode({ address: query, language: "es", region: "ES" }, (results, status) => {
+                    if (status === "OK" && results?.length) {
+                        resolve(results.map((r) => ({
+                            placeId: r.place_id,
+                            name: r.formatted_address?.split(",")[0] || r.formatted_address,
+                            subtitle: r.formatted_address?.split(",").slice(1).join(",").trim() || "",
+                            displayName: r.formatted_address,
+                            types: r.types || [],
+                            // Geocoder already has coords — store them directly
+                            lat: r.geometry.location.lat(),
+                            lng: r.geometry.location.lng(),
+                        })));
+                    } else {
+                        resolve([]);
+                    }
+                });
+            });
+        },
+        []
+    );
+
     const search = useCallback(
         async (query) => {
-            if (query.length < 2 || !placesLib?.AutocompleteSuggestion) {
+            if (query.length < 2) {
                 setResults([]);
                 setOpen(false);
                 return;
@@ -79,80 +142,91 @@ export default function AddressAutocomplete({
 
             setLoading(true);
             try {
-                const request = {
-                    input: query,
-                    sessionToken: getSessionToken(),
-                    language: "es",
-                };
+                // Try new Places Autocomplete API first
+                let items = await searchWithAutocomplete(query);
 
-                if (biasLat && biasLng && window.google?.maps?.LatLng) {
-                    request.locationBias = new google.maps.Circle({
-                        center: new google.maps.LatLng(biasLat, biasLng),
-                        radius: 50000,
-                    });
+                // Fallback to Geocoder if autocomplete unavailable or returned nothing
+                if (!items || items.length === 0) {
+                    items = await searchWithGeocoder(query);
                 }
 
-                const { suggestions } = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-
-                const items = (suggestions || [])
-                    .filter((s) => s.placePrediction)
-                    .map((s) => {
-                        const p = s.placePrediction;
-                        return {
-                            placeId: p.placeId,
-                            name: p.mainText?.text || p.text?.text || "",
-                            subtitle: p.secondaryText?.text || "",
-                            displayName: p.text?.text || "",
-                            types: p.types || [],
-                        };
-                    });
-
-                setResults(items);
-                setOpen(items.length > 0);
+                setResults(items || []);
+                setOpen((items || []).length > 0);
                 setActiveIdx(-1);
-            } catch {
-                setResults([]);
-                setOpen(false);
+            } catch (err) {
+                console.warn("AddressAutocomplete search error:", err);
+                // Try geocoder as last resort
+                try {
+                    const items = await searchWithGeocoder(query);
+                    setResults(items);
+                    setOpen(items.length > 0);
+                    setActiveIdx(-1);
+                } catch {
+                    setResults([]);
+                    setOpen(false);
+                }
             } finally {
                 setLoading(false);
             }
         },
-        [biasLat, biasLng, placesLib, getSessionToken]
+        [searchWithAutocomplete, searchWithGeocoder]
     );
 
+    // ── Resolve place to coords ──────────────────────────────────
+
     const resolvePlace = useCallback(
-        async (placeId, displayName) => {
-            if (!placesLib?.Place) {
-                onSelect?.({ lat: 0, lng: 0, displayName });
+        async (item) => {
+            const { placeId, displayName } = item;
+
+            // If we already have coords (from Geocoder fallback), use them directly
+            if (item.lat && item.lng) {
+                onSelect?.({ lat: item.lat, lng: item.lng, displayName, name: item.name });
                 return;
             }
 
-            try {
-                const place = new placesLib.Place({ id: placeId, requestedLanguage: "es" });
-                await place.fetchFields({
-                    fields: ["location", "formattedAddress", "displayName"],
-                    sessionToken: getSessionToken(),
-                });
+            // Try new Place API
+            if (placesLib?.Place) {
+                try {
+                    const place = new placesLib.Place({ id: placeId, requestedLanguage: "es" });
+                    await place.fetchFields({ fields: ["location", "formattedAddress", "displayName"] });
+                    sessionTokenRef.current = null;
 
-                // Reset session token after fetchFields (completes the session)
-                sessionTokenRef.current = null;
-
-                if (place.location) {
-                    onSelect?.({
-                        lat: place.location.lat(),
-                        lng: place.location.lng(),
-                        displayName: place.formattedAddress || displayName,
-                        name: place.displayName || displayName,
-                    });
-                } else {
-                    onSelect?.({ lat: 0, lng: 0, displayName });
+                    if (place.location) {
+                        onSelect?.({
+                            lat: place.location.lat(),
+                            lng: place.location.lng(),
+                            displayName: place.formattedAddress || displayName,
+                            name: place.displayName || displayName,
+                        });
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Place.fetchFields failed, falling back to Geocoder:", err);
+                    sessionTokenRef.current = null;
                 }
-            } catch {
-                sessionTokenRef.current = null;
+            }
+
+            // Fallback: resolve via Geocoder
+            if (window.google?.maps?.Geocoder) {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ placeId, language: "es" }, (results, status) => {
+                    if (status === "OK" && results?.[0]?.geometry?.location) {
+                        const loc = results[0].geometry.location;
+                        onSelect?.({
+                            lat: loc.lat(),
+                            lng: loc.lng(),
+                            displayName: results[0].formatted_address || displayName,
+                            name: displayName,
+                        });
+                    } else {
+                        onSelect?.({ lat: 0, lng: 0, displayName });
+                    }
+                });
+            } else {
                 onSelect?.({ lat: 0, lng: 0, displayName });
             }
         },
-        [placesLib, getSessionToken, onSelect]
+        [placesLib, onSelect]
     );
 
     const handleChange = (e) => {
@@ -169,12 +243,7 @@ export default function AddressAutocomplete({
         setOpen(false);
         setResults([]);
         inputRef.current?.blur();
-
-        if (item.placeId) {
-            resolvePlace(item.placeId, item.displayName);
-        } else if (item.lat && item.lng) {
-            onSelect?.(item);
-        }
+        resolvePlace(item);
     };
 
     const handleKeyDown = (e) => {
@@ -203,7 +272,6 @@ export default function AddressAutocomplete({
         }
     };
 
-    // Close on click outside
     useEffect(() => {
         const handleClick = (e) => {
             if (
@@ -221,9 +289,7 @@ export default function AddressAutocomplete({
     }, []);
 
     useEffect(() => {
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        };
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     }, []);
 
     return (
@@ -255,7 +321,6 @@ export default function AddressAutocomplete({
                 </div>
             </div>
 
-            {/* Quick address chips */}
             {quickAddresses.length > 0 && !value && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                     {quickAddresses.map((qa, i) => (
