@@ -38,7 +38,7 @@ class CoverPageBuilder
         $this->pdf->SetY(80);
         FontManager::apply($this->pdf, 'cover_title');
         $title = PdfTranslations::get('cover_title', $this->lang);
-        $this->pdf->MultiCell(0, 22, $title, 0, 'C', false, 1, 20, null, true);
+        $this->pdf->MultiCell($pageW, 22, $title, 0, 'C', false, 1, 0, null, true);
 
         // Blue separator line
         $lineY = $this->pdf->GetY() + 5;
@@ -52,13 +52,13 @@ class CoverPageBuilder
         $this->pdf->SetY($lineY + 10);
         FontManager::apply($this->pdf, 'cover_event');
         $eventName = $this->getEventName();
-        $this->pdf->MultiCell(0, 14, strtoupper($eventName), 0, 'C', false, 1, 20, null, true);
+        $this->pdf->MultiCell($pageW, 14, strtoupper($eventName), 0, 'C', false, 1, 0, null, true);
 
         // Location
         $this->pdf->SetY($this->pdf->GetY() + 3);
         FontManager::apply($this->pdf, 'cover_location');
         $location = $this->getLocation();
-        $this->pdf->MultiCell(0, 10, strtoupper($location), 0, 'C', false, 1, 20, null, true);
+        $this->pdf->MultiCell($pageW, 10, strtoupper($location), 0, 'C', false, 1, 0, null, true);
 
         // Restore margins and settings for content pages
         $this->pdf->SetMargins(20, 25, 20);
