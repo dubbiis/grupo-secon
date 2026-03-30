@@ -21,7 +21,7 @@ class SectionMapper
             ['pdf_num' => 8,  'type' => 'fixed_text',   'fixed_key' => 'security_plan'],
             ['pdf_num' => 9,  'type' => 'fixed_text',   'fixed_key' => 'human_resources'],
             ['pdf_num' => 10, 'type' => 'app_section',  'app_sections' => [8],  'has_images' => true],
-            ['pdf_num' => 11, 'type' => 'app_section',  'app_sections' => [9]],
+            ['pdf_num' => 11, 'type' => 'planning',     'app_sections' => [9]],
             ['pdf_num' => 12, 'type' => 'app_section',  'app_sections' => [10]],
             ['pdf_num' => 13, 'type' => 'app_section',  'app_sections' => [11], 'has_images' => true],
             ['pdf_num' => 14, 'type' => 'app_section',  'app_sections' => [12], 'has_images' => true],

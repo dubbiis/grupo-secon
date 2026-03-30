@@ -114,6 +114,10 @@ class ContentPageBuilder
                 }
                 break;
 
+            case 'planning':
+                $this->renderPlanningTable();
+                break;
+
             case 'annexes':
                 $this->renderAnnexes($section['app_sections'], $pdfNum);
                 break;
@@ -906,6 +910,184 @@ class ContentPageBuilder
         $month = (int) date('n', $ts);
 
         return $dias[$dow] . ' ' . $day . ' ' . $meses[$month];
+    }
+
+    /**
+     * Sec 9: Planning table — render rows grouped by day + staff summary.
+     */
+    private function renderPlanningTable(): void
+    {
+        $appSection = $this->plan->sections->firstWhere('section_number', 9);
+        if (!$appSection) return;
+
+        $rows = $appSection->form_data['filas'] ?? [];
+        if (!is_array($rows) || empty($rows)) {
+            FontManager::apply($this->pdf, 'body');
+            $this->pdf->MultiCell(0, 6, '(Planificación pendiente)', 0, 'L', false, 1, 20, null, true);
+            return;
+        }
+
+        // Column config: label, field, width (mm), align
+        $cols = [
+            ['Día',       'dia',       30, 'L'],
+            ['Posición',  'nombre',    40, 'L'],
+            ['Inicio',    'inicio',    18, 'C'],
+            ['Fin',       'fin',       18, 'C'],
+            ['Nº',        'cantidad',  12, 'C'],
+            ['Categoría', 'categoria', 30, 'C'],
+            ['Horas',     'horas',     22, 'R'],
+        ];
+        $totalW = array_sum(array_column($cols, 2));
+        $startX = 20;
+        $headerH = 8;
+        $rowH = 7;
+
+        // ── Table header ──
+        $this->ensureSpace(40);
+        $this->pdf->SetFillColor(34, 58, 129);
+        $this->pdf->SetTextColor(255, 255, 255);
+        $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+        $x = $startX;
+        $y = $this->pdf->GetY();
+        foreach ($cols as [$label, $field, $w, $align]) {
+            $this->pdf->SetXY($x, $y);
+            $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
+            $x += $w;
+        }
+        $this->pdf->SetY($y + $headerH);
+
+        // ── Table rows ──
+        $currentDay = null;
+        $totalHours = 0;
+
+        foreach ($rows as $rowIdx => $row) {
+            $day = $row['dia'] ?? '';
+
+            // Day header row
+            if ($day && $day !== $currentDay) {
+                $this->ensureSpace($rowH + 2);
+                $y = $this->pdf->GetY();
+                $this->pdf->SetFillColor(32, 141, 202, 20); // light blue
+                $this->pdf->SetFillColor(230, 244, 255);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+                $this->pdf->SetTextColor(32, 141, 202);
+                $this->pdf->SetXY($startX, $y);
+                $this->pdf->Cell($totalW, $rowH, mb_strtoupper($day), 0, 0, 'L', true);
+                $this->pdf->SetY($y + $rowH);
+                $currentDay = $day;
+            }
+
+            // Data row
+            $this->ensureSpace($rowH + 2);
+            $y = $this->pdf->GetY();
+            $bg = ($rowIdx % 2 === 0) ? [245, 247, 250] : [255, 255, 255];
+            $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
+            $this->pdf->SetTextColor(114, 112, 112);
+            $this->pdf->SetFont(FontManager::ROMAN, '', 8);
+
+            $x = $startX;
+            foreach ($cols as [$label, $field, $w, $align]) {
+                $val = $row[$field] ?? '';
+                if ($field === 'horas' && $val) {
+                    $val = $val . 'h';
+                    $totalHours += (float)($row['horas'] ?? 0);
+                }
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell($w, $rowH, $val, 0, 0, $align, true);
+                $x += $w;
+            }
+            $this->pdf->SetY($y + $rowH);
+
+            // Count hours (if not already counted in loop)
+            if (!str_contains($row['horas'] ?? '', 'h')) {
+                $totalHours += (float)($row['horas'] ?? 0);
+            }
+        }
+
+        // ── Total row ──
+        $this->ensureSpace(10);
+        $y = $this->pdf->GetY();
+        $this->pdf->SetFillColor(34, 58, 129);
+        $this->pdf->SetTextColor(255, 255, 255);
+        $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
+        $this->pdf->SetXY($startX, $y);
+        $this->pdf->Cell($totalW - 22, $headerH, 'TOTAL', 0, 0, 'R', true);
+        $this->pdf->Cell(22, $headerH, number_format($totalHours / 2, 1) . 'h', 0, 0, 'R', true);
+        $this->pdf->SetY($y + $headerH + 5);
+
+        // ── Staff summary ──
+        $staffMap = [];
+        foreach ($rows as $row) {
+            $name = trim($row['nombre'] ?? '');
+            if (!$name) continue;
+            if (!isset($staffMap[$name])) $staffMap[$name] = ['horas' => 0, 'categoria' => $row['categoria'] ?? ''];
+            $staffMap[$name]['horas'] += (float)($row['horas'] ?? 0);
+        }
+
+        if (!empty($staffMap)) {
+            $this->ensureSpace(30);
+
+            FontManager::apply($this->pdf, 'label');
+            $summaryTitle = $this->lang === 'en' ? 'Staff Summary:' : 'Resumen de Personal:';
+            $this->pdf->MultiCell(0, 7, $summaryTitle, 0, 'L', false, 1, 20, null, true);
+            $this->pdf->SetY($this->pdf->GetY() + 2);
+
+            // Summary header
+            $sumCols = [
+                ['Nombre / Posición', 70, 'L'],
+                ['Categoría', 50, 'C'],
+                ['Total Horas', 30, 'R'],
+            ];
+            $this->pdf->SetFillColor(34, 58, 129);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+            $x = $startX;
+            $y = $this->pdf->GetY();
+            foreach ($sumCols as [$label, $w, $align]) {
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
+                $x += $w;
+            }
+            $this->pdf->SetY($y + $headerH);
+
+            // Summary rows
+            $idx = 0;
+            $totalStaffHours = 0;
+            foreach ($staffMap as $name => $data) {
+                $this->ensureSpace($rowH + 2);
+                $y = $this->pdf->GetY();
+                $bg = ($idx % 2 === 0) ? [245, 247, 250] : [255, 255, 255];
+                $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
+                $this->pdf->SetTextColor(114, 112, 112);
+                $this->pdf->SetFont(FontManager::ROMAN, '', 8);
+
+                $x = $startX;
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell(70, $rowH, $name, 0, 0, 'L', true);
+                $x += 70;
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell(50, $rowH, $data['categoria'], 0, 0, 'C', true);
+                $x += 50;
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell(30, $rowH, number_format($data['horas'], 1) . 'h', 0, 0, 'R', true);
+                $this->pdf->SetY($y + $rowH);
+
+                $totalStaffHours += $data['horas'];
+                $idx++;
+            }
+
+            // Summary total
+            $y = $this->pdf->GetY();
+            $this->pdf->SetFillColor(34, 58, 129);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
+            $this->pdf->SetXY($startX, $y);
+            $this->pdf->Cell(120, $headerH, count($staffMap) . ' trabajadores', 0, 0, 'L', true);
+            $this->pdf->Cell(30, $headerH, number_format($totalStaffHours, 1) . 'h', 0, 0, 'R', true);
+            $this->pdf->SetY($y + $headerH + 5);
+        }
+
+        FontManager::apply($this->pdf, 'body');
     }
 
     /**
