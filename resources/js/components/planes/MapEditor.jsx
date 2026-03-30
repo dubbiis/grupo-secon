@@ -817,21 +817,25 @@ const MapEditor = forwardRef(function MapEditor({
             const mapH = Math.round(rect.height);
 
             // Build Static Maps API request via backend proxy
+            const hasRoute = !!mapState?.selectedRoutePolyline;
             const params = new URLSearchParams({
-                center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
-                zoom: mapState?.zoom || 13,
                 size: `${Math.min(mapW, 640)}x${Math.min(mapH, 640)}`,
                 maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
             });
 
-            if (mapState?.selectedRoutePolyline) {
+            if (hasRoute) {
+                // With a route: let Google auto-fit to path + markers (no center/zoom)
                 params.set("path", mapState.selectedRoutePolyline);
-            }
-            if (mapState?.routeOrigin) {
-                params.set("marker_a", `${mapState.routeOrigin.lat},${mapState.routeOrigin.lng}`);
-            }
-            if (mapState?.routeDestination) {
-                params.set("marker_b", `${mapState.routeDestination.lat},${mapState.routeDestination.lng}`);
+                if (mapState?.routeOrigin) {
+                    params.set("marker_a", `${mapState.routeOrigin.lat},${mapState.routeOrigin.lng}`);
+                }
+                if (mapState?.routeDestination) {
+                    params.set("marker_b", `${mapState.routeDestination.lat},${mapState.routeDestination.lng}`);
+                }
+            } else {
+                // No route: use exact center/zoom from the interactive map
+                params.set("center", mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038");
+                params.set("zoom", Math.round(mapState?.zoom || 13));
             }
 
             setCaptureFlash(true);
