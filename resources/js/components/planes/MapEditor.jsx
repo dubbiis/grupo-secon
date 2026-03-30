@@ -826,7 +826,7 @@ const MapEditor = forwardRef(function MapEditor({
             // To show the SAME geographic area: zoom_static = zoom_interactive - log2(mapW / staticW)
             const interactiveZoom = mapState?.zoom || 13;
             const zoomCorrection = Math.log2(mapW / staticW);
-            const staticZoom = Math.max(0, interactiveZoom - zoomCorrection - 6); // DEBUG: -6 extra para ver efecto
+            const staticZoom = Math.max(0, interactiveZoom - zoomCorrection);
 
             const params = new URLSearchParams({
                 center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
@@ -849,20 +849,10 @@ const MapEditor = forwardRef(function MapEditor({
 
             setCaptureFlash(true);
 
-            // DEBUG: download directly to see what Static API returns
-            const debugUrl = `/api/static-map?${params}`;
-            const res = await fetch(debugUrl);
+            const res = await fetch(`/api/static-map?${params}`);
             if (!res.ok) throw new Error("Static map failed");
 
             const blob = await res.blob();
-
-            // Direct download for debugging
-            const dlUrl = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = dlUrl;
-            a.download = "captura-debug.png";
-            a.click();
-            URL.revokeObjectURL(dlUrl);
 
             const dataUrl = await new Promise((resolve) => {
                 const reader = new FileReader();
@@ -875,10 +865,11 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    c.width = mapW;
-                    c.height = mapH;
+                    // Use image's native size (scale=2 gives sharp HD image)
+                    c.width = img.naturalWidth;
+                    c.height = img.naturalHeight;
                     const drawCtx = c.getContext("2d");
-                    drawCtx.drawImage(img, 0, 0, mapW, mapH);
+                    drawCtx.drawImage(img, 0, 0);
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
