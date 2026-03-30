@@ -101,6 +101,23 @@ export default function AddressAutocomplete({
         }
     }, [open]);
 
+    // Wait for Google Maps Places to be available (may load async)
+    const waitForService = useCallback(() => {
+        return new Promise((resolve) => {
+            const svc = getAutocompleteService();
+            if (svc) return resolve(svc);
+            // Poll up to 3 seconds
+            let attempts = 0;
+            const interval = setInterval(() => {
+                const svc = getAutocompleteService();
+                if (svc || ++attempts > 30) {
+                    clearInterval(interval);
+                    resolve(svc);
+                }
+            }, 100);
+        });
+    }, [getAutocompleteService]);
+
     const search = useCallback(
         async (query) => {
             if (query.length < 2) {
@@ -109,14 +126,15 @@ export default function AddressAutocomplete({
                 return;
             }
 
-            const service = getAutocompleteService();
+            setLoading(true);
+            const service = await waitForService();
             if (!service) {
                 setResults([]);
                 setOpen(false);
+                setLoading(false);
                 return;
             }
 
-            setLoading(true);
             try {
                 const request = {
                     input: query,
@@ -156,7 +174,7 @@ export default function AddressAutocomplete({
                 setLoading(false);
             }
         },
-        [biasLat, biasLng, getAutocompleteService, getSessionToken]
+        [biasLat, biasLng, waitForService, getSessionToken]
     );
 
     const resolvePlace = useCallback(

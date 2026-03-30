@@ -1308,7 +1308,7 @@ const MapEditor = forwardRef(function MapEditor({
                                 <ImagePlus size={12} />
                                 Canvas
                             </motion.button>
-                            {showMap && (
+                            {showMap && mode !== "standalone" && (
                                 <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
                                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                                         onClick={() => startCaptureRef.current?.()}
