@@ -4,6 +4,7 @@ import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
 import MapEditor from "@/components/planes/MapEditor";
 import PlacesPanel from "@/components/planes/PlacesPanel";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { Map } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
@@ -47,6 +48,7 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
     const mapFiles = files.filter((f) => f.file_category === "imagen_ruta");
 
     return (
+        <GoogleMapsProvider>
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
 
             {/* ── Búsqueda automática de emergencias ── */}
@@ -125,5 +127,6 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                 />
             </div>
         </SectionShell>
+        </GoogleMapsProvider>
     );
 }

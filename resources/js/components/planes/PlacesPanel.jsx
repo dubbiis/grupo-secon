@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Loader2, AlertCircle, Check, MapPin, RefreshCw, Navigation } from "lucide-react";
+import { Search, Loader2, AlertCircle, Check, MapPin, RefreshCw, Navigation, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { useTranslation } from "@/i18n";
@@ -11,10 +11,22 @@ const GROUPS = {
         { key: "parking",    label: "Parkings",               emoji: "🅿️" },
     ],
     emergencia: [
-        { key: "hospitales",    label: "Hospitales / Urgencias",  emoji: "🏥" },
-        { key: "policia",       label: "Policía Nacional / Local", emoji: "👮" },
-        { key: "guardia_civil", label: "Guardia Civil",            emoji: "🛡️" },
+        { key: "hospitales", label: "Hospitales / Urgencias", emoji: "🏥" },
+        { key: "policia",    label: "Policía",                emoji: "👮" },
     ],
+};
+
+const RADIUS_OPTIONS = [
+    { value: 1000,  label: "1 km" },
+    { value: 2000,  label: "2 km" },
+    { value: 5000,  label: "5 km" },
+    { value: 10000, label: "10 km" },
+    { value: 15000, label: "15 km" },
+];
+
+const DEFAULT_RADIUS = {
+    transporte: 2000,
+    emergencia: 5000,
 };
 
 function formatPlace(item) {
@@ -48,10 +60,8 @@ function buildOutputFields(type, data, checked) {
     (data.hospitales || []).forEach((item, i) => {
         if (checked[`hospitales_${i}`]) hospitalLines.push(formatPlace(item));
     });
-    ["policia", "guardia_civil"].forEach((key) => {
-        (data[key] || []).forEach((item, i) => {
-            if (checked[`${key}_${i}`]) fuerzasLines.push(formatPlace(item));
-        });
+    (data.policia || []).forEach((item, i) => {
+        if (checked[`policia_${i}`]) fuerzasLines.push(formatPlace(item));
     });
     return {
         hospitales_reales:  hospitalLines.join("\n"),
@@ -66,6 +76,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
     const [checked,     setChecked]     = useState({});
     const [addressUsed, setAddressUsed] = useState("");
     const [errorMsg,    setErrorMsg]    = useState("");
+    const [radius,      setRadius]      = useState(DEFAULT_RADIUS[type] ?? 5000);
 
     const groups = GROUPS[type] ?? [];
 
@@ -77,7 +88,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
         const headers = { "X-CSRF-TOKEN": csrf, "Content-Type": "application/json", "Accept": "application/json" };
-        const body = JSON.stringify({ skip_cache: skipCache });
+        const body = JSON.stringify({ skip_cache: skipCache, radius });
 
         const autoCheck = (merged) => {
             const c = {};
@@ -90,7 +101,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 let merged = {};
                 let addr = "";
 
-                // 1. Transit (metro + bus) — lighter query
+                // 1. Transit (metro + bus)
                 try {
                     const r1 = await fetch(`/planes/${uuid}/maps/transit`, { method: "POST", headers, body });
                     if (r1.ok) {
@@ -104,7 +115,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     }
                 } catch {}
 
-                // 2. Parking — separate query
+                // 2. Parking
                 try {
                     const r2 = await fetch(`/planes/${uuid}/maps/parking`, { method: "POST", headers, body });
                     if (r2.ok) {
@@ -117,11 +128,11 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 } catch {}
 
                 if (!merged.metro_tren?.length && !merged.autobus?.length && !merged.parking?.length) {
-                    setErrorMsg("No se encontraron datos de transporte en esta zona.");
+                    setErrorMsg("No se encontraron datos de transporte en esta zona. Prueba a ampliar el radio.");
                     setStatus("error");
                 }
             } else {
-                // Emergencia — split into 2 requests (hospitales first, then policia)
+                // Emergencia — split into 2 requests
                 let merged = {};
                 let addr = "";
 
@@ -139,7 +150,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     }
                 } catch {}
 
-                // 2. Policía + Guardia Civil
+                // 2. Policía
                 try {
                     const r2 = await fetch(`/planes/${uuid}/maps/policia`, { method: "POST", headers, body });
                     if (r2.ok) {
@@ -151,8 +162,8 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     }
                 } catch {}
 
-                if (!merged.hospitales?.length && !merged.policia?.length && !merged.guardia_civil?.length) {
-                    setErrorMsg("No se encontraron recursos de emergencia en esta zona.");
+                if (!merged.hospitales?.length && !merged.policia?.length) {
+                    setErrorMsg("No se encontraron recursos de emergencia en esta zona. Prueba a ampliar el radio.");
                     setStatus("error");
                 }
             }
@@ -185,28 +196,46 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     )}
                 </div>
 
-                {status === "idle" || status === "error" ? (
-                    <button
-                        onClick={search}
-                        className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-[#208DCA]/15 border border-[#208DCA]/30 text-[#208DCA] hover:bg-[#208DCA]/25 transition-all"
-                    >
-                        <Search size={11} />
-                        Buscar cerca del evento
-                    </button>
-                ) : status === "loading" ? (
-                    <div className="flex items-center gap-1.5 text-xs text-slate-900">
-                        <Loader2 size={12} className="animate-spin" />
-                        Buscando…
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Radio selector */}
+                    <div className="relative">
+                        <select
+                            value={radius}
+                            onChange={(e) => setRadius(Number(e.target.value))}
+                            className="appearance-none text-[11px] pl-2 pr-6 py-1 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#208DCA]/30"
+                        >
+                            {RADIUS_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
-                ) : (
-                    <button
-                        onClick={() => search(true)}
-                        className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
-                    >
-                        <RefreshCw size={11} />
-                        Volver a buscar
-                    </button>
-                )}
+
+                    {status === "idle" || status === "error" ? (
+                        <button
+                            onClick={() => search()}
+                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-[#208DCA]/15 border border-[#208DCA]/30 text-[#208DCA] hover:bg-[#208DCA]/25 transition-all"
+                        >
+                            <Search size={11} />
+                            Buscar cerca del evento
+                        </button>
+                    ) : status === "loading" ? (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-900">
+                            <Loader2 size={12} className="animate-spin" />
+                            Buscando…
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => search(true)}
+                            className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
+                        >
+                            <RefreshCw size={11} />
+                            Volver a buscar
+                        </button>
+                    )}
+                </div>
             </div>
 
             <AnimatePresence mode="wait">
@@ -320,7 +349,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
                         {totalItems === 0 && (
                             <p className="px-4 py-6 text-sm text-slate-400 text-center">
-                                No se encontraron lugares en este radio. Introduce los datos manualmente.
+                                No se encontraron lugares en este radio. Prueba a ampliarlo.
                             </p>
                         )}
 

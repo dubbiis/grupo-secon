@@ -8,7 +8,7 @@ import {
     Copy, Maximize2, Minimize2, Crosshair, FileImage, Navigation,
     MapPin, BookOpen, ChevronRight, Camera,
 } from "lucide-react";
-import LeafletMap from "@/components/planes/LeafletMap";
+import GoogleMap from "@/components/planes/GoogleMap";
 import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
@@ -235,6 +235,7 @@ const MapEditor = forwardRef(function MapEditor({
     const [iconDropPos, setIconDropPos] = useState({ top: 0, left: 0 });
     const containerRef = useRef(null);
     const mapContainerRef = useRef(null);
+    const googleMapRef = useRef(null);
 
     // Drawing refs (avoid re-render during draw)
     const isDrawingRef = useRef(false);
@@ -805,13 +806,10 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         try {
-            const leaflet = mapContainerRef.current.querySelector(".leaflet-container");
-            if (!leaflet) return;
+            const mapContainer = mapContainerRef.current.querySelector("[class*='map-container'], div[style*='position']") || mapContainerRef.current.firstElementChild;
+            if (!mapContainer) return;
 
-            // Use the tile pane as reference — it contains the actual visible tiles
-            const tilePane = leaflet.querySelector(".leaflet-tile-pane");
-            const overlayPane = leaflet.querySelector(".leaflet-overlay-pane");
-            const containerRect = leaflet.getBoundingClientRect();
+            const containerRect = mapContainer.getBoundingClientRect();
             const mapW = Math.round(containerRect.width);
             const mapH = Math.round(containerRect.height);
 
@@ -820,84 +818,58 @@ const MapEditor = forwardRef(function MapEditor({
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // Clip to map bounds
             ctx.beginPath();
             ctx.rect(0, 0, mapW, mapH);
             ctx.clip();
 
-            // Draw all tile images — use containerRect as origin
-            leaflet.querySelectorAll("img.leaflet-tile-loaded").forEach((tile) => {
-                const r = tile.getBoundingClientRect();
+            // Try to capture the Google Maps WebGL canvas
+            const webglCanvas = mapContainer.querySelector("canvas");
+            if (webglCanvas) {
                 try {
-                    ctx.drawImage(tile,
-                        r.left - containerRect.left,
-                        r.top - containerRect.top,
-                        r.width, r.height
-                    );
-                } catch {}
-            });
-
-            // Draw SVG overlays (route lines)
-            if (overlayPane) {
-                for (const svg of overlayPane.querySelectorAll("svg")) {
-                    try {
-                        const r = svg.getBoundingClientRect();
-                        const clone = svg.cloneNode(true);
-                        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-                        clone.setAttribute("width", String(Math.round(r.width)));
-                        clone.setAttribute("height", String(Math.round(r.height)));
-                        clone.removeAttribute("style");
-                        clone.style.width = Math.round(r.width) + "px";
-                        clone.style.height = Math.round(r.height) + "px";
-                        const data = new XMLSerializer().serializeToString(clone);
-                        const svgImg = await new Promise((resolve) => {
-                            const img = new Image();
-                            img.onload = () => resolve(img);
-                            img.onerror = () => resolve(null);
-                            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
-                        });
-                        if (svgImg) {
-                            ctx.drawImage(svgImg,
-                                r.left - containerRect.left,
-                                r.top - containerRect.top,
-                                Math.round(r.width), Math.round(r.height)
-                            );
-                        }
-                    } catch {}
+                    ctx.drawImage(webglCanvas, 0, 0, mapW, mapH);
+                } catch {
+                    // Canvas may be tainted — fill with a neutral background
+                    ctx.fillStyle = "#e5e7eb";
+                    ctx.fillRect(0, 0, mapW, mapH);
+                    ctx.fillStyle = "#94a3b8";
+                    ctx.font = "14px system-ui";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Mapa capturado (sin tiles)", mapW / 2, mapH / 2);
                 }
             }
 
-            // Draw HTML markers (A/B labels, POI icons) from the marker pane
-            const markerPane = leaflet.querySelector(".leaflet-marker-pane");
-            if (markerPane) {
-                for (const markerEl of markerPane.children) {
-                    try {
-                        const r = markerEl.getBoundingClientRect();
-                        if (r.width === 0 || r.height === 0) continue;
-                        // Use html2canvas-like approach: render the marker HTML to SVG foreignObject
-                        const html = markerEl.outerHTML;
-                        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(r.width)}" height="${Math.round(r.height)}">
-                            <foreignObject width="100%" height="100%">
-                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:${Math.round(r.width)}px;height:${Math.round(r.height)}px">
-                                    ${html}
-                                </div>
-                            </foreignObject>
-                        </svg>`;
-                        const markerImg = await new Promise((resolve) => {
-                            const img = new Image();
-                            img.onload = () => resolve(img);
-                            img.onerror = () => resolve(null);
-                            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
-                        });
-                        if (markerImg) {
-                            ctx.drawImage(markerImg,
-                                r.left - containerRect.left,
-                                r.top - containerRect.top,
-                                Math.round(r.width), Math.round(r.height)
-                            );
-                        }
-                    } catch {}
-                }
+            // Capture markers and overlays rendered as DOM elements
+            const overlayElements = mapContainer.querySelectorAll("[style*='position: absolute'], .gm-style > div > div > div > div");
+            for (const el of overlayElements) {
+                try {
+                    const r = el.getBoundingClientRect();
+                    if (r.width === 0 || r.height === 0) continue;
+                    if (r.width > mapW * 0.8) continue; // Skip large containers
+                    // Check if it looks like a marker (small element)
+                    if (r.width > 100 || r.height > 100) continue;
+
+                    const html = el.outerHTML;
+                    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(r.width)}" height="${Math.round(r.height)}">
+                        <foreignObject width="100%" height="100%">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:${Math.round(r.width)}px;height:${Math.round(r.height)}px">
+                                ${html}
+                            </div>
+                        </foreignObject>
+                    </svg>`;
+                    const markerImg = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+                    });
+                    if (markerImg) {
+                        ctx.drawImage(markerImg,
+                            r.left - containerRect.left,
+                            r.top - containerRect.top,
+                            Math.round(r.width), Math.round(r.height)
+                        );
+                    }
+                } catch {}
             }
 
             // Flash animation
@@ -906,7 +878,6 @@ const MapEditor = forwardRef(function MapEditor({
             const dataUrl = composite.toDataURL("image/png");
             const img = new Image();
             img.onload = () => {
-                // Delay to let flash animation play
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
@@ -1624,7 +1595,8 @@ const MapEditor = forwardRef(function MapEditor({
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                                <LeafletMap
+                                <GoogleMap
+                                    ref={googleMapRef}
                                     command={mapCommand}
                                     onStatus={setMapStatus}
                                     onRouteData={setRouteData}

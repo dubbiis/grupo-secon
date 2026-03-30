@@ -2,6 +2,7 @@ import { useState } from "react";
 import SectionShell from "@/components/planes/SectionShell";
 import FileUpload from "@/components/planes/FileUpload";
 import MapEditor from "@/components/planes/MapEditor";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { Map, Upload, Plus, Trash2, ChevronDown, FileImage } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
     const legacyFiles = files.filter((f) => f.file_category === "plano");
 
     return (
+        <GoogleMapsProvider>
         <SectionShell plan={plan} section={section} formData={formData} onFormChange={() => {}}>
             <motion.div
                 initial={{ opacity: 0, y: 4 }}
@@ -218,5 +220,6 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                 </div>
             )}
         </SectionShell>
+        </GoogleMapsProvider>
     );
 }

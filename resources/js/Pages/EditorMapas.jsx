@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { Crosshair } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import MapEditor from "@/components/planes/MapEditor";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 
 export default function EditorMapas() {
     const editorRef = useRef(null);
 
     return (
+        <GoogleMapsProvider>
         <AppLayout
             title="Editor de Mapas"
             subtitle="Crea planos, rutas de emergencia y anotaciones sobre imágenes"
@@ -37,5 +39,6 @@ export default function EditorMapas() {
                 <MapEditor ref={editorRef} mode="standalone" />
             </div>
         </AppLayout>
+        </GoogleMapsProvider>
     );
 }

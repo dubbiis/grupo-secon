@@ -7,9 +7,18 @@ use Illuminate\Support\Facades\Cache;
 
 class GoogleMapsService
 {
-    private string $userAgent = 'GrupoSecon/1.0 (planes-seguridad)';
+    private string $apiKey;
+    private string $language;
+    private string $region;
 
-    // ── Geocoding (Nominatim) ─────────────────────────────────────
+    public function __construct()
+    {
+        $this->apiKey   = config('googlemaps.api_key');
+        $this->language = config('googlemaps.language', 'es');
+        $this->region   = config('googlemaps.region', 'ES');
+    }
+
+    // ── Geocoding (Google Geocoding API) ─────────────────────────
 
     public function geocode(string $address): ?array
     {
@@ -18,22 +27,21 @@ class GoogleMapsService
         if ($cached !== null) return $cached;
 
         try {
-            $response = Http::withHeaders([
-                'User-Agent'      => $this->userAgent,
-                'Accept-Language' => 'es',
-            ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
-                'q'      => $address,
-                'format' => 'json',
-                'limit'  => 1,
+            $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'address'  => $address,
+                'key'      => $this->apiKey,
+                'language' => $this->language,
+                'region'   => $this->region,
             ]);
 
             $data = $response->json();
-            if (empty($data)) return null;
+            if (($data['status'] ?? '') !== 'OK' || empty($data['results'])) return null;
 
+            $loc = $data['results'][0]['geometry']['location'];
             $result = [
-                'lat'          => (float) $data[0]['lat'],
-                'lng'          => (float) $data[0]['lon'],
-                'display_name' => $data[0]['display_name'],
+                'lat'          => (float) $loc['lat'],
+                'lng'          => (float) $loc['lng'],
+                'display_name' => $data['results'][0]['formatted_address'] ?? $address,
             ];
 
             Cache::put($key, $result, 60 * 60 * 24 * 30);
@@ -43,32 +51,110 @@ class GoogleMapsService
         }
     }
 
-    // ── Overpass API (places nearby) ─────────────────────────────
+    // ── Places Nearby Search (Google Places API) ─────────────────
 
-    private const OVERPASS_MIRRORS = [
-        'https://overpass-api.de/api/interpreter',
-        'https://overpass.kumi.systems/api/interpreter',
-        'https://overpass.private.coffee/api/interpreter',
-    ];
-
-    private function overpassRequest(string $query): array
+    /**
+     * Search for places of given types near a location.
+     * Uses the Google Places API (New) — Nearby Search endpoint.
+     */
+    private function nearbySearch(float $lat, float $lng, array $includedTypes, int $radius = 5000, int $maxResults = 20): array
     {
-        foreach (self::OVERPASS_MIRRORS as $mirror) {
-            try {
-                $response = Http::withHeaders(['User-Agent' => $this->userAgent])
-                    ->timeout(12)
-                    ->asForm()
-                    ->post($mirror, ['data' => $query]);
+        try {
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'X-Goog-Api-Key'   => $this->apiKey,
+                    'X-Goog-FieldMask' => 'places.displayName,places.formattedAddress,places.location,places.internationalPhoneNumber,places.types',
+                ])
+                ->post('https://places.googleapis.com/v1/places:searchNearby', [
+                    'includedTypes'       => $includedTypes,
+                    'maxResultCount'      => $maxResults,
+                    'languageCode'        => $this->language,
+                    'locationRestriction' => [
+                        'circle' => [
+                            'center'  => ['latitude' => $lat, 'longitude' => $lng],
+                            'radius'  => (float) $radius,
+                        ],
+                    ],
+                ]);
 
-                if ($response->successful()) {
-                    return $response->json()['elements'] ?? [];
+            if ($response->failed()) return [];
+
+            return $response->json()['places'] ?? [];
+        } catch (\Exception) {
+            return [];
+        }
+    }
+
+    /**
+     * Convert Google Places API result to our internal format.
+     */
+    private function mapPlaceToItem(array $place, float $originLat, float $originLng): array
+    {
+        $loc  = $place['location'] ?? [];
+        $lat  = (float) ($loc['latitude'] ?? 0);
+        $lng  = (float) ($loc['longitude'] ?? 0);
+        $name = $place['displayName']['text'] ?? '';
+
+        return [
+            'name'          => $name,
+            'address'       => $place['formattedAddress'] ?? '',
+            'lat'           => $lat,
+            'lng'           => $lng,
+            'distance_text' => $this->formatDistanceKm($originLat, $originLng, $lat, $lng),
+            'phone'         => $place['internationalPhoneNumber'] ?? null,
+        ];
+    }
+
+    // ── Distance Matrix (Google Distance Matrix API) ─────────────
+
+    /**
+     * Get driving distances and times from origin to multiple destinations.
+     * Google allows max 25 destinations per request, so we batch.
+     */
+    private function getDistances(array $origin, array $destinations): array
+    {
+        if (empty($destinations)) return [];
+
+        $results = [];
+        $chunks  = array_chunk($destinations, 25);
+
+        foreach ($chunks as $chunk) {
+            try {
+                $destStrings = array_map(
+                    fn($d) => $d['lat'] . ',' . $d['lng'],
+                    $chunk
+                );
+
+                $response = Http::timeout(15)->get('https://maps.googleapis.com/maps/api/distancematrix/json', [
+                    'origins'      => $origin['lat'] . ',' . $origin['lng'],
+                    'destinations' => implode('|', $destStrings),
+                    'mode'         => 'driving',
+                    'language'     => $this->language,
+                    'key'          => $this->apiKey,
+                ]);
+
+                $data = $response->json();
+                $elements = $data['rows'][0]['elements'] ?? [];
+
+                foreach ($elements as $el) {
+                    if (($el['status'] ?? '') === 'OK') {
+                        $results[] = [
+                            'distance' => $el['distance']['value'] ?? 0,  // meters
+                            'time'     => $el['duration']['value'] ?? 0,  // seconds
+                        ];
+                    } else {
+                        $results[] = null;
+                    }
                 }
             } catch (\Exception) {
-                // Try next mirror
+                $results = array_merge($results, array_fill(0, count($chunk), null));
             }
         }
-        return [];
+
+        return $results;
     }
+
+    // ── Helpers ──────────────────────────────────────────────────
 
     private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
@@ -85,239 +171,125 @@ class GoogleMapsService
         return $km < 1 ? round($km * 1000) . ' m aprox.' : round($km, 1) . ' km aprox.';
     }
 
-    private function queryHospitals(float $lat, float $lng): array
-    {
-        return $this->overpassRequest(
-            "[out:json][timeout:10];(" .
-            "node[\"amenity\"~\"hospital|clinic\"](around:5000,{$lat},{$lng});" .
-            "way[\"amenity\"~\"hospital|clinic\"](around:5000,{$lat},{$lng});" .
-            ");out center tags;"
-        );
-    }
-
-    private function queryPolice(float $lat, float $lng): array
-    {
-        return $this->overpassRequest(
-            "[out:json][timeout:10];(" .
-            "node[\"amenity\"=\"police\"](around:5000,{$lat},{$lng});" .
-            "way[\"amenity\"=\"police\"](around:5000,{$lat},{$lng});" .
-            ");out center tags;"
-        );
-    }
-
-    private function queryTransit(float $lat, float $lng): array
-    {
-        return $this->overpassRequest(
-            "[out:json][timeout:10];(" .
-            "node[\"public_transport\"=\"station\"](around:1000,{$lat},{$lng});" .
-            "node[\"railway\"~\"station|subway_entrance\"](around:1000,{$lat},{$lng});" .
-            "node[\"railway\"=\"tram_stop\"](around:800,{$lat},{$lng});" .
-            ");out center tags;"
-        );
-    }
-
-    private function queryBus(float $lat, float $lng): array
-    {
-        return $this->overpassRequest(
-            "[out:json][timeout:10];(" .
-            "node[\"highway\"=\"bus_stop\"](around:400,{$lat},{$lng});" .
-            ");out center tags;"
-        );
-    }
-
-    private function queryParking(float $lat, float $lng): array
-    {
-        return $this->overpassRequest(
-            "[out:json][timeout:10];(" .
-            "node[\"amenity\"=\"parking\"](around:1000,{$lat},{$lng});" .
-            "way[\"amenity\"=\"parking\"](around:1000,{$lat},{$lng});" .
-            ");out center tags;"
-        );
-    }
-
-    // ── Valhalla (real road distances + travel times) ─────────────
-
-    private function getDistances(array $origin, array $destinations): array
-    {
-        if (empty($destinations)) return [];
-
-        try {
-            $targets = array_values(array_map(
-                fn($d) => ['lon' => $d['lng'], 'lat' => $d['lat']],
-                $destinations
-            ));
-
-            $response = Http::withHeaders(['User-Agent' => $this->userAgent])
-                ->timeout(20)
-                ->post('https://valhalla1.openstreetmap.de/sources_to_targets', [
-                    'sources' => [['lon' => $origin['lng'], 'lat' => $origin['lat']]],
-                    'targets' => $targets,
-                    'costing' => 'auto',
-                ]);
-
-            if ($response->failed()) {
-                return array_fill(0, count($destinations), null);
-            }
-
-            return $response->json()['sources_to_targets'][0]
-                ?? array_fill(0, count($destinations), null);
-        } catch (\Exception) {
-            return array_fill(0, count($destinations), null);
-        }
-    }
-
     private function formatDistance(?array $result): ?string
     {
         if (!$result || !isset($result['distance'])) return null;
-        $km   = round((float) $result['distance'], 1);
-        $mins = (int) round((float) ($result['time'] ?? 0) / 60);
-        $distStr = $km < 1 ? round($km * 1000) . ' m' : $km . ' km';
+        $meters = (float) $result['distance'];
+        $km     = round($meters / 1000, 1);
+        $mins   = (int) round((float) ($result['time'] ?? 0) / 60);
+        $distStr = $km < 1 ? round($meters) . ' m' : $km . ' km';
         return "{$distStr}, {$mins} min en coche";
     }
 
-    // ── Helpers ──────────────────────────────────────────────────
-
-    private function getCoords(array $element): array
+    /**
+     * Build place list from Google Places results with Distance Matrix distances.
+     */
+    private function buildPlaceList(array $places, float $originLat, float $originLng, bool $useDistanceMatrix = true): array
     {
-        if ($element['type'] === 'way') {
-            return [
-                'lat' => $element['center']['lat'],
-                'lng' => $element['center']['lon'],
-            ];
+        // First, convert to internal format and sort by haversine
+        $items = [];
+        foreach ($places as $place) {
+            $item = $this->mapPlaceToItem($place, $originLat, $originLng);
+            if (!$item['name']) continue;
+            $item['_haversine'] = $this->haversineKm($originLat, $originLng, $item['lat'], $item['lng']);
+            $items[] = $item;
         }
-        return ['lat' => $element['lat'], 'lng' => $element['lon']];
-    }
 
-    private function buildAddress(array $tags): string
-    {
-        $parts = [];
-        if (!empty($tags['addr:street'])) {
-            $parts[] = trim($tags['addr:street'] . ' ' . ($tags['addr:housenumber'] ?? ''));
-        }
-        if (!empty($tags['addr:city'])) {
-            $parts[] = $tags['addr:city'];
-        }
-        if (empty($parts) && !empty($tags['addr:full'])) {
-            return $tags['addr:full'];
-        }
-        return implode(', ', array_filter($parts));
-    }
+        usort($items, fn($a, $b) => $a['_haversine'] <=> $b['_haversine']);
 
-    private function buildPlaceList(array $elements, int $offset, array $distances): array
-    {
-        $result = [];
-        foreach ($elements as $i => $el) {
-            $tags    = $el['tags'] ?? [];
-            $name    = $tags['name'] ?? null;
-            if (!$name) continue;
+        // Optionally get real driving distances
+        if ($useDistanceMatrix && count($items) > 0) {
+            $origin = ['lat' => $originLat, 'lng' => $originLng];
+            $coords = array_map(fn($i) => ['lat' => $i['lat'], 'lng' => $i['lng']], $items);
+            $distances = $this->getDistances($origin, $coords);
 
-            $coords  = $this->getCoords($el);
-            $dist    = $distances[$offset + $i] ?? null;
-
-            $result[] = [
-                'name'          => $name,
-                'address'       => $this->buildAddress($tags),
-                'lat'           => $coords['lat'],
-                'lng'           => $coords['lng'],
-                'distance_text' => $this->formatDistance($dist),
-                'phone'         => $tags['phone'] ?? $tags['contact:phone'] ?? $tags['emergency:phone'] ?? null,
-            ];
+            foreach ($items as $idx => &$item) {
+                $formatted = $this->formatDistance($distances[$idx] ?? null);
+                if ($formatted) {
+                    $item['distance_text'] = $formatted;
+                }
+            }
+            unset($item);
         }
-        return $result;
+
+        // Remove internal field
+        return array_map(function ($item) {
+            unset($item['_haversine']);
+            return $item;
+        }, $items);
     }
 
     // ── Public API ───────────────────────────────────────────────
 
-    public function getTransitOnly(float $lat, float $lng): array
+    public function getTransitOnly(float $lat, float $lng, int $radius = 2000): array
     {
-        $origin = ['lat' => $lat, 'lng' => $lng];
-        $transitRaw = $this->queryTransit($lat, $lng);
-        $busRaw = $this->queryBus($lat, $lng);
+        $transitRaw = $this->nearbySearch($lat, $lng, ['subway_station', 'train_station', 'transit_station', 'light_rail_station'], $radius, 15);
+        $busRaw     = $this->nearbySearch($lat, $lng, ['bus_station'], min($radius, 1000), 10);
 
-        $seen = [];
+        // Deduplicate transit by name
+        $seen    = [];
         $transit = [];
-        foreach ($transitRaw as $el) {
-            $name = $el['tags']['name'] ?? null;
-            if ($name && !isset($seen[$name])) { $seen[$name] = true; $transit[] = $el; }
+        foreach ($transitRaw as $place) {
+            $name = $place['displayName']['text'] ?? '';
+            if ($name && !isset($seen[$name])) {
+                $seen[$name] = true;
+                $transit[]   = $place;
+            }
         }
-        $transit = array_slice($transit, 0, 10);
+        $transit  = array_slice($transit, 0, 10);
         $busStops = array_slice($busRaw, 0, 8);
 
-        $all = array_merge($transit, $busStops);
-        $coords = array_map([$this, 'getCoords'], $all);
-        $distances = $this->getDistances($origin, $coords);
-
         return [
-            'metro_tren' => $this->buildPlaceList($transit, 0, $distances),
-            'autobus' => $this->buildPlaceList($busStops, count($transit), $distances),
+            'metro_tren' => $this->buildPlaceList($transit, $lat, $lng),
+            'autobus'    => $this->buildPlaceList($busStops, $lat, $lng),
         ];
     }
 
-    public function getParkingOnly(float $lat, float $lng): array
+    public function getParkingOnly(float $lat, float $lng, int $radius = 2000): array
     {
-        $origin = ['lat' => $lat, 'lng' => $lng];
-        $parkingRaw = $this->queryParking($lat, $lng);
-        $parkings = array_slice($parkingRaw, 0, 8);
-        $coords = array_map([$this, 'getCoords'], $parkings);
-        $distances = $this->getDistances($origin, $coords);
+        $parkingRaw = $this->nearbySearch($lat, $lng, ['parking'], $radius, 10);
+        $parkings   = array_slice($parkingRaw, 0, 8);
 
         return [
-            'parking' => $this->buildPlaceList($parkings, 0, $distances),
+            'parking' => $this->buildPlaceList($parkings, $lat, $lng),
         ];
     }
 
     /**
-     * Transport data for section 4:
-     * metro_tren, autobus, parking
-     */
-    /**
-     * POIs for map overlay — cached 7 days, single combined response
+     * POIs for map overlay — cached 30 days, single combined response.
      */
     public function getMapPOIs(float $lat, float $lng, array $categories): array
     {
-        // Round to 2 decimals (~1km grid) so nearby addresses share cache
         $gridLat = round($lat, 2);
         $gridLng = round($lng, 2);
         sort($categories);
         $key = 'maps.pois.' . md5("{$gridLat},{$gridLng}," . implode(',', $categories));
+
         return Cache::remember($key, 60 * 60 * 24 * 30, function () use ($lat, $lng, $categories) {
             $pois = [];
+            $typeMap = [
+                'hospital' => ['types' => ['hospital'], 'emoji' => '🏥', 'max' => 8],
+                'police'   => ['types' => ['police'], 'emoji' => '👮', 'max' => 8],
+                'parking'  => ['types' => ['parking'], 'emoji' => '🅿️', 'max' => 8],
+                'metro'    => ['types' => ['subway_station', 'train_station', 'transit_station'], 'emoji' => '🚇', 'max' => 8],
+            ];
 
-            if (in_array('hospital', $categories)) {
-                foreach (array_slice($this->queryHospitals($lat, $lng), 0, 8) as $el) {
-                    $tags = $el['tags'] ?? [];
-                    $name = $tags['name'] ?? null;
+            foreach ($categories as $cat) {
+                if (!isset($typeMap[$cat])) continue;
+                $conf = $typeMap[$cat];
+                $radius = in_array($cat, ['hospital', 'police']) ? 5000 : 2000;
+                $places = $this->nearbySearch($lat, $lng, $conf['types'], $radius, $conf['max']);
+
+                foreach ($places as $place) {
+                    $loc  = $place['location'] ?? [];
+                    $name = $place['displayName']['text'] ?? '';
                     if (!$name) continue;
-                    $coords = $this->getCoords($el);
-                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🏥'];
-                }
-            }
-
-            if (in_array('police', $categories)) {
-                foreach (array_slice($this->queryPolice($lat, $lng), 0, 8) as $el) {
-                    $tags = $el['tags'] ?? [];
-                    $name = $tags['name'] ?? ($tags['description'] ?? 'Policía');
-                    $coords = $this->getCoords($el);
-                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '👮'];
-                }
-            }
-
-            if (in_array('parking', $categories)) {
-                foreach (array_slice($this->queryParking($lat, $lng), 0, 8) as $el) {
-                    $tags = $el['tags'] ?? [];
-                    $name = $tags['name'] ?? 'Parking';
-                    $coords = $this->getCoords($el);
-                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🅿️'];
-                }
-            }
-
-            if (in_array('metro', $categories)) {
-                foreach (array_slice($this->queryTransit($lat, $lng), 0, 8) as $el) {
-                    $tags = $el['tags'] ?? [];
-                    $name = $tags['name'] ?? null;
-                    if (!$name) continue;
-                    $coords = $this->getCoords($el);
-                    $pois[] = ['lat' => $coords['lat'], 'lng' => $coords['lng'], 'name' => $name, 'emoji' => '🚇'];
+                    $pois[] = [
+                        'lat'   => (float) ($loc['latitude'] ?? 0),
+                        'lng'   => (float) ($loc['longitude'] ?? 0),
+                        'name'  => $name,
+                        'emoji' => $conf['emoji'],
+                    ];
                 }
             }
 
@@ -325,134 +297,57 @@ class GoogleMapsService
         });
     }
 
-    public function getTransportData(float $lat, float $lng, bool $skipCache = false): array
+    /**
+     * Transport data for section 4: metro_tren, autobus, parking.
+     */
+    public function getTransportData(float $lat, float $lng, bool $skipCache = false, int $radius = 2000): array
     {
-        $key = 'maps.transport.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        $key = 'maps.transport.' . md5(round($lat, 2) . ',' . round($lng, 2) . ',' . $radius);
         if (!$skipCache && Cache::has($key)) return Cache::get($key);
 
-        $compute = function () use ($lat, $lng) {
-            $origin = ['lat' => $lat, 'lng' => $lng];
+        $transit = $this->getTransitOnly($lat, $lng, $radius);
+        $parking = $this->getParkingOnly($lat, $lng, $radius);
 
-            $transitRaw = $this->queryTransit($lat, $lng);
-            $busRaw     = $this->queryBus($lat, $lng);
-            $parkingRaw = $this->queryParking($lat, $lng);
+        $result = array_merge($transit, $parking);
 
-            // Deduplicate transit by name
-            $seen    = [];
-            $transit = [];
-            foreach ($transitRaw as $el) {
-                $name = $el['tags']['name'] ?? null;
-                if ($name && !isset($seen[$name])) {
-                    $seen[$name] = true;
-                    $transit[]   = $el;
-                }
-            }
-            $transit    = array_slice($transit, 0, 10);
-            $busStops   = array_slice($busRaw, 0, 8);
-            $parkings   = array_slice($parkingRaw, 0, 8);
-
-            // Batch distance request
-            $allElements = array_merge($transit, $busStops, $parkings);
-            $coords      = array_map([$this, 'getCoords'], $allElements);
-            $distances   = $this->getDistances($origin, $coords);
-
-            $tCount = count($transit);
-            $bCount = count($busStops);
-
-            return [
-                'metro_tren' => $this->buildPlaceList($transit, 0, $distances),
-                'autobus'    => $this->buildPlaceList($busStops, $tCount, $distances),
-                'parking'    => $this->buildPlaceList($parkings, $tCount + $bCount, $distances),
-            ];
-        };
-
-        $result = $compute();
         $total = count($result['metro_tren'] ?? []) + count($result['autobus'] ?? []) + count($result['parking'] ?? []);
         if ($total > 0) Cache::put($key, $result, 60 * 60 * 24 * 7);
         return $result;
     }
 
     /**
-     * Emergency data for section 5:
-     * hospitales, policia (Nacional/Local), guardia_civil
+     * Emergency data for section 5: hospitales, policia (unified).
      */
-    public function getEmergencyData(float $lat, float $lng, bool $skipCache = false): array
+    public function getEmergencyData(float $lat, float $lng, bool $skipCache = false, int $radius = 5000): array
     {
-        $key = 'maps.emergency.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        $key = 'maps.emergency.' . md5(round($lat, 2) . ',' . round($lng, 2) . ',' . $radius);
         if (!$skipCache && Cache::has($key)) return Cache::get($key);
 
-        $compute = function () use ($lat, $lng) {
-            $origin = ['lat' => $lat, 'lng' => $lng];
+        $hospitalPlaces = $this->nearbySearch($lat, $lng, ['hospital'], $radius, 10);
+        $policePlaces   = $this->nearbySearch($lat, $lng, ['police'], $radius, 10);
 
-            $hospitalRaw = $this->queryHospitals($lat, $lng);
-            $policeRaw   = $this->queryPolice($lat, $lng);
+        $hospitals = array_slice($hospitalPlaces, 0, 8);
+        $policia   = array_slice($policePlaces, 0, 10);
 
-            $policia  = [];
-            $guardias = [];
-            foreach ($policeRaw as $el) {
-                $tags = $el['tags'] ?? [];
-                $isGC = str_contains(strtolower($tags['name'] ?? ''), 'guardia civil')
-                     || str_contains(strtolower($tags['operator'] ?? ''), 'guardia civil');
-                if ($isGC) $guardias[] = $el; else $policia[] = $el;
-            }
+        $result = [
+            'hospitales' => $this->buildPlaceList($hospitals, $lat, $lng),
+            'policia'    => $this->buildPlaceList($policia, $lat, $lng),
+        ];
 
-            $hospitals = array_slice($hospitalRaw, 0, 8);
-            $policia   = array_slice($policia, 0, 6);
-            $guardias  = array_slice($guardias, 0, 4);
-
-            $allElements = array_merge($hospitals, $policia, $guardias);
-            $coords      = array_map([$this, 'getCoords'], $allElements);
-            $distances   = $this->getDistances($origin, $coords);
-
-            $hCount = count($hospitals);
-            $pCount = count($policia);
-
-            return [
-                'hospitales'    => $this->buildPlaceList($hospitals, 0, $distances),
-                'policia'       => $this->buildPlaceList($policia, $hCount, $distances),
-                'guardia_civil' => $this->buildPlaceList($guardias, $hCount + $pCount, $distances),
-            ];
-        };
-
-        $result = $compute();
-        $total = count($result['hospitales'] ?? []) + count($result['policia'] ?? []) + count($result['guardia_civil'] ?? []);
+        $total = count($result['hospitales']) + count($result['policia']);
         if ($total > 0) Cache::put($key, $result, 60 * 60 * 24 * 7);
         return $result;
     }
 
-    private function buildPlaceListHaversine(array $elements, float $originLat, float $originLng): array
-    {
-        $result = [];
-        foreach ($elements as $el) {
-            $tags = $el['tags'] ?? [];
-            $name = $tags['name'] ?? null;
-            if (!$name) continue;
-            $coords = $this->getCoords($el);
-            $result[] = [
-                'name'          => $name,
-                'address'       => $this->buildAddress($tags),
-                'lat'           => $coords['lat'],
-                'lng'           => $coords['lng'],
-                'distance_text' => $this->formatDistanceKm($originLat, $originLng, $coords['lat'], $coords['lng']),
-                'phone'         => $tags['phone'] ?? $tags['contact:phone'] ?? $tags['emergency:phone'] ?? null,
-            ];
-        }
-        usort($result, fn($a, $b) =>
-            $this->haversineKm($originLat, $originLng, $a['lat'], $a['lng']) <=>
-            $this->haversineKm($originLat, $originLng, $b['lat'], $b['lng'])
-        );
-        return $result;
-    }
-
     /** Hospitals only — for split requests */
-    public function getHospitalsOnly(float $lat, float $lng): array
+    public function getHospitalsOnly(float $lat, float $lng, int $radius = 5000): array
     {
-        $key = 'maps.hospitals_only.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        $key = 'maps.hospitals_only.' . md5(round($lat, 2) . ',' . round($lng, 2) . ',' . $radius);
         if (Cache::has($key)) return Cache::get($key);
 
-        $raw = $this->queryHospitals($lat, $lng);
-        $hospitals = array_slice($raw, 0, 8);
-        $result = ['hospitales' => $this->buildPlaceListHaversine($hospitals, $lat, $lng)];
+        $places   = $this->nearbySearch($lat, $lng, ['hospital'], $radius, 10);
+        $hospitals = array_slice($places, 0, 8);
+        $result = ['hospitales' => $this->buildPlaceList($hospitals, $lat, $lng)];
 
         if (count($result['hospitales']) > 0) {
             Cache::put($key, $result, 60 * 60 * 24 * 7);
@@ -460,30 +355,20 @@ class GoogleMapsService
         return $result;
     }
 
-    /** Police only — for split requests */
-    public function getPoliceOnly(float $lat, float $lng): array
+    /** Police only — for split requests (unified, no guardia_civil separation) */
+    public function getPoliceOnly(float $lat, float $lng, int $radius = 5000): array
     {
-        $key = 'maps.police_only.' . md5(round($lat, 2) . ',' . round($lng, 2));
+        $key = 'maps.police_only.' . md5(round($lat, 2) . ',' . round($lng, 2) . ',' . $radius);
         if (Cache::has($key)) return Cache::get($key);
 
-        $raw = $this->queryPolice($lat, $lng);
-        $policia = [];
-        $guardias = [];
-        foreach ($raw as $el) {
-            $tags = $el['tags'] ?? [];
-            $isGC = str_contains(strtolower($tags['name'] ?? ''), 'guardia civil')
-                 || str_contains(strtolower($tags['operator'] ?? ''), 'guardia civil');
-            if ($isGC) $guardias[] = $el; else $policia[] = $el;
-        }
-        $policia  = array_slice($policia, 0, 6);
-        $guardias = array_slice($guardias, 0, 4);
+        $places  = $this->nearbySearch($lat, $lng, ['police'], $radius, 10);
+        $policia = array_slice($places, 0, 10);
 
         $result = [
-            'policia'       => $this->buildPlaceListHaversine($policia, $lat, $lng),
-            'guardia_civil' => $this->buildPlaceListHaversine($guardias, $lat, $lng),
+            'policia' => $this->buildPlaceList($policia, $lat, $lng),
         ];
 
-        if (count($result['policia']) > 0 || count($result['guardia_civil']) > 0) {
+        if (count($result['policia']) > 0) {
             Cache::put($key, $result, 60 * 60 * 24 * 7);
         }
         return $result;

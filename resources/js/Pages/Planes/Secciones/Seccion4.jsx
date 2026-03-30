@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
 import PlacesPanel from "@/components/planes/PlacesPanel";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { useTranslation } from "@/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { DoorOpen, ImagePlus } from "lucide-react";
@@ -124,6 +125,7 @@ export default function Seccion4({ plan, section }) {
     }, [form.datos_transporte_googlemaps, form.datos_parkings_googlemaps]);
 
     return (
+        <GoogleMapsProvider>
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
             <div>
                 <label className="text-sm font-medium mb-1.5 block">{t("s4.accesses")}</label>
@@ -216,5 +218,6 @@ export default function Seccion4({ plan, section }) {
                 />
             </div>
         </SectionShell>
+        </GoogleMapsProvider>
     );
 }

@@ -3,20 +3,29 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
 
-const GEOCODE_URL = "/api/geocode";
-
 const TYPE_ICONS = {
-    house: MapPin,
-    street: MapPin,
-    city: Building2,
+    street_address: MapPin,
+    route: MapPin,
+    premise: MapPin,
+    subpremise: MapPin,
     locality: Building2,
-    district: Building2,
-    county: Building2,
-    state: Building2,
+    administrative_area_level_1: Building2,
+    administrative_area_level_2: Building2,
     country: Building2,
-    railway: Train,
+    transit_station: Train,
+    train_station: Train,
+    subway_station: Train,
     park: TreePine,
+    point_of_interest: MapPin,
+    establishment: MapPin,
 };
+
+function getIconForTypes(types = []) {
+    for (const t of types) {
+        if (TYPE_ICONS[t]) return TYPE_ICONS[t];
+    }
+    return MapPin;
+}
 
 export default function AddressAutocomplete({
     value = "",
@@ -35,11 +44,54 @@ export default function AddressAutocomplete({
     const [loading, setLoading] = useState(false);
     const [activeIdx, setActiveIdx] = useState(-1);
     const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
-    const abortRef = useRef(null);
     const timerRef = useRef(null);
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
     const dropdownRef = useRef(null);
+    const sessionTokenRef = useRef(null);
+    const autocompleteServiceRef = useRef(null);
+    const placesServiceRef = useRef(null);
+    const hiddenDivRef = useRef(null);
+
+    // Create a hidden div for PlacesService (requires a DOM element)
+    useEffect(() => {
+        if (!hiddenDivRef.current) {
+            hiddenDivRef.current = document.createElement("div");
+            hiddenDivRef.current.style.display = "none";
+            document.body.appendChild(hiddenDivRef.current);
+        }
+        return () => {
+            if (hiddenDivRef.current?.parentNode) {
+                hiddenDivRef.current.parentNode.removeChild(hiddenDivRef.current);
+            }
+        };
+    }, []);
+
+    // Initialize Google services when available
+    const getAutocompleteService = useCallback(() => {
+        if (autocompleteServiceRef.current) return autocompleteServiceRef.current;
+        if (window.google?.maps?.places?.AutocompleteService) {
+            autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+            return autocompleteServiceRef.current;
+        }
+        return null;
+    }, []);
+
+    const getPlacesService = useCallback(() => {
+        if (placesServiceRef.current) return placesServiceRef.current;
+        if (window.google?.maps?.places?.PlacesService && hiddenDivRef.current) {
+            placesServiceRef.current = new google.maps.places.PlacesService(hiddenDivRef.current);
+            return placesServiceRef.current;
+        }
+        return null;
+    }, []);
+
+    const getSessionToken = useCallback(() => {
+        if (!sessionTokenRef.current && window.google?.maps?.places?.AutocompleteSessionToken) {
+            sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
+        }
+        return sessionTokenRef.current;
+    }, []);
 
     // Update dropdown position when opening
     useEffect(() => {
@@ -57,34 +109,88 @@ export default function AddressAutocomplete({
                 return;
             }
 
-            if (abortRef.current) abortRef.current.abort();
-            const controller = new AbortController();
-            abortRef.current = controller;
+            const service = getAutocompleteService();
+            if (!service) {
+                setResults([]);
+                setOpen(false);
+                return;
+            }
 
             setLoading(true);
             try {
-                const params = new URLSearchParams({ q: query });
-                if (biasLat && biasLng) {
-                    params.set("lat", String(biasLat));
-                    params.set("lng", String(biasLng));
+                const request = {
+                    input: query,
+                    sessionToken: getSessionToken(),
+                    language: "es",
+                };
+
+                // Add location bias if available
+                if (biasLat && biasLng && window.google?.maps?.LatLng) {
+                    request.locationBias = new google.maps.Circle({
+                        center: new google.maps.LatLng(biasLat, biasLng),
+                        radius: 50000,
+                    });
                 }
 
-                const res = await fetch(`${GEOCODE_URL}?${params}`, { signal: controller.signal });
-                const items = await res.json();
-
-                setResults(items);
-                setOpen(items.length > 0);
-                setActiveIdx(-1);
-            } catch (err) {
-                if (err.name !== "AbortError") {
-                    setResults([]);
-                    setOpen(false);
-                }
-            } finally {
+                service.getPlacePredictions(request, (predictions, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                        const items = predictions.map((p) => ({
+                            placeId: p.place_id,
+                            name: p.structured_formatting?.main_text || p.description,
+                            subtitle: p.structured_formatting?.secondary_text || "",
+                            displayName: p.description,
+                            types: p.types || [],
+                        }));
+                        setResults(items);
+                        setOpen(items.length > 0);
+                        setActiveIdx(-1);
+                    } else {
+                        setResults([]);
+                        setOpen(false);
+                    }
+                    setLoading(false);
+                });
+            } catch {
+                setResults([]);
+                setOpen(false);
                 setLoading(false);
             }
         },
-        [biasLat, biasLng]
+        [biasLat, biasLng, getAutocompleteService, getSessionToken]
+    );
+
+    const resolvePlace = useCallback(
+        (placeId, displayName) => {
+            const service = getPlacesService();
+            if (!service) {
+                onSelect?.({ lat: 0, lng: 0, displayName });
+                return;
+            }
+
+            service.getDetails(
+                {
+                    placeId,
+                    fields: ["geometry", "formatted_address", "name"],
+                    sessionToken: getSessionToken(),
+                },
+                (place, status) => {
+                    // Reset session token after getDetails (completes the session)
+                    sessionTokenRef.current = null;
+
+                    if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+                        onSelect?.({
+                            lat: place.geometry.location.lat(),
+                            lng: place.geometry.location.lng(),
+                            displayName: place.formatted_address || displayName,
+                            name: place.name || displayName,
+                        });
+                    } else {
+                        onSelect?.({ lat: 0, lng: 0, displayName });
+                    }
+                }
+            );
+        },
+        [getPlacesService, getSessionToken, onSelect]
     );
 
     const handleChange = (e) => {
@@ -92,20 +198,24 @@ export default function AddressAutocomplete({
         onChange?.(val);
 
         if (timerRef.current) clearTimeout(timerRef.current);
-        // Longer debounce if user is typing a number (likely street number)
         const endsWithDigit = /\d$/.test(val.trim());
         timerRef.current = setTimeout(() => search(val), endsWithDigit ? 800 : 250);
     };
 
     const handleSelect = (item) => {
         onChange?.(item.displayName);
-        onSelect?.(item);
         setOpen(false);
         setResults([]);
         inputRef.current?.blur();
+
+        if (item.placeId) {
+            resolvePlace(item.placeId, item.displayName);
+        } else if (item.lat && item.lng) {
+            onSelect?.(item);
+        }
     };
 
-    const handleKeyDown = async (e) => {
+    const handleKeyDown = (e) => {
         if (e.key === "Escape") { setOpen(false); return; }
 
         if (e.key === "Enter") {
@@ -115,14 +225,7 @@ export default function AddressAutocomplete({
             } else if (open && results.length > 0) {
                 handleSelect(results[0]);
             } else if (value.trim().length >= 3) {
-                // No dropdown open — geocode the raw text directly
-                try {
-                    const params = new URLSearchParams({ q: value.trim() });
-                    if (biasLat && biasLng) { params.set("lat", String(biasLat)); params.set("lng", String(biasLng)); }
-                    const res = await fetch(`${GEOCODE_URL}?${params}`);
-                    const items = await res.json();
-                    if (items.length > 0) handleSelect(items[0]);
-                } catch {}
+                search(value.trim());
             }
             return;
         }
@@ -138,7 +241,7 @@ export default function AddressAutocomplete({
         }
     };
 
-    // Close on click outside (check both wrapper and portal dropdown)
+    // Close on click outside
     useEffect(() => {
         const handleClick = (e) => {
             if (
@@ -147,7 +250,6 @@ export default function AddressAutocomplete({
             ) {
                 setOpen(false);
             }
-            // If dropdown not mounted yet, only check wrapper
             if (wrapperRef.current && !wrapperRef.current.contains(e.target) && !dropdownRef.current) {
                 setOpen(false);
             }
@@ -160,7 +262,6 @@ export default function AddressAutocomplete({
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
-            if (abortRef.current) abortRef.current.abort();
         };
     }, []);
 
@@ -202,7 +303,6 @@ export default function AddressAutocomplete({
                             type="button"
                             onClick={() => {
                                 onChange?.(qa.address);
-                                // Trigger geocode search for this address
                                 search(qa.address);
                             }}
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-colors"
@@ -225,10 +325,10 @@ export default function AddressAutocomplete({
                     style={{ zIndex: 99999, top: dropPos.top, left: dropPos.left, width: dropPos.width, minWidth: 280 }}
                 >
                     {results.map((item, i) => {
-                        const Icon = TYPE_ICONS[item.type] || MapPin;
+                        const Icon = getIconForTypes(item.types);
                         return (
                             <motion.button
-                                key={`${item.lat}-${item.lng}-${i}`}
+                                key={item.placeId || `${i}`}
                                 type="button"
                                 onClick={() => handleSelect(item)}
                                 onMouseEnter={() => setActiveIdx(i)}

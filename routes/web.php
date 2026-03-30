@@ -49,14 +49,13 @@ Route::middleware('auth')->group(function () {
     // VIP AI description
     Route::post('/planes/{uuid}/vip-describir', [PlanSectionController::class, 'vipDescribir'])->name('planes.vip.describir');
 
-    // Maps (Nominatim + Overpass + Valhalla)
+    // Maps (Google Maps Platform)
     Route::post('/planes/{uuid}/maps/transporte', [GoogleMapsController::class, 'transporte'])->name('planes.maps.transporte');
     Route::post('/planes/{uuid}/maps/transit', [GoogleMapsController::class, 'transit'])->name('planes.maps.transit');
     Route::post('/planes/{uuid}/maps/parking', [GoogleMapsController::class, 'parking'])->name('planes.maps.parking');
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
     Route::post('/planes/{uuid}/maps/hospitales', [GoogleMapsController::class, 'hospitales'])->name('planes.maps.hospitales');
     Route::post('/planes/{uuid}/maps/policia', [GoogleMapsController::class, 'policia'])->name('planes.maps.policia');
-    Route::get('/api/geocode', [GoogleMapsController::class, 'geocodeSearch'])->name('api.geocode');
     Route::get('/api/map-pois', [GoogleMapsController::class, 'mapPOIs'])->name('api.map-pois');
 
     // Custom questions
