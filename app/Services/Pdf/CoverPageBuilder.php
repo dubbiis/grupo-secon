@@ -54,11 +54,7 @@ class CoverPageBuilder
         $eventName = $this->getEventName();
         $this->pdf->MultiCell($pageW, 14, strtoupper($eventName), 0, 'C', false, 1, 0, null, true);
 
-        // Location
-        $this->pdf->SetY($this->pdf->GetY() + 3);
-        FontManager::apply($this->pdf, 'cover_location');
-        $location = $this->getLocation();
-        $this->pdf->MultiCell($pageW, 10, strtoupper($location), 0, 'C', false, 1, 0, null, true);
+        // Location removed — only title + event name on cover
 
         // Restore margins and settings for content pages
         $this->pdf->SetMargins(20, 25, 20);

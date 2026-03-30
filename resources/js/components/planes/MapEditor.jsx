@@ -1487,15 +1487,32 @@ const MapEditor = forwardRef(function MapEditor({
                                             className="flex-shrink-0 overflow-hidden"
                                             style={{ height: "100%" }}
                                         >
-                                            <div className="h-full rounded-xl border border-slate-200 bg-white overflow-y-auto">
-                                                <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-3 py-2.5 flex items-center justify-between z-10">
+                                            <div className="h-full max-h-[500px] rounded-xl border border-slate-200 bg-white flex flex-col">
+                                                <div className="flex-shrink-0 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-3 py-2.5 flex items-center justify-between">
                                                     <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Direcciones</span>
                                                     <button onClick={() => setShowAddressPanel(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                                         <X size={14} />
                                                     </button>
                                                 </div>
-                                                <div className="p-2 space-y-1.5">
-                                                    {planAddresses.map((addr, i) => {
+                                                <div className="flex-1 overflow-y-auto p-2 space-y-3">
+                                                    {(() => {
+                                                        // Categorize addresses by emoji prefix
+                                                        const categories = {};
+                                                        planAddresses.forEach((addr) => {
+                                                            const isEmoji = /^\p{Emoji}/u.test(addr.label || "");
+                                                            let cat = "📍 Ubicaciones";
+                                                            if (isEmoji) {
+                                                                const emoji = addr.label.slice(0, 2);
+                                                                if (emoji === "🏥") cat = "🏥 Hospitales";
+                                                                else if (emoji === "🚔") cat = "🚔 Policía";
+                                                                else if (emoji === "🚇") cat = "🚇 Transporte";
+                                                                else if (emoji === "🅿") cat = "🅿️ Parkings";
+                                                                else cat = `${emoji} Otros`;
+                                                            }
+                                                            if (!categories[cat]) categories[cat] = [];
+                                                            categories[cat].push(addr);
+                                                        });
+
                                                         const geocodeAddr = async (text) => {
                                                             try {
                                                                 const r = await fetch(`/api/autocomplete?${new URLSearchParams({ q: text })}`);
@@ -1507,12 +1524,11 @@ const MapEditor = forwardRef(function MapEditor({
                                                             } catch { return null; }
                                                         };
 
-                                                        const handleClick = async () => {
+                                                        const handleAddrClick = async (addr) => {
                                                             const text = addr.address;
                                                             const place = await geocodeAddr(text);
                                                             if (!place) return;
                                                             const coords = { lat: place.lat, lng: place.lng };
-
                                                             if (mapMode === "search") {
                                                                 setMapQuery(text);
                                                                 setMapCommand({ type: "search", query: coords });
@@ -1530,42 +1546,44 @@ const MapEditor = forwardRef(function MapEditor({
                                                             }
                                                         };
 
-                                                        const isEmoji = /^\p{Emoji}/u.test(addr.label || "");
-                                                        return (
-                                                            <motion.button
-                                                                key={i}
-                                                                initial={{ opacity: 0, y: 6 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                transition={{ delay: i * 0.04, type: "spring", stiffness: 300 }}
-                                                                type="button"
-                                                                onClick={handleClick}
-                                                                className="w-full flex items-start gap-2.5 p-2.5 rounded-xl text-left border border-slate-100 hover:border-[#208DCA]/30 hover:bg-gradient-to-r hover:from-[#208DCA]/5 hover:to-transparent transition-all group shadow-sm hover:shadow-md"
-                                                            >
-                                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-[#253C87]/10 to-[#208DCA]/10 flex items-center justify-center">
-                                                                    {isEmoji ? (
-                                                                        <span className="text-sm">{addr.label.slice(0, 2)}</span>
-                                                                    ) : (
-                                                                        <MapPin size={14} className="text-[#208DCA]" />
-                                                                    )}
+                                                        return Object.entries(categories).map(([catName, addrs]) => (
+                                                            <div key={catName}>
+                                                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1 mb-1">{catName}</div>
+                                                                <div className="space-y-1">
+                                                                    {addrs.map((addr, i) => {
+                                                                        const isEmoji = /^\p{Emoji}/u.test(addr.label || "");
+                                                                        return (
+                                                                            <motion.button
+                                                                                key={`${catName}-${i}`}
+                                                                                initial={{ opacity: 0, y: 4 }}
+                                                                                animate={{ opacity: 1, y: 0 }}
+                                                                                transition={{ delay: i * 0.02 }}
+                                                                                type="button"
+                                                                                onClick={() => handleAddrClick(addr)}
+                                                                                className="w-full flex items-start gap-2 p-2 rounded-lg text-left border border-slate-100 hover:border-[#208DCA]/30 hover:bg-[#208DCA]/5 transition-all group"
+                                                                            >
+                                                                                <div className="min-w-0 flex-1">
+                                                                                    <div className="text-[11px] font-medium text-slate-700 truncate group-hover:text-[#208DCA]">
+                                                                                        {isEmoji ? addr.label.slice(2).trim() : addr.label}
+                                                                                    </div>
+                                                                                    <div className="text-[9px] text-slate-400 truncate">{addr.address}</div>
+                                                                                </div>
+                                                                                <div className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                    {mapMode === "route" ? (
+                                                                                        <span className="text-[9px] font-bold text-[#208DCA] bg-[#208DCA]/10 px-1.5 py-0.5 rounded">
+                                                                                            {!routeA ? "A" : "B"}
+                                                                                        </span>
+                                                                                    ) : (
+                                                                                        <Navigation size={9} className="text-[#208DCA]" />
+                                                                                    )}
+                                                                                </div>
+                                                                            </motion.button>
+                                                                        );
+                                                                    })}
                                                                 </div>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <div className="text-[11px] font-semibold text-slate-800 truncate group-hover:text-[#208DCA] transition-colors">
-                                                                        {isEmoji ? addr.label.slice(2).trim() : addr.label}
-                                                                    </div>
-                                                                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{addr.address}</div>
-                                                                </div>
-                                                                <div className="flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    {mapMode === "route" ? (
-                                                                        <span className="text-[9px] font-bold text-[#208DCA] bg-[#208DCA]/10 px-1.5 py-0.5 rounded">
-                                                                            {!routeA ? "A" : "B"}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <Navigation size={10} className="text-[#208DCA]" />
-                                                                    )}
-                                                                </div>
-                                                            </motion.button>
-                                                        );
-                                                    })}
+                                                            </div>
+                                                        ));
+                                                    })()}
                                                 </div>
                                             </div>
                                         </motion.div>
