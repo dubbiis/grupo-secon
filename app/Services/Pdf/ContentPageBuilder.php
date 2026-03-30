@@ -329,14 +329,23 @@ class ContentPageBuilder
             $this->pdf->SetFillColor(255, 255, 255);
             $this->pdf->Rect(0, 286, 210, 11, 'F');
 
-            // 3. Paint our blue gradient footer bar on top
-            // Draw a gradient-like bar (solid blue approximation)
-            $this->pdf->SetFillColor(34, 58, 129);
-            $this->pdf->Rect(0, 288, 105, 9, 'F');
-            $this->pdf->SetFillColor(32, 141, 202);
-            $this->pdf->Rect(105, 288, 105, 9, 'F');
+            // 3. Paint gradient footer bar (multiple segments for smooth transition)
+            $barY = 288;
+            $barH = 9;
+            $steps = 30;
+            $stepW = 210 / $steps;
+            $r1 = 34; $g1 = 58; $b1 = 129;   // #223A81
+            $r2 = 32; $g2 = 141; $b2 = 202;  // #208DCA
+            for ($s = 0; $s < $steps; $s++) {
+                $t = $s / ($steps - 1);
+                $r = (int)($r1 + ($r2 - $r1) * $t);
+                $g = (int)($g1 + ($g2 - $g1) * $t);
+                $b = (int)($b1 + ($b2 - $b1) * $t);
+                $this->pdf->SetFillColor($r, $g, $b);
+                $this->pdf->Rect($s * $stepW, $barY, $stepW + 0.5, $barH, 'F');
+            }
 
-            // 4. Secon logo mini (white S icon area)
+            // 4. Secon logo mini
             $logoPath = public_path('images/logo-secon.svg');
             if (file_exists($logoPath)) {
                 $this->pdf->ImageSVG($logoPath, 5, 288.5, 8);
