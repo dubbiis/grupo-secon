@@ -575,10 +575,11 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Only drag existing elements when in "select" tool
-        // Other tools always prioritize drawing new elements
+        // Hit test for existing elements
+        const idx = hitTestElement(pos);
+
         if (tool === "select") {
-            const idx = hitTestElement(pos);
+            // Select tool: click to select + drag to move
             if (idx >= 0) {
                 setSelectedIdx(idx);
                 isDraggingRef.current = true;
@@ -587,9 +588,21 @@ const MapEditor = forwardRef(function MapEditor({
                 redraw(elements, idx);
                 return;
             }
+            // Click on empty → deselect
+            if (selectedIdx !== null) {
+                setSelectedIdx(null);
+                redraw(elements, null);
+            }
+            return;
         }
-        // Click on empty area deselects (any tool)
-        if (selectedIdx !== null) {
+
+        // Drawing tools: click on element selects it (show handles)
+        // but does NOT enter drag mode — drawing takes priority
+        if (idx >= 0 && tool !== "text") {
+            setSelectedIdx(idx);
+            redraw(elements, idx);
+            // Don't return — continue to start drawing
+        } else if (selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
