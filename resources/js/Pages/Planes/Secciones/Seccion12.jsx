@@ -163,7 +163,17 @@ export default function Seccion12({ plan, section, files = [] }) {
     const { t } = useTranslation();
     const [modo, setModo] = useState(section.form_data?.modo ?? "crear");
     const [items, setItems] = useState(() => {
-        try { return JSON.parse(section.form_data?.personas_json ?? "[]"); }
+        try {
+            const parsed = JSON.parse(section.form_data?.personas_json ?? "[]");
+            // Resolve foto_url from files (in case URLs changed)
+            return parsed.map((item) => {
+                if (item.foto_id) {
+                    const file = files.find((f) => f.id === item.foto_id);
+                    if (file) return { ...item, foto_url: file.url };
+                }
+                return item;
+            });
+        }
         catch { return []; }
     });
     const [openIdx, setOpenIdx] = useState(null);

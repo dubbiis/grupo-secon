@@ -229,7 +229,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
 }
 
 // ── Main section ───────────────────────────────────────────
-export default function Seccion6({ plan, section }) {
+export default function Seccion6({ plan, section, files = [] }) {
     const { t } = useTranslation();
     const [form, setForm] = useState({
         perfil_publico: "",
@@ -239,7 +239,17 @@ export default function Seccion6({ plan, section }) {
     });
 
     const [vips, setVips] = useState(() => {
-        try { return JSON.parse(section.form_data?.vips_json ?? "[]"); }
+        try {
+            const parsed = JSON.parse(section.form_data?.vips_json ?? "[]");
+            // Resolve foto_url from files (in case URLs changed)
+            return parsed.map((vip) => {
+                if (vip.foto_id) {
+                    const file = files.find((f) => f.id === vip.foto_id);
+                    if (file) return { ...vip, foto_url: file.url };
+                }
+                return vip;
+            });
+        }
         catch { return []; }
     });
 
