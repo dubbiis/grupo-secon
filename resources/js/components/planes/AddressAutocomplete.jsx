@@ -50,37 +50,9 @@ export default function AddressAutocomplete({
     const inputRef = useRef(null);
     const dropdownRef = useRef(null);
     const sessionTokenRef = useRef(null);
-    const autocompleteServiceRef = useRef(null);
-    const placesServiceRef = useRef(null);
-    const hiddenDivRef = useRef(null);
 
-    // Load the Places library via the official hook
+    // Load Places library (new API)
     const placesLib = useMapsLibrary("places");
-
-    // Create a hidden div for PlacesService (requires a DOM element)
-    useEffect(() => {
-        if (!hiddenDivRef.current) {
-            hiddenDivRef.current = document.createElement("div");
-            hiddenDivRef.current.style.display = "none";
-            document.body.appendChild(hiddenDivRef.current);
-        }
-        return () => {
-            if (hiddenDivRef.current?.parentNode) {
-                hiddenDivRef.current.parentNode.removeChild(hiddenDivRef.current);
-            }
-        };
-    }, []);
-
-    // Initialize services once placesLib is loaded
-    useEffect(() => {
-        if (!placesLib) return;
-        if (!autocompleteServiceRef.current) {
-            autocompleteServiceRef.current = new placesLib.AutocompleteService();
-        }
-        if (!placesServiceRef.current && hiddenDivRef.current) {
-            placesServiceRef.current = new placesLib.PlacesService(hiddenDivRef.current);
-        }
-    }, [placesLib]);
 
     const getSessionToken = useCallback(() => {
         if (!sessionTokenRef.current && placesLib?.AutocompleteSessionToken) {
@@ -89,7 +61,7 @@ export default function AddressAutocomplete({
         return sessionTokenRef.current;
     }, [placesLib]);
 
-    // Update dropdown position when opening
+    // Update dropdown position
     useEffect(() => {
         if (open && inputRef.current) {
             const rect = inputRef.current.getBoundingClientRect();
@@ -99,14 +71,7 @@ export default function AddressAutocomplete({
 
     const search = useCallback(
         async (query) => {
-            if (query.length < 2) {
-                setResults([]);
-                setOpen(false);
-                return;
-            }
-
-            const service = autocompleteServiceRef.current;
-            if (!service) {
+            if (query.length < 2 || !placesLib?.AutocompleteSuggestion) {
                 setResults([]);
                 setOpen(false);
                 return;
@@ -127,27 +92,28 @@ export default function AddressAutocomplete({
                     });
                 }
 
-                service.getPlacePredictions(request, (predictions, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-                        const items = predictions.map((p) => ({
-                            placeId: p.place_id,
-                            name: p.structured_formatting?.main_text || p.description,
-                            subtitle: p.structured_formatting?.secondary_text || "",
-                            displayName: p.description,
+                const { suggestions } = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+                const items = (suggestions || [])
+                    .filter((s) => s.placePrediction)
+                    .map((s) => {
+                        const p = s.placePrediction;
+                        return {
+                            placeId: p.placeId,
+                            name: p.mainText?.text || p.text?.text || "",
+                            subtitle: p.secondaryText?.text || "",
+                            displayName: p.text?.text || "",
                             types: p.types || [],
-                        }));
-                        setResults(items);
-                        setOpen(items.length > 0);
-                        setActiveIdx(-1);
-                    } else {
-                        setResults([]);
-                        setOpen(false);
-                    }
-                    setLoading(false);
-                });
+                        };
+                    });
+
+                setResults(items);
+                setOpen(items.length > 0);
+                setActiveIdx(-1);
             } catch {
                 setResults([]);
                 setOpen(false);
+            } finally {
                 setLoading(false);
             }
         },
@@ -155,34 +121,36 @@ export default function AddressAutocomplete({
     );
 
     const resolvePlace = useCallback(
-        (placeId, displayName) => {
-            const service = placesServiceRef.current;
-            if (!service) {
+        async (placeId, displayName) => {
+            if (!placesLib?.Place) {
                 onSelect?.({ lat: 0, lng: 0, displayName });
                 return;
             }
 
-            service.getDetails(
-                {
-                    placeId,
-                    fields: ["geometry", "formatted_address", "name"],
+            try {
+                const place = new placesLib.Place({ id: placeId, requestedLanguage: "es" });
+                await place.fetchFields({
+                    fields: ["location", "formattedAddress", "displayName"],
                     sessionToken: getSessionToken(),
-                },
-                (place, status) => {
-                    sessionTokenRef.current = null;
+                });
 
-                    if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-                        onSelect?.({
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng(),
-                            displayName: place.formatted_address || displayName,
-                            name: place.name || displayName,
-                        });
-                    } else {
-                        onSelect?.({ lat: 0, lng: 0, displayName });
-                    }
+                // Reset session token after fetchFields (completes the session)
+                sessionTokenRef.current = null;
+
+                if (place.location) {
+                    onSelect?.({
+                        lat: place.location.lat(),
+                        lng: place.location.lng(),
+                        displayName: place.formattedAddress || displayName,
+                        name: place.displayName || displayName,
+                    });
+                } else {
+                    onSelect?.({ lat: 0, lng: 0, displayName });
                 }
-            );
+            } catch {
+                sessionTokenRef.current = null;
+                onSelect?.({ lat: 0, lng: 0, displayName });
+            }
         },
         [placesLib, getSessionToken, onSelect]
     );
