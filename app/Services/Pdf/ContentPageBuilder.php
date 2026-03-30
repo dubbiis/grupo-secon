@@ -315,6 +315,11 @@ class ContentPageBuilder
             $templates[] = $this->pdf->importPage($i);
         }
 
+        // Import base template for the footer bar
+        $baseTplPath = config('pdf.base_template');
+        $this->pdf->setSourceFile($baseTplPath);
+        $bgTpl = $this->pdf->importPage(1);
+
         // Disable auto background + auto page break
         $this->pdf->enableBackground(false);
         $this->pdf->SetAutoPageBreak(false, 0);
@@ -322,48 +327,61 @@ class ContentPageBuilder
         foreach ($templates as $idx => $tpl) {
             $this->pdf->AddPage();
 
-            // 1. Risk section page (full size)
+            // 1. Base template FIRST (just for the footer bar + logo)
+            $this->pdf->useTemplate($bgTpl, 0, 0, 210, 297);
+
+            // 2. White rectangle to cover all content area of base template (keep only footer)
+            $this->pdf->SetFillColor(255, 255, 255);
+            $this->pdf->Rect(0, 0, 210, 287, 'F');
+
+            // 3. Risk section page on top — only content area (white rect hides base content)
             $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
 
-            // 2. Cover original footer with white rectangle
+            // 4. Cover the original footer of the risk page with white
             $this->pdf->SetFillColor(255, 255, 255);
-            $this->pdf->Rect(0, 286, 210, 11, 'F');
+            $this->pdf->Rect(0, 287, 210, 10, 'F');
 
-            // 3. Paint gradient footer bar (multiple segments for smooth transition)
-            $barY = 288;
-            $barH = 9;
-            $steps = 30;
-            $stepW = 210 / $steps;
-            $r1 = 34; $g1 = 58; $b1 = 129;   // #223A81
-            $r2 = 32; $g2 = 141; $b2 = 202;  // #208DCA
+            // Now the base template's footer bar shows through (it was painted first, under everything)
+            // But it got covered by step 3... Need different approach.
+
+            // Actually: paint base template footer ON TOP of everything
+            // Re-import and use only the bottom 10mm
+            $this->pdf->setSourceFile($baseTplPath);
+            $bgTpl2 = $this->pdf->importPage(1);
+            // Paint full template but it will only be visible in the footer area (287-297)
+            // since the risk page content covers 0-287
+            // This won't work because templates layer, not clip.
+
+            // Simplest approach: just draw the footer manually with exact coordinates
+            // matching the base template's bar position
+
+            // The base template bar starts at approximately Y=289, height ~8mm
+            // Paint gradient
+            $barY = 289;
+            $barH = 8;
+            $steps = 40;
+            $stepW = 210.0 / $steps;
             for ($s = 0; $s < $steps; $s++) {
                 $t = $s / ($steps - 1);
-                $r = (int)($r1 + ($r2 - $r1) * $t);
-                $g = (int)($g1 + ($g2 - $g1) * $t);
-                $b = (int)($b1 + ($b2 - $b1) * $t);
+                $r = (int)(34 + (32 - 34) * $t);
+                $g = (int)(58 + (141 - 58) * $t);
+                $b = (int)(129 + (202 - 129) * $t);
                 $this->pdf->SetFillColor($r, $g, $b);
-                $this->pdf->Rect($s * $stepW, $barY, $stepW + 0.5, $barH, 'F');
+                $this->pdf->Rect($s * $stepW, $barY, $stepW + 0.3, $barH, 'F');
             }
 
-            // 4. Secon logo mini (white on blue bar)
-            $logoPath = public_path('images/logo-secon.svg');
-            if (file_exists($logoPath)) {
-                $this->pdf->ImageSVG($logoPath, 4, 289, 7);
-            }
-
-            // Record page number for section 7 (first page)
+            // Record page number
             if ($idx === 0) {
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // 5. Draw footer text centered on the bar
-            $this->pdf->SetY(289);
+            // Footer text
             $this->pdf->SetFont(FontManager::ROMAN, '', 8);
             $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetX(0);
-            $this->pdf->Cell(210, 5, strtoupper($this->pdf->getEventName()), 0, 0, 'C');
-            $this->pdf->SetX(180);
-            $this->pdf->Cell(25, 5, (string) $this->pdf->getAliasNumPage(), 0, 0, 'R');
+            $this->pdf->SetXY(15, $barY + 1.5);
+            $this->pdf->Cell(180, 5, strtoupper($this->pdf->getEventName()), 0, 0, 'C');
+            $this->pdf->SetXY(185, $barY + 1.5);
+            $this->pdf->Cell(20, 5, (string) $this->pdf->getAliasNumPage(), 0, 0, 'R');
         }
 
         // Restore
