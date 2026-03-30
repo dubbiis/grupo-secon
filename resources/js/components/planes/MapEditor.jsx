@@ -816,7 +816,7 @@ const MapEditor = forwardRef(function MapEditor({
             const mapW = Math.round(rect.width);
             const mapH = Math.round(rect.height);
 
-            // Build Static Maps API URL via backend proxy
+            // Build Static Maps API request via backend proxy
             const params = new URLSearchParams({
                 center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
                 zoom: mapState?.zoom || 13,
@@ -824,21 +824,14 @@ const MapEditor = forwardRef(function MapEditor({
                 maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
             });
 
-            // Add route polyline (only selected route)
             if (mapState?.selectedRoutePolyline) {
                 params.set("path", mapState.selectedRoutePolyline);
             }
-
-            // Add A/B markers
-            if (mapState?.routeOrigin && mapState?.routeDestination) {
-                params.append("markers[]", JSON.stringify({
-                    color: "blue", label: "A",
-                    lat: mapState.routeOrigin.lat, lng: mapState.routeOrigin.lng,
-                }));
-                params.append("markers[]", JSON.stringify({
-                    color: "red", label: "B",
-                    lat: mapState.routeDestination.lat, lng: mapState.routeDestination.lng,
-                }));
+            if (mapState?.routeOrigin) {
+                params.set("marker_a", `${mapState.routeOrigin.lat},${mapState.routeOrigin.lng}`);
+            }
+            if (mapState?.routeDestination) {
+                params.set("marker_b", `${mapState.routeDestination.lat},${mapState.routeDestination.lng}`);
             }
 
             setCaptureFlash(true);

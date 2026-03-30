@@ -205,44 +205,43 @@ class GoogleMapsController extends Controller
      */
     public function staticMap(Request $request)
     {
-        $params = [
-            'center'  => $request->input('center', '40.4168,-3.7038'),
-            'zoom'    => $request->input('zoom', 13),
-            'size'    => $request->input('size', '800x600'),
-            'scale'   => 2,
-            'maptype' => $request->input('maptype', 'roadmap'),
-            'key'     => config('googlemaps.api_key'),
-            'language' => 'es',
-        ];
+        $center  = $request->input('center', '40.4168,-3.7038');
+        $zoom    = $request->input('zoom', 13);
+        $size    = $request->input('size', '800x600');
+        $maptype = $request->input('maptype', 'roadmap');
+        $polyline = $request->input('path', '');
+        $markerA  = $request->input('marker_a', '');  // "lat,lng"
+        $markerB  = $request->input('marker_b', '');
 
-        // Add route path if provided
-        $polyline = $request->input('path');
+        $url = 'https://maps.googleapis.com/maps/api/staticmap'
+            . '?center=' . urlencode($center)
+            . '&zoom=' . intval($zoom)
+            . '&size=' . urlencode($size)
+            . '&scale=2'
+            . '&maptype=' . urlencode($maptype)
+            . '&language=es'
+            . '&key=' . config('googlemaps.api_key');
+
         if ($polyline) {
-            $params['path'] = 'color:0x208DCAff|weight:5|enc:' . $polyline;
+            $url .= '&path=' . urlencode('color:0x208DCAff|weight:5|enc:' . $polyline);
         }
-
-        // Add markers
-        $markers = $request->input('markers', []);
-        $markerParams = [];
-        foreach ($markers as $m) {
-            $markerParams[] = "color:{$m['color']}|label:{$m['label']}|{$m['lat']},{$m['lng']}";
+        if ($markerA) {
+            $url .= '&markers=' . urlencode('color:0x253C87|label:A|' . $markerA);
         }
-
-        $url = 'https://maps.googleapis.com/maps/api/staticmap?' . http_build_query($params);
-        foreach ($markerParams as $mp) {
-            $url .= '&markers=' . urlencode($mp);
+        if ($markerB) {
+            $url .= '&markers=' . urlencode('color:0x208DCA|label:B|' . $markerB);
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(10)->get($url);
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()->timeout(10)->get($url);
             if ($response->successful()) {
                 return response($response->body(), 200)
                     ->header('Content-Type', 'image/png')
                     ->header('Cache-Control', 'public, max-age=3600');
             }
-            return response()->json(['error' => 'Static map failed'], 502);
-        } catch (\Exception) {
-            return response()->json(['error' => 'Static map timeout'], 504);
+            return response()->json(['error' => 'Static map failed: ' . $response->status()], 502);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Static map error: ' . $e->getMessage()], 504);
         }
     }
 
