@@ -806,54 +806,51 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         try {
-            const mapContainer = mapContainerRef.current.querySelector("[class*='map-container'], div[style*='position']") || mapContainerRef.current.firstElementChild;
-            if (!mapContainer) return;
+            // Find the .gm-style container (Google Maps main wrapper)
+            const gmStyle = mapContainerRef.current.querySelector(".gm-style");
+            const mapEl = gmStyle || mapContainerRef.current.firstElementChild;
+            if (!mapEl) return;
 
-            const containerRect = mapContainer.getBoundingClientRect();
-            const mapW = Math.round(containerRect.width);
-            const mapH = Math.round(containerRect.height);
+            const rect = mapEl.getBoundingClientRect();
+            const mapW = Math.round(rect.width);
+            const mapH = Math.round(rect.height);
 
             const composite = document.createElement("canvas");
             composite.width = mapW;
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            ctx.beginPath();
-            ctx.rect(0, 0, mapW, mapH);
-            ctx.clip();
-
-            // Try to capture the Google Maps WebGL canvas
-            const webglCanvas = mapContainer.querySelector("canvas");
+            // 1. Capture the WebGL canvas — Google Maps renders tiles + polylines here
+            const webglCanvas = mapEl.querySelector("canvas");
             if (webglCanvas) {
                 try {
+                    // The internal canvas resolution may differ from CSS size.
+                    // drawImage handles the scaling automatically.
                     ctx.drawImage(webglCanvas, 0, 0, mapW, mapH);
                 } catch {
-                    // Canvas may be tainted — fill with a neutral background
                     ctx.fillStyle = "#e5e7eb";
                     ctx.fillRect(0, 0, mapW, mapH);
-                    ctx.fillStyle = "#94a3b8";
-                    ctx.font = "14px system-ui";
-                    ctx.textAlign = "center";
-                    ctx.fillText("Mapa capturado (sin tiles)", mapW / 2, mapH / 2);
                 }
             }
 
-            // Capture markers and overlays rendered as DOM elements
-            const overlayElements = mapContainer.querySelectorAll("[style*='position: absolute'], .gm-style > div > div > div > div");
-            for (const el of overlayElements) {
+            // 2. Capture AdvancedMarker elements and route labels
+            // They are rendered as regular DOM elements inside .gm-style
+            const markerContainers = mapEl.querySelectorAll(
+                "[data-advanced-markers] div, .gm-style > div > div > div div[style*='transform']"
+            );
+            for (const el of markerContainers) {
                 try {
                     const r = el.getBoundingClientRect();
-                    if (r.width === 0 || r.height === 0) continue;
-                    if (r.width > mapW * 0.8) continue; // Skip large containers
-                    // Check if it looks like a marker (small element)
-                    if (r.width > 100 || r.height > 100) continue;
+                    const w = Math.round(r.width);
+                    const h = Math.round(r.height);
+                    if (w < 8 || h < 8 || w > 250 || h > 60) continue;
+                    const x = Math.round(r.left - rect.left);
+                    const y = Math.round(r.top - rect.top);
+                    if (x + w < 0 || y + h < 0 || x > mapW || y > mapH) continue;
 
-                    const html = el.outerHTML;
-                    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(r.width)}" height="${Math.round(r.height)}">
+                    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
                         <foreignObject width="100%" height="100%">
-                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;width:${Math.round(r.width)}px;height:${Math.round(r.height)}px">
-                                ${html}
-                            </div>
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px">${el.outerHTML}</div>
                         </foreignObject>
                     </svg>`;
                     const markerImg = await new Promise((resolve) => {
@@ -862,17 +859,10 @@ const MapEditor = forwardRef(function MapEditor({
                         img.onerror = () => resolve(null);
                         img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
                     });
-                    if (markerImg) {
-                        ctx.drawImage(markerImg,
-                            r.left - containerRect.left,
-                            r.top - containerRect.top,
-                            Math.round(r.width), Math.round(r.height)
-                        );
-                    }
+                    if (markerImg) ctx.drawImage(markerImg, x, y, w, h);
                 } catch {}
             }
 
-            // Flash animation
             setCaptureFlash(true);
 
             const dataUrl = composite.toDataURL("image/png");
@@ -881,8 +871,8 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    c.width = img.width;
-                    c.height = img.height;
+                    c.width = mapW;
+                    c.height = mapH;
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
@@ -891,7 +881,6 @@ const MapEditor = forwardRef(function MapEditor({
                     setHistory([[]]);
                     setHistoryStep(0);
                     requestAnimationFrame(() => redraw([]));
-
                 }, 600);
             };
             img.src = dataUrl;
