@@ -838,8 +838,6 @@ const MapEditor = forwardRef(function MapEditor({
                 params.set("zoom", Math.round(mapState?.zoom || 13));
             }
 
-            console.log("[Capture] hasRoute:", hasRoute, "params:", Object.fromEntries(params), "polyline length:", mapState?.selectedRoutePolyline?.length);
-
             setCaptureFlash(true);
 
             const res = await fetch(`/api/static-map?${params}`);
@@ -857,8 +855,11 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    c.width = img.width;
-                    c.height = img.height;
+                    // Use CSS dimensions, not the scale=2 image dimensions
+                    c.width = mapW;
+                    c.height = mapH;
+                    const drawCtx = c.getContext("2d");
+                    drawCtx.drawImage(img, 0, 0, mapW, mapH);
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
