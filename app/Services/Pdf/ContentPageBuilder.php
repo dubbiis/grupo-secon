@@ -320,9 +320,10 @@ class ContentPageBuilder
         $this->pdf->setSourceFile($baseTplPath);
         $bgTpl = $this->pdf->importPage(1);
 
-        // Disable auto background + auto page break
+        // Disable auto background, auto page break and auto footer
         $this->pdf->enableBackground(false);
         $this->pdf->SetAutoPageBreak(false, 0);
+        $this->pdf->setPrintFooter(false);
 
         foreach ($templates as $idx => $tpl) {
             $this->pdf->AddPage();
@@ -387,6 +388,7 @@ class ContentPageBuilder
         }
 
         // Restore
+        $this->pdf->setPrintFooter(true);
         $this->pdf->SetAutoPageBreak(true, 22);
         $this->pdf->enableBackground(true);
         $this->pdf->reloadBackgroundTemplate();
