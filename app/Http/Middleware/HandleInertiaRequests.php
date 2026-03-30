@@ -49,6 +49,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'googleMapsApiKey' => config('googlemaps.api_key'),
         ];
     }
 }

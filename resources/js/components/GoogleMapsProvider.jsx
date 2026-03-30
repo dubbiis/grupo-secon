@@ -1,15 +1,17 @@
 import { APIProvider } from "@vis.gl/react-google-maps";
-
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+import { usePage } from "@inertiajs/react";
 
 export default function GoogleMapsProvider({ children }) {
-    if (!API_KEY) {
-        console.warn("GoogleMapsProvider: VITE_GOOGLE_MAPS_API_KEY not set");
+    const { googleMapsApiKey } = usePage().props;
+    const apiKey = googleMapsApiKey || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+
+    if (!apiKey) {
+        console.warn("GoogleMapsProvider: API key not available");
         return children;
     }
 
     return (
-        <APIProvider apiKey={API_KEY} language="es" region="ES">
+        <APIProvider apiKey={apiKey} language="es" region="ES">
             {children}
         </APIProvider>
     );
