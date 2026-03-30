@@ -890,7 +890,8 @@ const MapEditor = forwardRef(function MapEditor({
                     setElements([]);
                     setHistory([[]]);
                     setHistoryStep(0);
-                    requestAnimationFrame(() => drawElements([]));
+                    requestAnimationFrame(() => redraw([]));
+
                 }, 600);
             };
             img.src = dataUrl;
