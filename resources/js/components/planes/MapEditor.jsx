@@ -575,11 +575,9 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Hit test for existing elements
-        const idx = hitTestElement(pos);
-
+        // Select tool: hit test + drag/move/resize
         if (tool === "select") {
-            // Select tool: click to select + drag to move
+            const idx = hitTestElement(pos);
             if (idx >= 0) {
                 setSelectedIdx(idx);
                 isDraggingRef.current = true;
@@ -588,7 +586,6 @@ const MapEditor = forwardRef(function MapEditor({
                 redraw(elements, idx);
                 return;
             }
-            // Click on empty → deselect
             if (selectedIdx !== null) {
                 setSelectedIdx(null);
                 redraw(elements, null);
@@ -596,13 +593,8 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drawing tools: click on element selects it (show handles)
-        // but does NOT enter drag mode — drawing takes priority
-        if (idx >= 0 && tool !== "text") {
-            setSelectedIdx(idx);
-            redraw(elements, idx);
-            // Don't return — continue to start drawing
-        } else if (selectedIdx !== null) {
+        // Drawing tools: deselect any selected element, then draw
+        if (selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
