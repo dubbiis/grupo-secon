@@ -73,6 +73,11 @@ export default function Show({ plan, sections, currentSection, files, eventAddre
         parseResourceLines(sec5?.hospitales_reales, "🏥");
         parseResourceLines(sec5?.comisarias_reales, "🚔");
 
+        // Section 10: transporte y parkings
+        const sec10 = sections.find((s) => s.section_number === 10)?.form_data;
+        parseResourceLines(sec10?.datos_transporte_googlemaps, "🚇");
+        parseResourceLines(sec10?.datos_parkings_googlemaps, "🅿️");
+
         return addrs;
     })();
 
