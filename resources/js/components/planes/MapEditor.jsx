@@ -819,12 +819,17 @@ const MapEditor = forwardRef(function MapEditor({
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // 1. Capture ALL canvases (Google Maps uses multiple: tiles, overlays, labels)
+            // 1. Capture ALL canvases using their actual position relative to map
             const allCanvases = mapEl.querySelectorAll("canvas");
             for (const cvs of allCanvases) {
                 try {
                     if (cvs.width === 0 || cvs.height === 0) continue;
-                    ctx.drawImage(cvs, 0, 0, mapW, mapH);
+                    const cvsRect = cvs.getBoundingClientRect();
+                    const x = Math.round(cvsRect.left - rect.left);
+                    const y = Math.round(cvsRect.top - rect.top);
+                    const w = Math.round(cvsRect.width);
+                    const h = Math.round(cvsRect.height);
+                    ctx.drawImage(cvs, x, y, w, h);
                 } catch {}
             }
 
