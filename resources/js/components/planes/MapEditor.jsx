@@ -821,12 +821,11 @@ const MapEditor = forwardRef(function MapEditor({
             const staticW = Math.round(mapW * ratio);
             const staticH = Math.round(mapH * ratio);
 
-            // Zoom correction: the interactive map shows an area based on mapW pixels.
-            // The static map shows an area based on staticW * scale pixels.
-            // To show the SAME geographic area: zoom_static = zoom_interactive - log2(mapW / (staticW * scale))
+            // Zoom correction: Static API viewport is based on `size` pixels (scale only affects resolution).
+            // Interactive map viewport is based on CSS pixels (mapW).
+            // To show the SAME geographic area: zoom_static = zoom_interactive - log2(mapW / staticW)
             const interactiveZoom = mapState?.zoom || 13;
-            const effectiveStaticPx = staticW * 2; // scale=2
-            const zoomCorrection = Math.log2(mapW / effectiveStaticPx);
+            const zoomCorrection = Math.log2(mapW / staticW);
             const staticZoom = Math.max(0, interactiveZoom - zoomCorrection);
 
             const params = new URLSearchParams({
