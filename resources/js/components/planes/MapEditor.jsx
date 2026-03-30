@@ -856,10 +856,11 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    c.width = mapW;
-                    c.height = mapH;
+                    // Use staticW/staticH so the canvas fits the editor area
+                    c.width = staticW;
+                    c.height = staticH;
                     const drawCtx = c.getContext("2d");
-                    drawCtx.drawImage(img, 0, 0, mapW, mapH);
+                    drawCtx.drawImage(img, 0, 0, staticW, staticH);
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
