@@ -341,6 +341,15 @@ class ContentPageBuilder
             $this->pdf->SetFillColor(255, 255, 255);
             $this->pdf->Rect(0, 287, 210, 10, 'F');
 
+            // 5. Logo arriba a la derecha (same as base template pages)
+            $logoPath = public_path('images/logo-secon.svg');
+            if (file_exists($logoPath)) {
+                // Cover original logo area first
+                $this->pdf->SetFillColor(255, 255, 255);
+                $this->pdf->Rect(155, 0, 55, 22, 'F');
+                $this->pdf->ImageSVG($logoPath, 165, 5, 35);
+            }
+
             // Now the base template's footer bar shows through (it was painted first, under everything)
             // But it got covered by step 3... Need different approach.
 
