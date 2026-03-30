@@ -84,8 +84,6 @@ class TcpdfInstance extends Fpdi
     public function Header(): void {}
     public function Footer(): void
     {
-        if ($this->useBackground) {
-            $this->drawFooter();
-        }
+        $this->drawFooter();
     }
 }
