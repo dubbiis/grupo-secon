@@ -531,6 +531,8 @@ const MapEditor = forwardRef(function MapEditor({
     // ── Drawing events ───────────────────────────────────────────
     const onMouseDown = (e) => {
         if (!hasBg) return;
+        // Ignore right-click (handled by onContextMenu)
+        if (e.button === 2) return;
         setContextMenu(null);
         const pos = getPos(e);
 
@@ -950,7 +952,7 @@ const MapEditor = forwardRef(function MapEditor({
     const canRedo = historyStep < history.length - 1;
 
     const cursorClass = {
-        select: selectedIdx !== null ? "cursor-move" : "cursor-default",
+        select: "cursor-default",
         pen: "cursor-crosshair",
         line: "cursor-crosshair",
         arrow: "cursor-crosshair",
