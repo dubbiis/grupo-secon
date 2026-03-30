@@ -815,14 +815,24 @@ const MapEditor = forwardRef(function MapEditor({
             const mapW = Math.round(rect.width);
             const mapH = Math.round(rect.height);
 
-            // Static Maps API: scale down to fit 640px max while keeping aspect ratio
+            // Static Maps API: fit within 640x640 limit, keeping aspect ratio
+            // scale=2 means Google returns 2x resolution, so we can request half-size
+            // and the image will be sharp at full canvas size
             const ratio = Math.min(640 / mapW, 640 / mapH, 1);
             const staticW = Math.round(mapW * ratio);
             const staticH = Math.round(mapH * ratio);
 
+            // Adjust zoom: the static map viewport is smaller than the interactive one,
+            // so we need to decrease zoom to show the same area.
+            // Each zoom level doubles pixels, so: zoomAdjust = log2(scale=2 * ratio)
+            // scale=2 doubles the output, ratio shrinks input → net = 2 * ratio
+            const interactiveZoom = mapState?.zoom || 13;
+            const zoomAdjust = Math.log2(2 * ratio); // e.g. ratio=0.46 → log2(0.92) ≈ -0.12
+            const staticZoom = Math.max(0, Math.round((interactiveZoom + zoomAdjust) * 100) / 100);
+
             const params = new URLSearchParams({
                 center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
-                zoom: Math.round(mapState?.zoom || 13),
+                zoom: Math.round(staticZoom),
                 size: `${staticW}x${staticH}`,
                 maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
             });
@@ -856,11 +866,11 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    // Use staticW/staticH so the canvas fits the editor area
-                    c.width = staticW;
-                    c.height = staticH;
+                    // Canvas at map size, image scaled up from HD static capture
+                    c.width = mapW;
+                    c.height = mapH;
                     const drawCtx = c.getContext("2d");
-                    drawCtx.drawImage(img, 0, 0, staticW, staticH);
+                    drawCtx.drawImage(img, 0, 0, mapW, mapH);
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
