@@ -315,24 +315,31 @@ class ContentPageBuilder
             $templates[] = $this->pdf->importPage($i);
         }
 
+        // Import base template for footer bar
+        $baseTplPath = config('pdf.base_template');
+        $this->pdf->setSourceFile($baseTplPath);
+        $bgTpl = $this->pdf->importPage(1);
+
         // Disable auto background + auto page break
         $this->pdf->enableBackground(false);
         $this->pdf->SetAutoPageBreak(false, 0);
 
         foreach ($templates as $idx => $tpl) {
             $this->pdf->AddPage();
-            $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
+
+            // 1. Base template first (logo + blue footer bar)
+            $this->pdf->useTemplate($bgTpl, 0, 0, 210, 297);
+
+            // 2. Risk section page on top (covers content area, footer area gets our bar)
+            // Slightly crop to avoid the original footer: show 0-285mm of the source page
+            $this->pdf->useTemplate($tpl, 0, 0, 210, 285);
 
             // Record page number for section 7 (first page)
             if ($idx === 0) {
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // Overwrite the original footer: white rectangle to cover it
-            $this->pdf->SetFillColor(255, 255, 255);
-            $this->pdf->Rect(0, 285, 210, 12, 'F');
-
-            // Draw our dynamic footer (event name + page number)
+            // 3. Draw our dynamic footer text on the blue bar
             $this->pdf->drawFooter();
         }
 
