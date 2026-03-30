@@ -45,8 +45,9 @@ class FontManager
     {
         $fontsPath = config('pdf.fonts_path') . '/';
 
-        // AddFont only needed if not in TCPDF's default font dir
-        // Since we registered with addTTFfont to our custom dir, we need to tell TCPDF
+        // Disable font subsetting — embed full fonts for Adobe compatibility
+        $pdf->setFontSubsetting(false);
+
         $fontFiles = [
             self::BLACK_CONDENSED => 'helveticaneueblackcondensed',
             self::HEAVY           => 'helveticaneueheavy',
