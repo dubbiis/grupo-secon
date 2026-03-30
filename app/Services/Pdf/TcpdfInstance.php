@@ -45,6 +45,11 @@ class TcpdfInstance extends Fpdi
         $this->eventName = $name;
     }
 
+    public function getEventName(): string
+    {
+        return $this->eventName;
+    }
+
     public function setFooterLogoPath(string $path): void
     {
         $this->footerLogoPath = $path;

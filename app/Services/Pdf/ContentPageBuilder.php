@@ -345,10 +345,10 @@ class ContentPageBuilder
                 $this->pdf->Rect($s * $stepW, $barY, $stepW + 0.5, $barH, 'F');
             }
 
-            // 4. Secon logo mini
+            // 4. Secon logo mini (white on blue bar)
             $logoPath = public_path('images/logo-secon.svg');
             if (file_exists($logoPath)) {
-                $this->pdf->ImageSVG($logoPath, 5, 288.5, 8);
+                $this->pdf->ImageSVG($logoPath, 4, 289, 7);
             }
 
             // Record page number for section 7 (first page)
@@ -356,8 +356,14 @@ class ContentPageBuilder
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // 5. Draw footer text
-            $this->pdf->drawFooter();
+            // 5. Draw footer text centered on the bar
+            $this->pdf->SetY(289);
+            $this->pdf->SetFont(FontManager::ROMAN, '', 8);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetX(0);
+            $this->pdf->Cell(210, 5, strtoupper($this->pdf->getEventName()), 0, 0, 'C');
+            $this->pdf->SetX(180);
+            $this->pdf->Cell(25, 5, (string) $this->pdf->getAliasNumPage(), 0, 0, 'R');
         }
 
         // Restore
