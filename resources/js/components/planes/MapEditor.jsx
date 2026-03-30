@@ -576,8 +576,25 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drawing tools: deselect and always draw
-        if (selectedIdx !== null) {
+        // Drawing tools: if element selected (via right-click), allow drag/resize
+        if (selectedIdx !== null && elements[selectedIdx]) {
+            // Resize corner?
+            const corner = hitTestCorner(pos, elements[selectedIdx]);
+            if (corner) {
+                isResizingRef.current = true;
+                resizeCornerRef.current = corner;
+                dragIdxRef.current = selectedIdx;
+                return;
+            }
+            // Click on the selected element? → drag it
+            const hitIdx = hitTestElement(pos);
+            if (hitIdx === selectedIdx) {
+                isDraggingRef.current = true;
+                dragIdxRef.current = selectedIdx;
+                dragOffRef.current = getDragOff(elements[selectedIdx]);
+                return;
+            }
+            // Click elsewhere → deselect and draw
             setSelectedIdx(null);
             redraw(elements, null);
         }
@@ -951,15 +968,17 @@ const MapEditor = forwardRef(function MapEditor({
     const canUndo = historyStep > 0;
     const canRedo = historyStep < history.length - 1;
 
-    const cursorClass = {
-        select: "cursor-default",
-        pen: "cursor-crosshair",
-        line: "cursor-crosshair",
-        arrow: "cursor-crosshair",
-        rect: "cursor-crosshair",
-        circle: "cursor-crosshair",
-        text: "cursor-text",
-    }[tool] ?? "cursor-crosshair";
+    const cursorClass = selectedIdx !== null
+        ? "cursor-move"
+        : ({
+            select: "cursor-default",
+            pen: "cursor-crosshair",
+            line: "cursor-crosshair",
+            arrow: "cursor-crosshair",
+            rect: "cursor-crosshair",
+            circle: "cursor-crosshair",
+            text: "cursor-text",
+        }[tool] ?? "cursor-crosshair");
 
     // If we have a saved preview, show it instead of the editor
     if (savedPreviewUrl && mode === "section") {
