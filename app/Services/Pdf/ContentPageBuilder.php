@@ -759,15 +759,40 @@ class ContentPageBuilder
         $tableH = count($rows) * $rowH + 10;
         $this->ensureSpace(min($tableH, 80));
 
+        $headerCells = $rows[0] ?? [];
+        $drawMdHeader = function () use ($headerCells, $numCols, $colWidths, $startX, $rowH) {
+            $this->pdf->SetFillColor(34, 58, 129);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+            $x = $startX;
+            $y = $this->pdf->GetY();
+            $padded = $headerCells;
+            while (count($padded) < $numCols) $padded[] = '';
+            foreach ($padded as $colIdx => $cell) {
+                if ($colIdx >= $numCols) break;
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell($colWidths[$colIdx], $rowH, $cell, 0, 0, 'C', true);
+                $x += $colWidths[$colIdx];
+            }
+            $this->pdf->SetY($y + $rowH);
+        };
+
+        $lastMdPage = $this->pdf->getPage();
+
         foreach ($rows as $rowIdx => $cells) {
             $isHeader = ($rowIdx === 0);
             $y = $this->pdf->GetY();
 
-            // Page break if needed
+            // Page break if needed — repaint header
             if (297 - $y - 22 < $rowH + 2) {
                 $this->pdf->AddPage();
                 $y = 25;
                 $this->pdf->SetY($y);
+                if (!$isHeader) {
+                    $drawMdHeader();
+                    $y = $this->pdf->GetY();
+                }
+                $lastMdPage = $this->pdf->getPage();
             }
 
             // Pad cells
@@ -974,19 +999,27 @@ class ContentPageBuilder
         $headerH = 8;
         $rowH = 7;
 
+        // Helper: draw table header row
+        $drawHeader = function () use ($cols, $startX, $headerH) {
+            $this->pdf->SetFillColor(34, 58, 129);
+            $this->pdf->SetTextColor(255, 255, 255);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+            $x = $startX;
+            $y = $this->pdf->GetY();
+            foreach ($cols as [$label, $field, $w, $align]) {
+                $this->pdf->SetXY($x, $y);
+                $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
+                $x += $w;
+            }
+            $this->pdf->SetY($y + $headerH);
+        };
+
+        // Track current page to detect page breaks
+        $lastPage = $this->pdf->getPage();
+
         // ── Table header ──
         $this->ensureSpace(40);
-        $this->pdf->SetFillColor(34, 58, 129);
-        $this->pdf->SetTextColor(255, 255, 255);
-        $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
-        $x = $startX;
-        $y = $this->pdf->GetY();
-        foreach ($cols as [$label, $field, $w, $align]) {
-            $this->pdf->SetXY($x, $y);
-            $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
-            $x += $w;
-        }
-        $this->pdf->SetY($y + $headerH);
+        $drawHeader();
 
         // ── Table rows ──
         $currentDay = null;
@@ -997,9 +1030,13 @@ class ContentPageBuilder
 
             // Day header row
             if ($day && $day !== $currentDay) {
-                $this->ensureSpace($rowH + 2);
+                $this->ensureSpace($rowH + $headerH + 2);
+                // Repaint header if page changed
+                if ($this->pdf->getPage() !== $lastPage) {
+                    $drawHeader();
+                    $lastPage = $this->pdf->getPage();
+                }
                 $y = $this->pdf->GetY();
-                $this->pdf->SetFillColor(32, 141, 202, 20); // light blue
                 $this->pdf->SetFillColor(230, 244, 255);
                 $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
                 $this->pdf->SetTextColor(32, 141, 202);
@@ -1011,6 +1048,11 @@ class ContentPageBuilder
 
             // Data row
             $this->ensureSpace($rowH + 2);
+            // Repaint header if page changed
+            if ($this->pdf->getPage() !== $lastPage) {
+                $drawHeader();
+                $lastPage = $this->pdf->getPage();
+            }
             $y = $this->pdf->GetY();
             $bg = ($rowIdx % 2 === 0) ? [245, 247, 250] : [255, 255, 255];
             $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
