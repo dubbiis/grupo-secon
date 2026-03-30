@@ -575,20 +575,18 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drag elements with any tool — only if clicking directly on an element
-        if (tool !== "text" && tool !== "pen") {
-            const idx = hitTestElement(pos);
-            if (idx >= 0) {
-                setSelectedIdx(idx);
-                isDraggingRef.current = true;
-                dragIdxRef.current = idx;
-                dragOffRef.current = getDragOff(elements[idx]);
-                redraw(elements, idx);
-                return;
-            }
+        // Drag elements with any tool — also select to show handles
+        const idx = hitTestElement(pos);
+        if (idx >= 0 && tool !== "text") {
+            setSelectedIdx(idx);
+            isDraggingRef.current = true;
+            dragIdxRef.current = idx;
+            dragOffRef.current = getDragOff(elements[idx]);
+            redraw(elements, idx);
+            return;
         }
         // Click on empty area deselects
-        if (selectedIdx !== null) {
+        if (idx < 0 && selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
