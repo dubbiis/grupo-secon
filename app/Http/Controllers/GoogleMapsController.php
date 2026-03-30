@@ -143,6 +143,64 @@ class GoogleMapsController extends Controller
     }
 
     /**
+     * Autocomplete — proxy to Google Places Autocomplete (New).
+     */
+    public function autocomplete(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        if (strlen($q) < 2) return response()->json([]);
+
+        $lat = $request->input('lat') ? (float) $request->input('lat') : null;
+        $lng = $request->input('lng') ? (float) $request->input('lng') : null;
+
+        $cacheKey = 'autocomplete.' . md5($q . $lat . $lng);
+        $cached = Cache::get($cacheKey);
+        if ($cached) return response()->json($cached);
+
+        $results = $this->maps->autocomplete($q, $lat, $lng);
+
+        if (!empty($results)) {
+            Cache::put($cacheKey, $results, 3600);
+        }
+
+        return response()->json($results);
+    }
+
+    /**
+     * Place details — resolve placeId to coordinates.
+     */
+    public function placeDetails(Request $request)
+    {
+        $placeId = $request->input('place_id', '');
+        if (!$placeId) return response()->json(['error' => 'place_id required'], 422);
+
+        $result = $this->maps->placeDetails($placeId);
+        if (!$result) return response()->json(['error' => 'Not found'], 404);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Route — proxy to Google Routes API.
+     */
+    public function computeRoute(Request $request)
+    {
+        $origin = $request->input('origin');
+        $destination = $request->input('destination');
+
+        if (!$origin || !$destination) {
+            return response()->json(['error' => 'origin and destination required'], 422);
+        }
+
+        $routes = $this->maps->computeRoute(
+            ['lat' => (float) $origin['lat'], 'lng' => (float) $origin['lng']],
+            ['lat' => (float) $destination['lat'], 'lng' => (float) $destination['lng']],
+        );
+
+        return response()->json(['routes' => $routes]);
+    }
+
+    /**
      * POIs for map overlay — uses cached backend Google Places queries.
      */
     public function mapPOIs(Request $request)

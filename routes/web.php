@@ -56,6 +56,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/planes/{uuid}/maps/emergencia', [GoogleMapsController::class, 'emergencia'])->name('planes.maps.emergencia');
     Route::post('/planes/{uuid}/maps/hospitales', [GoogleMapsController::class, 'hospitales'])->name('planes.maps.hospitales');
     Route::post('/planes/{uuid}/maps/policia', [GoogleMapsController::class, 'policia'])->name('planes.maps.policia');
+    Route::get('/api/autocomplete', [GoogleMapsController::class, 'autocomplete'])->name('api.autocomplete');
+    Route::get('/api/place-details', [GoogleMapsController::class, 'placeDetails'])->name('api.place-details');
+    Route::post('/api/route', [GoogleMapsController::class, 'computeRoute'])->name('api.route');
     Route::get('/api/map-pois', [GoogleMapsController::class, 'mapPOIs'])->name('api.map-pois');
 
     // Custom questions

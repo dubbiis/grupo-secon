@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
-import { usePage } from "@inertiajs/react";
 
 const TYPE_ICONS = {
     street_address: MapPin, route: MapPin, premise: MapPin,
@@ -28,9 +27,6 @@ export default function AddressAutocomplete({
     className = "",
     quickAddresses = [],
 }) {
-    const { googleMapsApiKey } = usePage().props;
-    const apiKey = googleMapsApiKey || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
-
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -49,11 +45,11 @@ export default function AddressAutocomplete({
         }
     }, [open]);
 
-    // ── Search via Google Geocoding REST API (always works) ──────
+    // ── Search via backend proxy (/api/autocomplete) ─────────────
 
     const search = useCallback(
         async (query) => {
-            if (query.length < 2 || !apiKey) {
+            if (query.length < 2) {
                 setResults([]);
                 setOpen(false);
                 return;
@@ -65,36 +61,18 @@ export default function AddressAutocomplete({
 
             setLoading(true);
             try {
-                const params = new URLSearchParams({
-                    address: query,
-                    key: apiKey,
-                    language: "es",
-                    region: "ES",
-                });
-
-                const res = await fetch(
-                    `https://maps.googleapis.com/maps/api/geocode/json?${params}`,
-                    { signal: controller.signal }
-                );
-                const data = await res.json();
-
-                if (data.status === "OK" && data.results?.length) {
-                    const items = data.results.slice(0, 6).map((r) => ({
-                        placeId: r.place_id,
-                        name: r.address_components?.[0]?.long_name || r.formatted_address?.split(",")[0],
-                        subtitle: r.formatted_address?.split(",").slice(1).join(",").trim() || "",
-                        displayName: r.formatted_address,
-                        types: r.types || [],
-                        lat: r.geometry.location.lat,
-                        lng: r.geometry.location.lng,
-                    }));
-                    setResults(items);
-                    setOpen(items.length > 0);
-                    setActiveIdx(-1);
-                } else {
-                    setResults([]);
-                    setOpen(false);
+                const params = new URLSearchParams({ q: query });
+                if (biasLat && biasLng) {
+                    params.set("lat", String(biasLat));
+                    params.set("lng", String(biasLng));
                 }
+
+                const res = await fetch(`/api/autocomplete?${params}`, { signal: controller.signal });
+                const items = await res.json();
+
+                setResults(Array.isArray(items) ? items : []);
+                setOpen(Array.isArray(items) && items.length > 0);
+                setActiveIdx(-1);
             } catch (err) {
                 if (err.name !== "AbortError") {
                     setResults([]);
@@ -104,7 +82,36 @@ export default function AddressAutocomplete({
                 setLoading(false);
             }
         },
-        [apiKey]
+        [biasLat, biasLng]
+    );
+
+    // ── Resolve place to coords via backend ──────────────────────
+
+    const resolvePlace = useCallback(
+        async (item) => {
+            if (item.lat && item.lng) {
+                onSelect?.(item);
+                return;
+            }
+
+            if (!item.placeId) {
+                onSelect?.({ lat: 0, lng: 0, displayName: item.displayName });
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/place-details?place_id=${encodeURIComponent(item.placeId)}`);
+                const data = await res.json();
+                if (data.lat && data.lng) {
+                    onSelect?.(data);
+                } else {
+                    onSelect?.({ lat: 0, lng: 0, displayName: item.displayName });
+                }
+            } catch {
+                onSelect?.({ lat: 0, lng: 0, displayName: item.displayName });
+            }
+        },
+        [onSelect]
     );
 
     const handleChange = (e) => {
@@ -120,12 +127,7 @@ export default function AddressAutocomplete({
         setOpen(false);
         setResults([]);
         inputRef.current?.blur();
-        onSelect?.({
-            lat: item.lat,
-            lng: item.lng,
-            displayName: item.displayName,
-            name: item.name,
-        });
+        resolvePlace(item);
     };
 
     const handleKeyDown = (e) => {
@@ -173,79 +175,55 @@ export default function AddressAutocomplete({
         <div ref={wrapperRef} className={`relative ${className}`}>
             <div className="flex items-center gap-2">
                 {label && (
-                    <div
-                        className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md"
-                        style={{ background: labelColor }}
-                    >
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md"
+                        style={{ background: labelColor }}>
                         {label}
                     </div>
                 )}
                 <div className="relative flex-1">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input
-                        ref={inputRef}
-                        type="text"
-                        value={value}
-                        onChange={handleChange}
-                        onKeyDown={handleKeyDown}
+                        ref={inputRef} type="text" value={value}
+                        onChange={handleChange} onKeyDown={handleKeyDown}
                         onFocus={() => results.length > 0 && setOpen(true)}
                         placeholder={placeholder}
                         className="w-full pl-8 pr-8 py-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#208DCA]/40 focus:border-[#208DCA]/30 transition-all"
                     />
-                    {loading && (
-                        <Loader2 size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#208DCA] animate-spin" />
-                    )}
+                    {loading && <Loader2 size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#208DCA] animate-spin" />}
                 </div>
             </div>
 
             {quickAddresses.length > 0 && !value && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                     {quickAddresses.map((qa, i) => (
-                        <button
-                            key={i}
-                            type="button"
+                        <button key={i} type="button"
                             onClick={() => { onChange?.(qa.address); search(qa.address); }}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-colors"
-                        >
-                            <MapPin size={9} />
-                            {qa.label}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-colors">
+                            <MapPin size={9} /> {qa.label}
                         </button>
                     ))}
                 </div>
             )}
 
             {open && results.length > 0 && createPortal(
-                <motion.div
-                    ref={dropdownRef}
-                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                <motion.div ref={dropdownRef}
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.15 }}
                     className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden"
-                    style={{ zIndex: 99999, top: dropPos.top, left: dropPos.left, width: dropPos.width, minWidth: 280 }}
-                >
+                    style={{ zIndex: 99999, top: dropPos.top, left: dropPos.left, width: dropPos.width, minWidth: 280 }}>
                     {results.map((item, i) => {
                         const Icon = getIconForTypes(item.types);
                         return (
-                            <motion.button
-                                key={item.placeId || `${i}`}
-                                type="button"
-                                onClick={() => handleSelect(item)}
-                                onMouseEnter={() => setActiveIdx(i)}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                                    i === activeIdx ? "bg-[#208DCA]/8" : "hover:bg-slate-50"
-                                }`}
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.03 }}
-                            >
+                            <motion.button key={item.placeId || `${i}`} type="button"
+                                onClick={() => handleSelect(item)} onMouseEnter={() => setActiveIdx(i)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${i === activeIdx ? "bg-[#208DCA]/8" : "hover:bg-slate-50"}`}
+                                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
                                 <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
                                     <Icon size={14} className="text-[#208DCA]" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="text-xs font-medium text-slate-900 truncate">{item.name}</div>
-                                    {item.subtitle && (
-                                        <div className="text-[10px] text-slate-500 truncate">{item.subtitle}</div>
-                                    )}
+                                    {item.subtitle && <div className="text-[10px] text-slate-500 truncate">{item.subtitle}</div>}
                                 </div>
                             </motion.button>
                         );

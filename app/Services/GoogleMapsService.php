@@ -51,6 +51,111 @@ class GoogleMapsService
         }
     }
 
+    // ── Autocomplete (Places API New) ─────────────────────────────
+
+    public function autocomplete(string $input, ?float $biasLat = null, ?float $biasLng = null): array
+    {
+        try {
+            $body = [
+                'input'        => $input,
+                'languageCode' => $this->language,
+            ];
+
+            if ($biasLat && $biasLng) {
+                $body['locationBias'] = [
+                    'circle' => [
+                        'center' => ['latitude' => $biasLat, 'longitude' => $biasLng],
+                        'radius' => 50000.0,
+                    ],
+                ];
+            }
+
+            $response = Http::timeout(5)
+                ->withHeaders(['X-Goog-Api-Key' => $this->apiKey])
+                ->post('https://places.googleapis.com/v1/places:autocomplete', $body);
+
+            if ($response->failed()) return [];
+
+            $suggestions = $response->json()['suggestions'] ?? [];
+            $results = [];
+
+            foreach ($suggestions as $s) {
+                $p = $s['placePrediction'] ?? null;
+                if (!$p) continue;
+
+                $results[] = [
+                    'placeId'     => $p['placeId'] ?? '',
+                    'name'        => $p['structuredFormat']['mainText']['text'] ?? $p['text']['text'] ?? '',
+                    'subtitle'    => $p['structuredFormat']['secondaryText']['text'] ?? '',
+                    'displayName' => $p['text']['text'] ?? '',
+                    'types'       => $p['types'] ?? [],
+                ];
+            }
+
+            return $results;
+        } catch (\Exception) {
+            return [];
+        }
+    }
+
+    public function placeDetails(string $placeId): ?array
+    {
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'X-Goog-Api-Key'   => $this->apiKey,
+                    'X-Goog-FieldMask' => 'location,formattedAddress,displayName',
+                    'Accept-Language'   => $this->language,
+                ])
+                ->get("https://places.googleapis.com/v1/places/{$placeId}");
+
+            if ($response->failed()) return null;
+
+            $data = $response->json();
+            $loc  = $data['location'] ?? null;
+            if (!$loc) return null;
+
+            return [
+                'lat'         => (float) $loc['latitude'],
+                'lng'         => (float) $loc['longitude'],
+                'displayName' => $data['formattedAddress'] ?? '',
+                'name'        => $data['displayName']['text'] ?? '',
+            ];
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    // ── Routes (Routes API) ─────────────────────────────────────
+
+    public function computeRoute(array $origin, array $destination): array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'X-Goog-Api-Key'   => $this->apiKey,
+                    'X-Goog-FieldMask' => 'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline',
+                ])
+                ->post('https://routes.googleapis.com/directions/v2:computeRoutes', [
+                    'origin'      => ['location' => ['latLng' => ['latitude' => $origin['lat'], 'longitude' => $origin['lng']]]],
+                    'destination' => ['location' => ['latLng' => ['latitude' => $destination['lat'], 'longitude' => $destination['lng']]]],
+                    'travelMode'  => 'DRIVE',
+                    'computeAlternativeRoutes' => true,
+                ]);
+
+            if ($response->failed()) return [];
+
+            $routes = $response->json()['routes'] ?? [];
+            return array_map(fn($r) => [
+                'distanceMeters'  => $r['distanceMeters'] ?? 0,
+                'duration'        => $r['duration'] ?? '0s',
+                'encodedPolyline' => $r['polyline']['encodedPolyline'] ?? '',
+            ], $routes);
+        } catch (\Exception) {
+            return [];
+        }
+    }
+
     // ── Places Nearby Search (Google Places API) ─────────────────
 
     /**

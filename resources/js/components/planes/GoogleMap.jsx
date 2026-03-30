@@ -76,6 +76,10 @@ const GoogleMap = forwardRef(function GoogleMap(
             mapRef.current = map;
             geocoderRef.current = new google.maps.Geocoder();
             infoWindowRef.current = new google.maps.InfoWindow();
+
+            // Load geometry library for polyline decoding
+            google.maps.importLibrary("geometry").catch(() => {});
+            google.maps.importLibrary("marker").catch(() => {});
         }
     }, []);
 
@@ -363,19 +367,17 @@ const GoogleMap = forwardRef(function GoogleMap(
             Promise.all([resolveA, resolveB])
                 .then(async ([locA, locB]) => {
                     try {
-                        // Use Routes REST API directly (no JS SDK dependency)
-                        const res = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+                        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+                        const res = await fetch("/api/route", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                "X-Goog-Api-Key": apiKey,
-                                "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
+                                "Accept": "application/json",
+                                "X-CSRF-TOKEN": csrf,
                             },
                             body: JSON.stringify({
-                                origin: { location: { latLng: { latitude: locA.lat, longitude: locA.lng } } },
-                                destination: { location: { latLng: { latitude: locB.lat, longitude: locB.lng } } },
-                                travelMode: "DRIVE",
-                                computeAlternativeRoutes: true,
+                                origin: { lat: locA.lat, lng: locA.lng },
+                                destination: { lat: locB.lat, lng: locB.lng },
                             }),
                         });
                         const data = await res.json();
@@ -386,16 +388,20 @@ const GoogleMap = forwardRef(function GoogleMap(
                             return;
                         }
 
-                        // Decode polylines
-                        const decode = google.maps.geometry?.encoding?.decodePath
-                            || ((enc) => google.maps.geometry.encoding.decodePath(enc));
+                        // Decode polylines using google.maps.geometry
+                        const decodePolyline = (encoded) => {
+                            if (!encoded) return [];
+                            try {
+                                return google.maps.geometry.encoding.decodePath(encoded);
+                            } catch {
+                                return [];
+                            }
+                        };
 
                         const routes = rawRoutes.map((r) => ({
                             distanceMeters: r.distanceMeters || 0,
                             durationSeconds: parseInt(String(r.duration || "0").replace("s", ""), 10),
-                            decodedPath: r.polyline?.encodedPolyline
-                                ? google.maps.geometry.encoding.decodePath(r.polyline.encodedPolyline)
-                                : [],
+                            decodedPath: decodePolyline(r.encodedPolyline),
                         }));
 
                         renderRoutes(routes, locA, locB, 0);
