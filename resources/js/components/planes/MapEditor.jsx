@@ -549,19 +549,18 @@ const MapEditor = forwardRef(function MapEditor({
             return { x: pos.x - (el.x ?? 0), y: pos.y - (el.y ?? 0) };
         };
 
-        // Check resize corner on selected element first
-        if (selectedIdx !== null && elements[selectedIdx]) {
-            const corner = hitTestCorner(pos, elements[selectedIdx]);
-            if (corner) {
-                isResizingRef.current = true;
-                resizeCornerRef.current = corner;
-                dragIdxRef.current = selectedIdx;
-                return;
-            }
-        }
-
-        // Select tool
+        // Select tool: hit test + select + drag + resize
         if (tool === "select") {
+            // Check resize corner on selected element first
+            if (selectedIdx !== null && elements[selectedIdx]) {
+                const corner = hitTestCorner(pos, elements[selectedIdx]);
+                if (corner) {
+                    isResizingRef.current = true;
+                    resizeCornerRef.current = corner;
+                    dragIdxRef.current = selectedIdx;
+                    return;
+                }
+            }
             const idx = hitTestElement(pos);
             if (idx >= 0) {
                 setSelectedIdx(idx);
@@ -575,25 +574,7 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Select tool: hit test + drag/move/resize
-        if (tool === "select") {
-            const idx = hitTestElement(pos);
-            if (idx >= 0) {
-                setSelectedIdx(idx);
-                isDraggingRef.current = true;
-                dragIdxRef.current = idx;
-                dragOffRef.current = getDragOff(elements[idx]);
-                redraw(elements, idx);
-                return;
-            }
-            if (selectedIdx !== null) {
-                setSelectedIdx(null);
-                redraw(elements, null);
-            }
-            return;
-        }
-
-        // Drawing tools: deselect any selected element, then draw
+        // Drawing tools: deselect and always draw
         if (selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
