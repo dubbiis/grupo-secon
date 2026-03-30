@@ -1112,23 +1112,33 @@ class ContentPageBuilder
                 ['Categoría', 50, 'C'],
                 ['Total Horas', 30, 'R'],
             ];
-            $this->pdf->SetFillColor(34, 58, 129);
-            $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
-            $x = $startX;
-            $y = $this->pdf->GetY();
-            foreach ($sumCols as [$label, $w, $align]) {
-                $this->pdf->SetXY($x, $y);
-                $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
-                $x += $w;
-            }
-            $this->pdf->SetY($y + $headerH);
+
+            $drawStaffHeader = function () use ($sumCols, $startX, $headerH) {
+                $this->pdf->SetFillColor(34, 58, 129);
+                $this->pdf->SetTextColor(255, 255, 255);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+                $x = $startX;
+                $y = $this->pdf->GetY();
+                foreach ($sumCols as [$label, $w, $align]) {
+                    $this->pdf->SetXY($x, $y);
+                    $this->pdf->Cell($w, $headerH, $label, 0, 0, $align, true);
+                    $x += $w;
+                }
+                $this->pdf->SetY($y + $headerH);
+            };
+
+            $drawStaffHeader();
+            $lastStaffPage = $this->pdf->getPage();
 
             // Summary rows
             $idx = 0;
             $totalStaffHours = 0;
             foreach ($staffMap as $name => $data) {
                 $this->ensureSpace($rowH + 2);
+                if ($this->pdf->getPage() !== $lastStaffPage) {
+                    $drawStaffHeader();
+                    $lastStaffPage = $this->pdf->getPage();
+                }
                 $y = $this->pdf->GetY();
                 $bg = ($idx % 2 === 0) ? [245, 247, 250] : [255, 255, 255];
                 $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
