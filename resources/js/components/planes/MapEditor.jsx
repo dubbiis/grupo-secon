@@ -838,6 +838,8 @@ const MapEditor = forwardRef(function MapEditor({
                 params.set("zoom", Math.round(mapState?.zoom || 13));
             }
 
+            console.log("[Capture] hasRoute:", hasRoute, "params:", Object.fromEntries(params), "polyline length:", mapState?.selectedRoutePolyline?.length);
+
             setCaptureFlash(true);
 
             const res = await fetch(`/api/static-map?${params}`);
