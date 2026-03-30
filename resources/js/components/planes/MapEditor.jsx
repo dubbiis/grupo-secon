@@ -819,13 +819,16 @@ const MapEditor = forwardRef(function MapEditor({
             composite.height = mapH;
             const ctx = composite.getContext("2d");
 
-            // 1. Capture WebGL canvas (tiles + polylines) — preserveDrawingBuffer is forced on
-            const webglCanvas = mapEl.querySelector("canvas");
-            if (webglCanvas) {
-                ctx.drawImage(webglCanvas, 0, 0, mapW, mapH);
+            // 1. Capture ALL canvases (Google Maps uses multiple: tiles, overlays, labels)
+            const allCanvases = mapEl.querySelectorAll("canvas");
+            for (const cvs of allCanvases) {
+                try {
+                    if (cvs.width === 0 || cvs.height === 0) continue;
+                    ctx.drawImage(cvs, 0, 0, mapW, mapH);
+                } catch {}
             }
 
-            // 2. Capture DOM overlays (markers, labels) via foreignObject SVG
+            // 2. Capture DOM overlays (markers, route labels)
             const overlays = mapEl.querySelectorAll("[style*='transform'][style*='position']");
             for (const el of overlays) {
                 try {
