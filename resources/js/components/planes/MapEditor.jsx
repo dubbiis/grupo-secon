@@ -16,6 +16,7 @@ import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 
 // ── Herramientas ──────────────────────────────────────────────
 const TOOLS = [
+    { id: "select", icon: MousePointer, label: "Seleccionar / Mover", shortcut: "S" },
     { id: "pen",    icon: Pen,          label: "Lápiz libre",          shortcut: "P" },
     { id: "line",   icon: Minus,        label: "Línea recta",          shortcut: "L" },
     { id: "arrow",  icon: ArrowRight,   label: "Flecha",               shortcut: "A" },
@@ -371,7 +372,7 @@ const MapEditor = forwardRef(function MapEditor({
                 if (e.key === "y" || (e.key === "Z" && e.shiftKey)) { e.preventDefault(); redo(); }
                 return;
             }
-            const keyMap = { p: "pen", l: "line", a: "arrow", r: "rect", c: "circle", t: "text" };
+            const keyMap = { s: "select", p: "pen", l: "line", a: "arrow", r: "rect", c: "circle", t: "text" };
             if (keyMap[e.key.toLowerCase()]) { setTool(keyMap[e.key.toLowerCase()]); return; }
             if ((e.key === "Delete" || e.key === "Backspace") && selectedIdx !== null) {
                 e.preventDefault(); deleteSelected();
@@ -548,9 +549,8 @@ const MapEditor = forwardRef(function MapEditor({
             return { x: pos.x - (el.x ?? 0), y: pos.y - (el.y ?? 0) };
         };
 
-        // If an element is selected (via right-click), allow resize/drag with left click
+        // Check resize corner on selected element first
         if (selectedIdx !== null && elements[selectedIdx]) {
-            // Check resize corners first
             const corner = hitTestCorner(pos, elements[selectedIdx]);
             if (corner) {
                 isResizingRef.current = true;
@@ -558,15 +558,43 @@ const MapEditor = forwardRef(function MapEditor({
                 dragIdxRef.current = selectedIdx;
                 return;
             }
-            // Check if clicking on the selected element → drag it
-            const hitIdx = hitTestElement(pos);
-            if (hitIdx === selectedIdx) {
+        }
+
+        // Select tool
+        if (tool === "select") {
+            const idx = hitTestElement(pos);
+            if (idx >= 0) {
+                setSelectedIdx(idx);
                 isDraggingRef.current = true;
-                dragIdxRef.current = selectedIdx;
-                dragOffRef.current = getDragOff(elements[selectedIdx]);
+                dragIdxRef.current = idx;
+                dragOffRef.current = getDragOff(elements[idx]);
+            } else {
+                setSelectedIdx(null);
+            }
+            redraw(elements, idx >= 0 ? idx : null);
+            return;
+        }
+
+        // Select tool: hit test + drag/move/resize
+        if (tool === "select") {
+            const idx = hitTestElement(pos);
+            if (idx >= 0) {
+                setSelectedIdx(idx);
+                isDraggingRef.current = true;
+                dragIdxRef.current = idx;
+                dragOffRef.current = getDragOff(elements[idx]);
+                redraw(elements, idx);
                 return;
             }
-            // Clicking elsewhere → deselect and draw
+            if (selectedIdx !== null) {
+                setSelectedIdx(null);
+                redraw(elements, null);
+            }
+            return;
+        }
+
+        // Drawing tools: deselect any selected element, then draw
+        if (selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
@@ -941,6 +969,7 @@ const MapEditor = forwardRef(function MapEditor({
     const canRedo = historyStep < history.length - 1;
 
     const cursorClass = {
+        select: selectedIdx !== null ? "cursor-move" : "cursor-default",
         pen: "cursor-crosshair",
         line: "cursor-crosshair",
         arrow: "cursor-crosshair",
@@ -1745,10 +1774,10 @@ const MapEditor = forwardRef(function MapEditor({
                             <X size={12} />
                         </button>
                         {/* Select mode indicator */}
-                        {selectedIdx !== null && (
-                            <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-white text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
+                        {tool === "select" && selectedIdx !== null && (
+                            <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-slate-900 text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
                                 <Crosshair size={10} />
-                                Elemento seleccionado — <kbd className="bg-white/20 px-1 rounded">Del</kbd> eliminar · arrastra para mover
+                                Elemento seleccionado — <kbd className="bg-slate-2000 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
                             </div>
                         )}
                     </div>
