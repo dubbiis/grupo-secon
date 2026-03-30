@@ -315,11 +315,6 @@ class ContentPageBuilder
             $templates[] = $this->pdf->importPage($i);
         }
 
-        // Import base template for footer bar
-        $baseTplPath = config('pdf.base_template');
-        $this->pdf->setSourceFile($baseTplPath);
-        $bgTpl = $this->pdf->importPage(1);
-
         // Disable auto background + auto page break
         $this->pdf->enableBackground(false);
         $this->pdf->SetAutoPageBreak(false, 0);
@@ -327,19 +322,32 @@ class ContentPageBuilder
         foreach ($templates as $idx => $tpl) {
             $this->pdf->AddPage();
 
-            // 1. Base template first (logo + blue footer bar)
-            $this->pdf->useTemplate($bgTpl, 0, 0, 210, 297);
+            // 1. Risk section page (full size)
+            $this->pdf->useTemplate($tpl, 0, 0, 210, 297);
 
-            // 2. Risk section page on top (covers content area, footer area gets our bar)
-            // Slightly crop to avoid the original footer: show 0-285mm of the source page
-            $this->pdf->useTemplate($tpl, 0, 0, 210, 285);
+            // 2. Cover original footer with white rectangle
+            $this->pdf->SetFillColor(255, 255, 255);
+            $this->pdf->Rect(0, 286, 210, 11, 'F');
+
+            // 3. Paint our blue gradient footer bar on top
+            // Draw a gradient-like bar (solid blue approximation)
+            $this->pdf->SetFillColor(34, 58, 129);
+            $this->pdf->Rect(0, 288, 105, 9, 'F');
+            $this->pdf->SetFillColor(32, 141, 202);
+            $this->pdf->Rect(105, 288, 105, 9, 'F');
+
+            // 4. Secon logo mini (white S icon area)
+            $logoPath = public_path('images/logo-secon.svg');
+            if (file_exists($logoPath)) {
+                $this->pdf->ImageSVG($logoPath, 5, 288.5, 8);
+            }
 
             // Record page number for section 7 (first page)
             if ($idx === 0) {
                 $this->sectionPages[7] = $this->pdf->getPage();
             }
 
-            // 3. Draw our dynamic footer text on the blue bar
+            // 5. Draw footer text
             $this->pdf->drawFooter();
         }
 
