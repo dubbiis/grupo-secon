@@ -806,7 +806,8 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         try {
-            // Find the .gm-style container (Google Maps main wrapper)
+            // Get map state from GoogleMap ref
+            const mapState = googleMapRef.current?.getMapState?.();
             const gmStyle = mapContainerRef.current.querySelector(".gm-style");
             const mapEl = gmStyle || mapContainerRef.current.firstElementChild;
             if (!mapEl) return;
@@ -815,64 +816,50 @@ const MapEditor = forwardRef(function MapEditor({
             const mapW = Math.round(rect.width);
             const mapH = Math.round(rect.height);
 
-            const composite = document.createElement("canvas");
-            composite.width = mapW;
-            composite.height = mapH;
-            const ctx = composite.getContext("2d");
+            // Build Static Maps API URL via backend proxy
+            const params = new URLSearchParams({
+                center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
+                zoom: mapState?.zoom || 13,
+                size: `${Math.min(mapW, 640)}x${Math.min(mapH, 640)}`,
+                maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
+            });
 
-            // 1. Capture the WebGL canvas — Google Maps renders tiles + polylines here
-            const webglCanvas = mapEl.querySelector("canvas");
-            if (webglCanvas) {
-                try {
-                    // The internal canvas resolution may differ from CSS size.
-                    // drawImage handles the scaling automatically.
-                    ctx.drawImage(webglCanvas, 0, 0, mapW, mapH);
-                } catch {
-                    ctx.fillStyle = "#e5e7eb";
-                    ctx.fillRect(0, 0, mapW, mapH);
-                }
+            // Add route polyline (only selected route)
+            if (mapState?.selectedRoutePolyline) {
+                params.set("path", mapState.selectedRoutePolyline);
             }
 
-            // 2. Capture AdvancedMarker elements and route labels
-            // They are rendered as regular DOM elements inside .gm-style
-            const markerContainers = mapEl.querySelectorAll(
-                "[data-advanced-markers] div, .gm-style > div > div > div div[style*='transform']"
-            );
-            for (const el of markerContainers) {
-                try {
-                    const r = el.getBoundingClientRect();
-                    const w = Math.round(r.width);
-                    const h = Math.round(r.height);
-                    if (w < 8 || h < 8 || w > 250 || h > 60) continue;
-                    const x = Math.round(r.left - rect.left);
-                    const y = Math.round(r.top - rect.top);
-                    if (x + w < 0 || y + h < 0 || x > mapW || y > mapH) continue;
-
-                    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-                        <foreignObject width="100%" height="100%">
-                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px">${el.outerHTML}</div>
-                        </foreignObject>
-                    </svg>`;
-                    const markerImg = await new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = () => resolve(img);
-                        img.onerror = () => resolve(null);
-                        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
-                    });
-                    if (markerImg) ctx.drawImage(markerImg, x, y, w, h);
-                } catch {}
+            // Add A/B markers
+            if (mapState?.routeOrigin && mapState?.routeDestination) {
+                params.append("markers[]", JSON.stringify({
+                    color: "blue", label: "A",
+                    lat: mapState.routeOrigin.lat, lng: mapState.routeOrigin.lng,
+                }));
+                params.append("markers[]", JSON.stringify({
+                    color: "red", label: "B",
+                    lat: mapState.routeDestination.lat, lng: mapState.routeDestination.lng,
+                }));
             }
 
             setCaptureFlash(true);
 
-            const dataUrl = composite.toDataURL("image/png");
+            const res = await fetch(`/api/static-map?${params}`);
+            if (!res.ok) throw new Error("Static map failed");
+
+            const blob = await res.blob();
+            const dataUrl = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+
             const img = new Image();
             img.onload = () => {
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    c.width = mapW;
-                    c.height = mapH;
+                    c.width = img.width;
+                    c.height = img.height;
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);
@@ -881,7 +868,7 @@ const MapEditor = forwardRef(function MapEditor({
                     setHistory([[]]);
                     setHistoryStep(0);
                     requestAnimationFrame(() => redraw([]));
-                }, 600);
+                }, 400);
             };
             img.src = dataUrl;
         } catch (err) {

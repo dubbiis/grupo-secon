@@ -201,6 +201,52 @@ class GoogleMapsController extends Controller
     }
 
     /**
+     * Static map image — proxy to Google Maps Static API.
+     */
+    public function staticMap(Request $request)
+    {
+        $params = [
+            'center'  => $request->input('center', '40.4168,-3.7038'),
+            'zoom'    => $request->input('zoom', 13),
+            'size'    => $request->input('size', '800x600'),
+            'scale'   => 2,
+            'maptype' => $request->input('maptype', 'roadmap'),
+            'key'     => config('googlemaps.api_key'),
+            'language' => 'es',
+        ];
+
+        // Add route path if provided
+        $polyline = $request->input('path');
+        if ($polyline) {
+            $params['path'] = 'color:0x208DCAff|weight:5|enc:' . $polyline;
+        }
+
+        // Add markers
+        $markers = $request->input('markers', []);
+        $markerParams = [];
+        foreach ($markers as $m) {
+            $markerParams[] = "color:{$m['color']}|label:{$m['label']}|{$m['lat']},{$m['lng']}";
+        }
+
+        $url = 'https://maps.googleapis.com/maps/api/staticmap?' . http_build_query($params);
+        foreach ($markerParams as $mp) {
+            $url .= '&markers=' . urlencode($mp);
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->get($url);
+            if ($response->successful()) {
+                return response($response->body(), 200)
+                    ->header('Content-Type', 'image/png')
+                    ->header('Cache-Control', 'public, max-age=3600');
+            }
+            return response()->json(['error' => 'Static map failed'], 502);
+        } catch (\Exception) {
+            return response()->json(['error' => 'Static map timeout'], 504);
+        }
+    }
+
+    /**
      * POIs for map overlay — uses cached backend Google Places queries.
      */
     public function mapPOIs(Request $request)

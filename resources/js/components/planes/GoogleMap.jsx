@@ -38,10 +38,16 @@ const GoogleMap = forwardRef(function GoogleMap(
             const map = mapRef.current;
             if (!map) return null;
             const center = map.getCenter();
+            const cached = cachedRoutesRef.current;
+            const selectedRoute = cached?.routes?.[cached?.selectedIdx ?? 0];
             return {
                 center: { lat: center.lat(), lng: center.lng() },
                 zoom: map.getZoom(),
                 mapTypeId: map.getMapTypeId(),
+                selectedRoutePolyline: selectedRoute?.encodedPolyline || null,
+                routeOrigin: cached?.locA || null,
+                routeDestination: cached?.locB || null,
+                apiKey,
             };
         },
     }));
@@ -205,7 +211,7 @@ const GoogleMap = forwardRef(function GoogleMap(
         const map = mapRef.current;
         if (!map) return;
 
-        cachedRoutesRef.current = { routes, locA, locB };
+        cachedRoutesRef.current = { routes, locA, locB, selectedIdx };
         clearAll();
 
         const bounds = new google.maps.LatLngBounds();
@@ -446,6 +452,7 @@ const GoogleMap = forwardRef(function GoogleMap(
                             distanceMeters: r.distanceMeters || 0,
                             durationSeconds: parseInt(String(r.duration || "0").replace("s", ""), 10),
                             decodedPath: decodePolyline(r.encodedPolyline),
+                            encodedPolyline: r.encodedPolyline || "",
                         }));
 
                         renderRoutes(routes, locA, locB, 0);

@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/autocomplete', [GoogleMapsController::class, 'autocomplete'])->name('api.autocomplete');
     Route::get('/api/place-details', [GoogleMapsController::class, 'placeDetails'])->name('api.place-details');
     Route::post('/api/route', [GoogleMapsController::class, 'computeRoute'])->name('api.route');
+    Route::get('/api/static-map', [GoogleMapsController::class, 'staticMap'])->name('api.static-map');
     Route::get('/api/map-pois', [GoogleMapsController::class, 'mapPOIs'])->name('api.map-pois');
 
     // Custom questions
