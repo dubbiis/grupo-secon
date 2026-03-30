@@ -205,22 +205,28 @@ class GoogleMapsController extends Controller
      */
     public function staticMap(Request $request)
     {
-        $center  = $request->input('center', '40.4168,-3.7038');
-        $zoom    = $request->input('zoom', 13);
-        $size    = $request->input('size', '800x600');
-        $maptype = $request->input('maptype', 'roadmap');
+        $center   = $request->input('center');
+        $zoom     = $request->input('zoom');
+        $size     = $request->input('size', '800x600');
+        $maptype  = $request->input('maptype', 'roadmap');
         $polyline = $request->input('path', '');
-        $markerA  = $request->input('marker_a', '');  // "lat,lng"
+        $markerA  = $request->input('marker_a', '');
         $markerB  = $request->input('marker_b', '');
 
         $url = 'https://maps.googleapis.com/maps/api/staticmap'
-            . '?center=' . urlencode($center)
-            . '&zoom=' . intval($zoom)
-            . '&size=' . urlencode($size)
+            . '?size=' . urlencode($size)
             . '&scale=2'
             . '&maptype=' . urlencode($maptype)
             . '&language=es'
             . '&key=' . config('googlemaps.api_key');
+
+        // Only add center/zoom if explicitly provided (omitting lets Google auto-fit to path/markers)
+        if ($center) {
+            $url .= '&center=' . urlencode($center);
+        }
+        if ($zoom !== null) {
+            $url .= '&zoom=' . intval($zoom);
+        }
 
         if ($polyline) {
             $url .= '&path=' . urlencode('color:0x208DCAff|weight:5|enc:' . $polyline);
