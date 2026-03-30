@@ -850,10 +850,21 @@ const MapEditor = forwardRef(function MapEditor({
 
             setCaptureFlash(true);
 
-            const res = await fetch(`/api/static-map?${params}`);
+            // DEBUG: download directly to see what Static API returns
+            const debugUrl = `/api/static-map?${params}`;
+            const res = await fetch(debugUrl);
             if (!res.ok) throw new Error("Static map failed");
 
             const blob = await res.blob();
+
+            // Direct download for debugging
+            const dlUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = dlUrl;
+            a.download = "captura-debug.png";
+            a.click();
+            URL.revokeObjectURL(dlUrl);
+
             const dataUrl = await new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
@@ -865,7 +876,6 @@ const MapEditor = forwardRef(function MapEditor({
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    // Canvas at map size, image scaled up from HD static capture
                     c.width = mapW;
                     c.height = mapH;
                     const drawCtx = c.getContext("2d");
