@@ -20,6 +20,7 @@ const GoogleMap = forwardRef(function GoogleMap(
     const mapRef           = useRef(null);
     const markersRef       = useRef([]);
     const polylinesRef     = useRef([]);
+    const routeLabelsRef   = useRef([]);
     const poiMarkersRef    = useRef([]);
     const prevCommandRef   = useRef(null);
     const cachedRoutesRef  = useRef(null);
@@ -114,6 +115,8 @@ const GoogleMap = forwardRef(function GoogleMap(
     const clearPolylines = useCallback(() => {
         polylinesRef.current.forEach((p) => p.setMap(null));
         polylinesRef.current = [];
+        routeLabelsRef.current.forEach((o) => o.setMap(null));
+        routeLabelsRef.current = [];
     }, []);
 
     const clearPOIs = useCallback(() => {
@@ -245,6 +248,47 @@ const GoogleMap = forwardRef(function GoogleMap(
 
             if (isPrimary) {
                 path.forEach((p) => bounds.extend(p));
+            }
+
+            // Route label at midpoint
+            if (path.length > 0 && route.distanceMeters) {
+                const midIdx = Math.floor(path.length / 2);
+                const midPoint = path[midIdx];
+                const km = (route.distanceMeters / 1000).toFixed(0);
+                const mins = Math.round((route.durationSeconds || 0) / 60);
+                const hours = Math.floor(mins / 60);
+                const timeStr = hours > 0 ? `${hours}h ${mins % 60}min` : `${mins} min`;
+                const color = isPrimary ? "#208DCA" : "#94A3B8";
+
+                const labelDiv = document.createElement("div");
+                labelDiv.style.cssText = `
+                    display:flex;align-items:center;gap:4px;
+                    padding:4px 8px;border-radius:12px;
+                    background:white;border:2px solid ${color};
+                    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+                    font-family:system-ui,sans-serif;font-size:11px;font-weight:600;
+                    color:${isPrimary ? "#1e293b" : "#64748b"};
+                    white-space:nowrap;cursor:pointer;
+                    ${!isPrimary ? "opacity:0.8;" : ""}
+                `;
+                labelDiv.innerHTML = `🚗 ${km} km · ${timeStr}`;
+
+                if (!isPrimary) {
+                    labelDiv.addEventListener("click", () => {
+                        renderRoutes(routes, locA, locB, route.idx);
+                        onRouteData?.({ routes, selectedIndex: route.idx });
+                    });
+                }
+
+                if (google.maps.marker?.AdvancedMarkerElement) {
+                    const label = new google.maps.marker.AdvancedMarkerElement({
+                        map,
+                        position: midPoint,
+                        content: labelDiv,
+                        zIndex: isPrimary ? 1500 : 1000,
+                    });
+                    routeLabelsRef.current.push(label);
+                }
             }
         });
 
