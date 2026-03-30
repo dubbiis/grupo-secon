@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 const TYPE_ICONS = {
     street_address: MapPin,
@@ -53,6 +54,9 @@ export default function AddressAutocomplete({
     const placesServiceRef = useRef(null);
     const hiddenDivRef = useRef(null);
 
+    // Load the Places library via the official hook
+    const placesLib = useMapsLibrary("places");
+
     // Create a hidden div for PlacesService (requires a DOM element)
     useEffect(() => {
         if (!hiddenDivRef.current) {
@@ -67,31 +71,23 @@ export default function AddressAutocomplete({
         };
     }, []);
 
-    // Initialize Google services when available
-    const getAutocompleteService = useCallback(() => {
-        if (autocompleteServiceRef.current) return autocompleteServiceRef.current;
-        if (window.google?.maps?.places?.AutocompleteService) {
-            autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-            return autocompleteServiceRef.current;
+    // Initialize services once placesLib is loaded
+    useEffect(() => {
+        if (!placesLib) return;
+        if (!autocompleteServiceRef.current) {
+            autocompleteServiceRef.current = new placesLib.AutocompleteService();
         }
-        return null;
-    }, []);
-
-    const getPlacesService = useCallback(() => {
-        if (placesServiceRef.current) return placesServiceRef.current;
-        if (window.google?.maps?.places?.PlacesService && hiddenDivRef.current) {
-            placesServiceRef.current = new google.maps.places.PlacesService(hiddenDivRef.current);
-            return placesServiceRef.current;
+        if (!placesServiceRef.current && hiddenDivRef.current) {
+            placesServiceRef.current = new placesLib.PlacesService(hiddenDivRef.current);
         }
-        return null;
-    }, []);
+    }, [placesLib]);
 
     const getSessionToken = useCallback(() => {
-        if (!sessionTokenRef.current && window.google?.maps?.places?.AutocompleteSessionToken) {
-            sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
+        if (!sessionTokenRef.current && placesLib?.AutocompleteSessionToken) {
+            sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
         }
         return sessionTokenRef.current;
-    }, []);
+    }, [placesLib]);
 
     // Update dropdown position when opening
     useEffect(() => {
@@ -101,23 +97,6 @@ export default function AddressAutocomplete({
         }
     }, [open]);
 
-    // Wait for Google Maps Places to be available (may load async)
-    const waitForService = useCallback(() => {
-        return new Promise((resolve) => {
-            const svc = getAutocompleteService();
-            if (svc) return resolve(svc);
-            // Poll up to 3 seconds
-            let attempts = 0;
-            const interval = setInterval(() => {
-                const svc = getAutocompleteService();
-                if (svc || ++attempts > 30) {
-                    clearInterval(interval);
-                    resolve(svc);
-                }
-            }, 100);
-        });
-    }, [getAutocompleteService]);
-
     const search = useCallback(
         async (query) => {
             if (query.length < 2) {
@@ -126,15 +105,14 @@ export default function AddressAutocomplete({
                 return;
             }
 
-            setLoading(true);
-            const service = await waitForService();
+            const service = autocompleteServiceRef.current;
             if (!service) {
                 setResults([]);
                 setOpen(false);
-                setLoading(false);
                 return;
             }
 
+            setLoading(true);
             try {
                 const request = {
                     input: query,
@@ -142,7 +120,6 @@ export default function AddressAutocomplete({
                     language: "es",
                 };
 
-                // Add location bias if available
                 if (biasLat && biasLng && window.google?.maps?.LatLng) {
                     request.locationBias = new google.maps.Circle({
                         center: new google.maps.LatLng(biasLat, biasLng),
@@ -174,12 +151,12 @@ export default function AddressAutocomplete({
                 setLoading(false);
             }
         },
-        [biasLat, biasLng, waitForService, getSessionToken]
+        [biasLat, biasLng, placesLib, getSessionToken]
     );
 
     const resolvePlace = useCallback(
         (placeId, displayName) => {
-            const service = getPlacesService();
+            const service = placesServiceRef.current;
             if (!service) {
                 onSelect?.({ lat: 0, lng: 0, displayName });
                 return;
@@ -192,7 +169,6 @@ export default function AddressAutocomplete({
                     sessionToken: getSessionToken(),
                 },
                 (place, status) => {
-                    // Reset session token after getDetails (completes the session)
                     sessionTokenRef.current = null;
 
                     if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
@@ -208,7 +184,7 @@ export default function AddressAutocomplete({
                 }
             );
         },
-        [getPlacesService, getSessionToken, onSelect]
+        [placesLib, getSessionToken, onSelect]
     );
 
     const handleChange = (e) => {
@@ -276,7 +252,6 @@ export default function AddressAutocomplete({
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    // Cleanup
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);

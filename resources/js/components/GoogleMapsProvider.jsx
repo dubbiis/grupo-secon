@@ -11,12 +11,7 @@ export default function GoogleMapsProvider({ children }) {
     }
 
     return (
-        <APIProvider
-            apiKey={apiKey}
-            language="es"
-            region="ES"
-            libraries={["places", "geometry", "marker"]}
-        >
+        <APIProvider apiKey={apiKey} language="es" region="ES">
             {children}
         </APIProvider>
     );
