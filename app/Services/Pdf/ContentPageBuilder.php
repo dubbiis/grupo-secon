@@ -308,58 +308,118 @@ class ContentPageBuilder
             return;
         }
 
-        // Use originals — apply base template + title + footer dynamically
         $baseTplPath = config('pdf.base_template');
-        $fontsPath = config('pdf.fonts_path') . '/';
 
-        // 1. Import all risk table pages first
+        // Import all table pages + base template
         $pageCount = $this->pdf->setSourceFile($riskTablePath);
         $tableTemplates = [];
         for ($i = 1; $i <= $pageCount; $i++) {
             $tableTemplates[] = $this->pdf->importPage($i);
         }
-
-        // 2. Import base template
         $this->pdf->setSourceFile($baseTplPath);
         $bgTpl = $this->pdf->importPage(1);
 
-        // 3. Disable auto background + auto page break during table import
-        $this->pdf->enableBackground(false);
-        $this->pdf->SetAutoPageBreak(false, 0);
-
-        // 4. Render each page: base template + table content + title (1st) + footer
-        foreach ($tableTemplates as $idx => $tpl) {
+        // Helper: add a table page with base template
+        $addTablePage = function ($tplIdx, $yOffset = 15, $tplH = 270) use ($tableTemplates, $bgTpl) {
+            $this->pdf->enableBackground(false);
+            $this->pdf->SetAutoPageBreak(false, 0);
             $this->pdf->AddPage();
-
-            // Base template (logo + blue bar)
             $this->pdf->useTemplate($bgTpl, 0, 0, 210, 297);
-
-            // Table content — offset down to leave room for logo/title
-            if ($idx === 0) {
-                $this->pdf->useTemplate($tpl, 0, 38, 210, 247);
-            } else {
-                $this->pdf->useTemplate($tpl, 0, 15, 210, 270);
-            }
-
-            // Title on first page
-            if ($idx === 0) {
-                FontManager::apply($this->pdf, 'section_title');
-                $title = $this->lang === 'en'
-                    ? '7. RISK ASSESSMENT AND PREVENTIVE MEASURES'
-                    : '7. ANÁLISIS DE RIESGOS Y MEDIDAS PREVENTIVAS';
-                $this->pdf->SetXY(20, 25);
-                $this->pdf->Cell(170, 10, $title, 0, 0, 'L');
-                $this->sectionPages[7] = $this->pdf->getPage();
-            }
-
-            // Footer
+            $this->pdf->useTemplate($tableTemplates[$tplIdx], 0, $yOffset, 210, $tplH);
             $this->pdf->drawFooter();
-        }
+            $this->pdf->SetAutoPageBreak(true, 22);
+            $this->pdf->enableBackground(true);
+            $this->pdf->reloadBackgroundTemplate();
+        };
 
-        // 5. Restore
-        $this->pdf->SetAutoPageBreak(true, 22);
-        $this->pdf->enableBackground(true);
-        $this->pdf->reloadBackgroundTemplate();
+        // Helper: add a text page with content
+        $addTextPage = function (array $blocks) {
+            $this->pdf->AddPage();
+            $this->pdf->SetY(25);
+            foreach ($blocks as $block) {
+                $style = $block['style'] ?? 'body';
+                $text = $block['text'];
+                FontManager::apply($this->pdf, $style);
+                $this->pdf->MultiCell(0, $block['h'] ?? 6, $text, 0, 'L', false, 1, 20, null, true);
+                $this->pdf->SetY($this->pdf->GetY() + ($block['gap'] ?? 2));
+            }
+        };
+
+        // ═══ PAGE 1: Title + 7.1 intro ═══
+        $this->pdf->AddPage();
+        $this->pdf->SetY(25);
+        $this->sectionPages[7] = $this->pdf->getPage();
+
+        FontManager::apply($this->pdf, 'section_title');
+        $this->pdf->MultiCell(0, 10, '7. ' . mb_strtoupper($this->lang === 'en' ? 'RISK ASSESSMENT AND PREVENTIVE MEASURES' : 'ANÁLISIS DE RIESGOS Y MEDIDAS PREVENTIVAS'), 0, 'L', false, 1, 20, null, true);
+        $this->pdf->SetY($this->pdf->GetY() + 5);
+
+        FontManager::apply($this->pdf, 'subsection');
+        $this->pdf->MultiCell(0, 7, '7.1 ' . ($this->lang === 'en' ? 'RISK IDENTIFICATION' : 'IDENTIFICACIÓN DE LOS RIESGOS'), 0, 'L', false, 1, 20, null, true);
+        $this->pdf->SetY($this->pdf->GetY() + 8);
+
+        // ═══ TABLE PAGE: Identification table + Criterio F (page 1 of PDF) ═══
+        $addTablePage(0, 30, 255);
+
+        // ═══ PAGE 3: 7.2 intro + criteria text ═══
+        $addTextPage([
+            ['style' => 'subsection', 'text' => '7.2 ' . ($this->lang === 'en' ? 'RISK ANALYSIS AND EVALUATION' : 'ANÁLISIS Y EVALUACIÓN DE LOS RIESGOS'), 'h' => 8, 'gap' => 5],
+            ['style' => 'label', 'text' => '7.2.1 ' . ($this->lang === 'en' ? 'Risk definition phase' : 'Fase de definición de los riesgos'), 'h' => 7, 'gap' => 2],
+            ['style' => 'body', 'text' => $this->lang === 'en'
+                ? 'In this phase, the ASSET at risk and the DAMAGE it may suffer are identified.'
+                : 'En esta fase se identifica el BIEN que está en riesgo y el DAÑO que puede sufrir.', 'h' => 6, 'gap' => 5],
+            ['style' => 'label', 'text' => '7.2.2 ' . ($this->lang === 'en' ? 'Risk analysis phase' : 'Fase de análisis de riesgo'), 'h' => 7, 'gap' => 2],
+            ['style' => 'body', 'text' => $this->lang === 'en'
+                ? "- The purpose of this phase is to determine and calculate the criteria for risk evaluation.\n- Impact assessment criteria (F, S, P and E), threat materialisation (A) and vulnerability severity (V)."
+                : "- El objeto de esta fase será la determinación y el cálculo de los criterios que determinarán la evaluación del riesgo.\n- Criterios de valoración de impactos (F, S, P y E), materialización de amenazas (A) y gravedad de vulnerabilidades (V).", 'h' => 6, 'gap' => 5],
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Function Criterion (F): damage or negative consequences on activity.'
+                : 'Criterio de Función (F): daños o consecuencias negativas en la actividad.', 'h' => 7, 'gap' => 3],
+        ]);
+
+        // ═══ TABLE PAGE: Criterio S, P, E, A (page 2 of PDF) ═══
+        // Text before the table page with descriptions of each criterion
+        $addTextPage([
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Substitution Criterion (S): assessment of the substitutability of assets.'
+                : 'Criterio de Sustitución (S): valoración de la sustitución de los bienes.', 'h' => 7, 'gap' => 3],
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Depth Criterion (P): the disturbance and psychological effects according to their image impact.'
+                : 'Criterio de Profundidad (P): la perturbación y los efectos psicológicos que producirían serían de diferente graduación por sus efectos de imagen.', 'h' => 7, 'gap' => 3],
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Extension Criterion (E): scope of damages according to their extent.'
+                : 'Criterio de Extensión (E): alcance de los daños según su extensión.', 'h' => 7, 'gap' => 3],
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Probability Criterion (A): the probability that the risk will materialise.'
+                : 'Criterio de Probabilidad (A): la probabilidad de que el riesgo se manifieste.', 'h' => 7, 'gap' => 3],
+        ]);
+
+        $addTablePage(1);
+
+        // ═══ TEXT PAGE: Vulnerability + formulas + classification ═══
+        $addTextPage([
+            ['style' => 'label', 'text' => $this->lang === 'en'
+                ? 'Vulnerability Criterion (V): the probability that damage will occur.'
+                : 'Criterio de Vulnerabilidad (V): la probabilidad de que se produzcan daños.', 'h' => 7, 'gap' => 5],
+            ['style' => 'label', 'text' => '7.2.3 ' . ($this->lang === 'en' ? 'Risk evaluation phase' : 'Fase de evaluación del riesgo'), 'h' => 7, 'gap' => 2],
+            ['style' => 'body', 'text' => $this->lang === 'en'
+                ? "In the following phase, risks are quantified by calculating their character, applying the following formulas:\n\nI = Importance of the event ............................................................. I = F x S\nD = Damage ................................................................................... D = P x E\nC = Risk character .......................................................................... C = I + D\nPR = Probability character ............................................................... PR = A x V"
+                : "En la siguiente fase, cuantificamos los riesgos, calculando el carácter del mismo, aplicando las siguientes fórmulas:\n\nI = Importancia del suceso ............................................................. I = F x S\nD = Daño ........................................................................................ D = P x E\nC = Carácter del riesgo .................................................................. C = I + D\nPR = Carácter de la probabilidad .................................................... PR = A x V", 'h' => 6, 'gap' => 5],
+            ['style' => 'label', 'text' => '7.2.4 ' . ($this->lang === 'en' ? 'Risk calculation phase' : 'Fase del cálculo del riesgo'), 'h' => 7, 'gap' => 2],
+            ['style' => 'body', 'text' => $this->lang === 'en'
+                ? "We quantify the considered risks according to the following formula, where ER is the risk value.\n\nER = C x PR"
+                : "Cuantificamos los riesgos considerados, según la fórmula siguiente donde ER es el valor del riesgo.\n\nER = C x PR", 'h' => 6, 'gap' => 5],
+            ['style' => 'label', 'text' => '7.2.5 ' . ($this->lang === 'en' ? 'Risk classification phase' : 'Fase de clasificación del riesgo'), 'h' => 7, 'gap' => 2],
+            ['style' => 'body', 'text' => $this->lang === 'en'
+                ? 'We classify the risk based on the value obtained in the evaluation phase and tabulate it.'
+                : 'Clasificaremos el riesgo en función del valor obtenido en la fase de evaluación y lo tabularemos.', 'h' => 6, 'gap' => 3],
+        ]);
+
+        // ═══ TABLE PAGE: Vulnerability V + Classification table (page 3, top only) ═══
+        // Only show top ~55% of page 3 (V table + classification), skip individual risk cards
+        $addTablePage(2, 15, 155);
+
+        // Pages 3 bottom and 4 (individual risk cards) are intentionally omitted
     }
 
     /**
