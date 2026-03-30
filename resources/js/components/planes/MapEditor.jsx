@@ -826,7 +826,7 @@ const MapEditor = forwardRef(function MapEditor({
             // To show the SAME geographic area: zoom_static = zoom_interactive - log2(mapW / staticW)
             const interactiveZoom = mapState?.zoom || 13;
             const zoomCorrection = Math.log2(mapW / staticW);
-            const staticZoom = Math.max(0, interactiveZoom - zoomCorrection);
+            const staticZoom = Math.max(0, interactiveZoom - zoomCorrection - 6); // DEBUG: -6 extra para ver efecto
 
             const params = new URLSearchParams({
                 center: mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038",
