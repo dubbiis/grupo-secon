@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SectionShell from "@/components/planes/SectionShell";
+import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { ChevronDown, Info } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
@@ -61,6 +63,7 @@ export default function Seccion1({ plan, section }) {
     });
 
     return (
+        <GoogleMapsProvider>
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm} showCustomQuestions={false}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
@@ -80,7 +83,15 @@ export default function Seccion1({ plan, section }) {
 
                 <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-1.5 block">{t("forms.address")} {t("forms.required")}</label>
-                    <Input {...field("direccion_evento")} placeholder="Dirección completa del recinto" />
+                    <AddressAutocomplete
+                        value={form.direccion_evento}
+                        onChange={(val) => setForm((prev) => ({ ...prev, direccion_evento: val }))}
+                        onSelect={(place) => setForm((prev) => ({
+                            ...prev,
+                            direccion_evento: place.displayName || place.name || prev.direccion_evento,
+                        }))}
+                        placeholder="Dirección completa del recinto"
+                    />
                 </div>
 
                 <div>
@@ -177,5 +188,6 @@ export default function Seccion1({ plan, section }) {
                 </AnimatePresence>
             </div>
         </SectionShell>
+        </GoogleMapsProvider>
     );
 }

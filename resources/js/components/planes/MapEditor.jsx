@@ -1494,62 +1494,78 @@ const MapEditor = forwardRef(function MapEditor({
                                                         <X size={14} />
                                                     </button>
                                                 </div>
-                                                <div className="p-2 space-y-1">
-                                                    {planAddresses.map((addr, i) => (
-                                                        <motion.button
-                                                            key={i}
-                                                            initial={{ opacity: 0, x: -8 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ delay: i * 0.03 }}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const text = addr.address;
-                                                                if (mapMode === "search") {
-                                                                    setMapQuery(text);
-                                                                    // Trigger geocode
-                                                                    fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
-                                                                        .then(r => r.json())
-                                                                        .then(items => {
-                                                                            if (items[0]) setMapCommand({ type: "search", query: { lat: items[0].lat, lng: items[0].lng } });
-                                                                        }).catch(() => {});
-                                                                } else if (mapMode === "route") {
-                                                                    // Fill whichever is empty, or B if both filled
-                                                                    if (!routeA) {
-                                                                        setRouteA(text);
-                                                                        fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
-                                                                            .then(r => r.json())
-                                                                            .then(items => {
-                                                                                if (items[0]) {
-                                                                                    const coords = { lat: items[0].lat, lng: items[0].lng };
-                                                                                    setRouteACoords(coords);
-                                                                                    if (routeBCoords) setMapCommand({ type: "route", a: coords, b: routeBCoords });
-                                                                                    else setMapCommand({ type: "search", query: coords });
-                                                                                }
-                                                                            }).catch(() => {});
-                                                                    } else {
-                                                                        setRouteB(text);
-                                                                        fetch(`/api/geocode?${new URLSearchParams({ q: text })}`)
-                                                                            .then(r => r.json())
-                                                                            .then(items => {
-                                                                                if (items[0]) {
-                                                                                    const coords = { lat: items[0].lat, lng: items[0].lng };
-                                                                                    setRouteBCoords(coords);
-                                                                                    if (routeACoords) setMapCommand({ type: "route", a: routeACoords, b: coords });
-                                                                                }
-                                                                            }).catch(() => {});
-                                                                    }
+                                                <div className="p-2 space-y-1.5">
+                                                    {planAddresses.map((addr, i) => {
+                                                        const geocodeAddr = async (text) => {
+                                                            try {
+                                                                const r = await fetch(`/api/autocomplete?${new URLSearchParams({ q: text })}`);
+                                                                const items = await r.json();
+                                                                if (!items[0]?.placeId) return null;
+                                                                const r2 = await fetch(`/api/place-details?place_id=${encodeURIComponent(items[0].placeId)}`);
+                                                                const place = await r2.json();
+                                                                return place.lat && place.lng ? place : null;
+                                                            } catch { return null; }
+                                                        };
+
+                                                        const handleClick = async () => {
+                                                            const text = addr.address;
+                                                            const place = await geocodeAddr(text);
+                                                            if (!place) return;
+                                                            const coords = { lat: place.lat, lng: place.lng };
+
+                                                            if (mapMode === "search") {
+                                                                setMapQuery(text);
+                                                                setMapCommand({ type: "search", query: coords });
+                                                            } else if (mapMode === "route") {
+                                                                if (!routeA) {
+                                                                    setRouteA(text);
+                                                                    setRouteACoords(coords);
+                                                                    if (routeBCoords) setMapCommand({ type: "route", a: coords, b: routeBCoords });
+                                                                    else setMapCommand({ type: "search", query: coords });
+                                                                } else {
+                                                                    setRouteB(text);
+                                                                    setRouteBCoords(coords);
+                                                                    if (routeACoords) setMapCommand({ type: "route", a: routeACoords, b: coords });
                                                                 }
-                                                            }}
-                                                            className="w-full flex items-start gap-2 px-2.5 py-2 rounded-lg text-left hover:bg-[#208DCA]/8 transition-colors group"
-                                                        >
-                                                            <MapPin size={12} className="text-[#208DCA] mt-0.5 flex-shrink-0" />
-                                                            <div className="min-w-0 flex-1">
-                                                                <div className="text-[11px] font-medium text-slate-800 truncate group-hover:text-[#208DCA] transition-colors">{addr.label}</div>
-                                                                <div className="text-[10px] text-slate-400 truncate">{addr.address}</div>
-                                                            </div>
-                                                            <ChevronRight size={10} className="text-slate-300 mt-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        </motion.button>
-                                                    ))}
+                                                            }
+                                                        };
+
+                                                        const isEmoji = /^\p{Emoji}/u.test(addr.label || "");
+                                                        return (
+                                                            <motion.button
+                                                                key={i}
+                                                                initial={{ opacity: 0, y: 6 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: i * 0.04, type: "spring", stiffness: 300 }}
+                                                                type="button"
+                                                                onClick={handleClick}
+                                                                className="w-full flex items-start gap-2.5 p-2.5 rounded-xl text-left border border-slate-100 hover:border-[#208DCA]/30 hover:bg-gradient-to-r hover:from-[#208DCA]/5 hover:to-transparent transition-all group shadow-sm hover:shadow-md"
+                                                            >
+                                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-[#253C87]/10 to-[#208DCA]/10 flex items-center justify-center">
+                                                                    {isEmoji ? (
+                                                                        <span className="text-sm">{addr.label.slice(0, 2)}</span>
+                                                                    ) : (
+                                                                        <MapPin size={14} className="text-[#208DCA]" />
+                                                                    )}
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="text-[11px] font-semibold text-slate-800 truncate group-hover:text-[#208DCA] transition-colors">
+                                                                        {isEmoji ? addr.label.slice(2).trim() : addr.label}
+                                                                    </div>
+                                                                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{addr.address}</div>
+                                                                </div>
+                                                                <div className="flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    {mapMode === "route" ? (
+                                                                        <span className="text-[9px] font-bold text-[#208DCA] bg-[#208DCA]/10 px-1.5 py-0.5 rounded">
+                                                                            {!routeA ? "A" : "B"}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <Navigation size={10} className="text-[#208DCA]" />
+                                                                    )}
+                                                                </div>
+                                                            </motion.button>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         </motion.div>
