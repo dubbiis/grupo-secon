@@ -2,29 +2,17 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { usePage } from "@inertiajs/react";
 
 const TYPE_ICONS = {
-    street_address: MapPin,
-    route: MapPin,
-    premise: MapPin,
-    subpremise: MapPin,
-    locality: Building2,
-    administrative_area_level_1: Building2,
-    administrative_area_level_2: Building2,
-    country: Building2,
-    transit_station: Train,
-    train_station: Train,
-    subway_station: Train,
-    park: TreePine,
-    point_of_interest: MapPin,
-    establishment: MapPin,
+    street_address: MapPin, route: MapPin, premise: MapPin,
+    locality: Building2, administrative_area_level_1: Building2, country: Building2,
+    transit_station: Train, train_station: Train, subway_station: Train,
+    park: TreePine, point_of_interest: MapPin, establishment: MapPin,
 };
 
 function getIconForTypes(types = []) {
-    for (const t of types) {
-        if (TYPE_ICONS[t]) return TYPE_ICONS[t];
-    }
+    for (const t of types) { if (TYPE_ICONS[t]) return TYPE_ICONS[t]; }
     return MapPin;
 }
 
@@ -40,26 +28,19 @@ export default function AddressAutocomplete({
     className = "",
     quickAddresses = [],
 }) {
+    const { googleMapsApiKey } = usePage().props;
+    const apiKey = googleMapsApiKey || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [activeIdx, setActiveIdx] = useState(-1);
     const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
     const timerRef = useRef(null);
+    const abortRef = useRef(null);
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
     const dropdownRef = useRef(null);
-    const sessionTokenRef = useRef(null);
-
-    // Load Places library
-    const placesLib = useMapsLibrary("places");
-
-    const getSessionToken = useCallback(() => {
-        if (!sessionTokenRef.current && placesLib?.AutocompleteSessionToken) {
-            sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
-        }
-        return sessionTokenRef.current;
-    }, [placesLib]);
 
     useEffect(() => {
         if (open && inputRef.current) {
@@ -68,100 +49,54 @@ export default function AddressAutocomplete({
         }
     }, [open]);
 
-    // ── Search: try new API, fallback to Geocoder ────────────────
-
-    const searchWithAutocomplete = useCallback(
-        async (query) => {
-            if (!placesLib?.AutocompleteSuggestion) return null;
-
-            const request = {
-                input: query,
-                sessionToken: getSessionToken(),
-                language: "es",
-            };
-
-            if (biasLat && biasLng && window.google?.maps?.LatLng) {
-                request.locationBias = new google.maps.Circle({
-                    center: new google.maps.LatLng(biasLat, biasLng),
-                    radius: 50000,
-                });
-            }
-
-            const { suggestions } = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-
-            return (suggestions || [])
-                .filter((s) => s.placePrediction)
-                .map((s) => {
-                    const p = s.placePrediction;
-                    return {
-                        placeId: p.placeId,
-                        name: p.mainText?.text || p.text?.text || "",
-                        subtitle: p.secondaryText?.text || "",
-                        displayName: p.text?.text || "",
-                        types: p.types || [],
-                    };
-                });
-        },
-        [placesLib, biasLat, biasLng, getSessionToken]
-    );
-
-    const searchWithGeocoder = useCallback(
-        async (query) => {
-            if (!window.google?.maps?.Geocoder) return [];
-
-            const geocoder = new google.maps.Geocoder();
-            return new Promise((resolve) => {
-                geocoder.geocode({ address: query, language: "es", region: "ES" }, (results, status) => {
-                    if (status === "OK" && results?.length) {
-                        resolve(results.map((r) => ({
-                            placeId: r.place_id,
-                            name: r.formatted_address?.split(",")[0] || r.formatted_address,
-                            subtitle: r.formatted_address?.split(",").slice(1).join(",").trim() || "",
-                            displayName: r.formatted_address,
-                            types: r.types || [],
-                            // Geocoder already has coords — store them directly
-                            lat: r.geometry.location.lat(),
-                            lng: r.geometry.location.lng(),
-                        })));
-                    } else {
-                        resolve([]);
-                    }
-                });
-            });
-        },
-        []
-    );
+    // ── Search via Google Geocoding REST API (always works) ──────
 
     const search = useCallback(
         async (query) => {
-            if (query.length < 2) {
+            if (query.length < 2 || !apiKey) {
                 setResults([]);
                 setOpen(false);
                 return;
             }
 
+            if (abortRef.current) abortRef.current.abort();
+            const controller = new AbortController();
+            abortRef.current = controller;
+
             setLoading(true);
             try {
-                // Try new Places Autocomplete API first
-                let items = await searchWithAutocomplete(query);
+                const params = new URLSearchParams({
+                    address: query,
+                    key: apiKey,
+                    language: "es",
+                    region: "ES",
+                });
 
-                // Fallback to Geocoder if autocomplete unavailable or returned nothing
-                if (!items || items.length === 0) {
-                    items = await searchWithGeocoder(query);
-                }
+                const res = await fetch(
+                    `https://maps.googleapis.com/maps/api/geocode/json?${params}`,
+                    { signal: controller.signal }
+                );
+                const data = await res.json();
 
-                setResults(items || []);
-                setOpen((items || []).length > 0);
-                setActiveIdx(-1);
-            } catch (err) {
-                console.warn("AddressAutocomplete search error:", err);
-                // Try geocoder as last resort
-                try {
-                    const items = await searchWithGeocoder(query);
+                if (data.status === "OK" && data.results?.length) {
+                    const items = data.results.slice(0, 6).map((r) => ({
+                        placeId: r.place_id,
+                        name: r.address_components?.[0]?.long_name || r.formatted_address?.split(",")[0],
+                        subtitle: r.formatted_address?.split(",").slice(1).join(",").trim() || "",
+                        displayName: r.formatted_address,
+                        types: r.types || [],
+                        lat: r.geometry.location.lat,
+                        lng: r.geometry.location.lng,
+                    }));
                     setResults(items);
                     setOpen(items.length > 0);
                     setActiveIdx(-1);
-                } catch {
+                } else {
+                    setResults([]);
+                    setOpen(false);
+                }
+            } catch (err) {
+                if (err.name !== "AbortError") {
                     setResults([]);
                     setOpen(false);
                 }
@@ -169,70 +104,12 @@ export default function AddressAutocomplete({
                 setLoading(false);
             }
         },
-        [searchWithAutocomplete, searchWithGeocoder]
-    );
-
-    // ── Resolve place to coords ──────────────────────────────────
-
-    const resolvePlace = useCallback(
-        async (item) => {
-            const { placeId, displayName } = item;
-
-            // If we already have coords (from Geocoder fallback), use them directly
-            if (item.lat && item.lng) {
-                onSelect?.({ lat: item.lat, lng: item.lng, displayName, name: item.name });
-                return;
-            }
-
-            // Try new Place API
-            if (placesLib?.Place) {
-                try {
-                    const place = new placesLib.Place({ id: placeId, requestedLanguage: "es" });
-                    await place.fetchFields({ fields: ["location", "formattedAddress", "displayName"] });
-                    sessionTokenRef.current = null;
-
-                    if (place.location) {
-                        onSelect?.({
-                            lat: place.location.lat(),
-                            lng: place.location.lng(),
-                            displayName: place.formattedAddress || displayName,
-                            name: place.displayName || displayName,
-                        });
-                        return;
-                    }
-                } catch (err) {
-                    console.warn("Place.fetchFields failed, falling back to Geocoder:", err);
-                    sessionTokenRef.current = null;
-                }
-            }
-
-            // Fallback: resolve via Geocoder
-            if (window.google?.maps?.Geocoder) {
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ placeId, language: "es" }, (results, status) => {
-                    if (status === "OK" && results?.[0]?.geometry?.location) {
-                        const loc = results[0].geometry.location;
-                        onSelect?.({
-                            lat: loc.lat(),
-                            lng: loc.lng(),
-                            displayName: results[0].formatted_address || displayName,
-                            name: displayName,
-                        });
-                    } else {
-                        onSelect?.({ lat: 0, lng: 0, displayName });
-                    }
-                });
-            } else {
-                onSelect?.({ lat: 0, lng: 0, displayName });
-            }
-        },
-        [placesLib, onSelect]
+        [apiKey]
     );
 
     const handleChange = (e) => {
         const val = e.target.value;
         onChange?.(val);
-
         if (timerRef.current) clearTimeout(timerRef.current);
         const endsWithDigit = /\d$/.test(val.trim());
         timerRef.current = setTimeout(() => search(val), endsWithDigit ? 800 : 250);
@@ -243,12 +120,16 @@ export default function AddressAutocomplete({
         setOpen(false);
         setResults([]);
         inputRef.current?.blur();
-        resolvePlace(item);
+        onSelect?.({
+            lat: item.lat,
+            lng: item.lng,
+            displayName: item.displayName,
+            name: item.name,
+        });
     };
 
     const handleKeyDown = (e) => {
         if (e.key === "Escape") { setOpen(false); return; }
-
         if (e.key === "Enter") {
             e.preventDefault();
             if (open && activeIdx >= 0 && results[activeIdx]) {
@@ -260,9 +141,7 @@ export default function AddressAutocomplete({
             }
             return;
         }
-
         if (!open || results.length === 0) return;
-
         if (e.key === "ArrowDown") {
             e.preventDefault();
             setActiveIdx((prev) => Math.min(prev + 1, results.length - 1));
@@ -274,13 +153,8 @@ export default function AddressAutocomplete({
 
     useEffect(() => {
         const handleClick = (e) => {
-            if (
-                wrapperRef.current && !wrapperRef.current.contains(e.target) &&
-                dropdownRef.current && !dropdownRef.current.contains(e.target)
-            ) {
-                setOpen(false);
-            }
-            if (wrapperRef.current && !wrapperRef.current.contains(e.target) && !dropdownRef.current) {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target) &&
+                (!dropdownRef.current || !dropdownRef.current.contains(e.target))) {
                 setOpen(false);
             }
         };
@@ -289,7 +163,10 @@ export default function AddressAutocomplete({
     }, []);
 
     useEffect(() => {
-        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+            if (abortRef.current) abortRef.current.abort();
+        };
     }, []);
 
     return (
@@ -327,10 +204,7 @@ export default function AddressAutocomplete({
                         <button
                             key={i}
                             type="button"
-                            onClick={() => {
-                                onChange?.(qa.address);
-                                search(qa.address);
-                            }}
+                            onClick={() => { onChange?.(qa.address); search(qa.address); }}
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-colors"
                         >
                             <MapPin size={9} />
@@ -345,7 +219,6 @@ export default function AddressAutocomplete({
                     ref={dropdownRef}
                     initial={{ opacity: 0, y: -4, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
                     className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden"
                     style={{ zIndex: 99999, top: dropPos.top, left: dropPos.left, width: dropPos.width, minWidth: 280 }}
