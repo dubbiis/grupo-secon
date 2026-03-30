@@ -806,8 +806,6 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         try {
-            // Get map state from GoogleMap ref
-            const mapState = googleMapRef.current?.getMapState?.();
             const gmStyle = mapContainerRef.current.querySelector(".gm-style");
             const mapEl = gmStyle || mapContainerRef.current.firstElementChild;
             if (!mapEl) return;
@@ -816,50 +814,54 @@ const MapEditor = forwardRef(function MapEditor({
             const mapW = Math.round(rect.width);
             const mapH = Math.round(rect.height);
 
-            // Build Static Maps API request via backend proxy
-            const hasRoute = !!mapState?.selectedRoutePolyline;
-            const params = new URLSearchParams({
-                size: `${Math.min(mapW, 640)}x${Math.min(mapH, 640)}`,
-                maptype: mapState?.mapTypeId === "satellite" ? "satellite" : "roadmap",
-            });
+            const composite = document.createElement("canvas");
+            composite.width = mapW;
+            composite.height = mapH;
+            const ctx = composite.getContext("2d");
 
-            if (hasRoute) {
-                // With a route: let Google auto-fit to path + markers (no center/zoom)
-                params.set("path", mapState.selectedRoutePolyline);
-                if (mapState?.routeOrigin) {
-                    params.set("marker_a", `${mapState.routeOrigin.lat},${mapState.routeOrigin.lng}`);
-                }
-                if (mapState?.routeDestination) {
-                    params.set("marker_b", `${mapState.routeDestination.lat},${mapState.routeDestination.lng}`);
-                }
-            } else {
-                // No route: use exact center/zoom from the interactive map
-                params.set("center", mapState ? `${mapState.center.lat},${mapState.center.lng}` : "40.4168,-3.7038");
-                params.set("zoom", Math.round(mapState?.zoom || 13));
+            // 1. Capture WebGL canvas (tiles + polylines) — preserveDrawingBuffer is forced on
+            const webglCanvas = mapEl.querySelector("canvas");
+            if (webglCanvas) {
+                ctx.drawImage(webglCanvas, 0, 0, mapW, mapH);
+            }
+
+            // 2. Capture DOM overlays (markers, labels) via foreignObject SVG
+            const overlays = mapEl.querySelectorAll("[style*='transform'][style*='position']");
+            for (const el of overlays) {
+                try {
+                    const r = el.getBoundingClientRect();
+                    const w = Math.round(r.width);
+                    const h = Math.round(r.height);
+                    if (w < 8 || h < 8 || w > 250 || h > 80) continue;
+                    const x = Math.round(r.left - rect.left);
+                    const y = Math.round(r.top - rect.top);
+                    if (x + w < 0 || y + h < 0 || x > mapW || y > mapH) continue;
+
+                    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+                        <foreignObject width="100%" height="100%">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px">${el.outerHTML}</div>
+                        </foreignObject>
+                    </svg>`;
+                    const markerImg = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+                    });
+                    if (markerImg) ctx.drawImage(markerImg, x, y, w, h);
+                } catch {}
             }
 
             setCaptureFlash(true);
 
-            const res = await fetch(`/api/static-map?${params}`);
-            if (!res.ok) throw new Error("Static map failed");
-
-            const blob = await res.blob();
-            const dataUrl = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-            });
-
+            const dataUrl = composite.toDataURL("image/png");
             const img = new Image();
             img.onload = () => {
                 setTimeout(() => {
                     const c = canvasRef.current;
                     if (!c) return;
-                    // Use CSS dimensions, not the scale=2 image dimensions
                     c.width = mapW;
                     c.height = mapH;
-                    const drawCtx = c.getContext("2d");
-                    drawCtx.drawImage(img, 0, 0, mapW, mapH);
                     bgRef.current = img;
                     setHasBg(true);
                     setShowMap(false);

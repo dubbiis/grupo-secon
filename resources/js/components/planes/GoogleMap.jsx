@@ -68,6 +68,16 @@ const GoogleMap = forwardRef(function GoogleMap(
 
         function initMap() {
             if (mapRef.current) return;
+
+            // Force preserveDrawingBuffer so we can capture the WebGL canvas
+            const origGetContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+                if (type === "webgl" || type === "webgl2") {
+                    attrs = { ...attrs, preserveDrawingBuffer: true };
+                }
+                return origGetContext.call(this, type, attrs);
+            };
+
             const map = new google.maps.Map(containerRef.current, {
                 center: { lat: 40.4168, lng: -3.7038 },
                 zoom: 13,
@@ -79,6 +89,9 @@ const GoogleMap = forwardRef(function GoogleMap(
                 gestureHandling: interactionDisabled ? "none" : "cooperative",
                 mapId: googleMapsMapId || import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || undefined,
             });
+
+            // Restore original getContext
+            HTMLCanvasElement.prototype.getContext = origGetContext;
 
             mapRef.current = map;
             geocoderRef.current = new google.maps.Geocoder();
