@@ -786,10 +786,25 @@ const MapEditor = forwardRef(function MapEditor({
         }
     };
 
-    // Auto-fill point A from event address
+    // Auto-fill point A from event address + geocode to get coords
     useEffect(() => {
         if (eventAddress && !routeA && mapMode === "route") {
             setRouteA(eventAddress);
+            // Geocode event address to get coordinates for route calculation
+            fetch(`/api/autocomplete?q=${encodeURIComponent(eventAddress)}`)
+                .then((r) => r.json())
+                .then((items) => {
+                    if (items?.[0]?.placeId) {
+                        return fetch(`/api/place-details?place_id=${encodeURIComponent(items[0].placeId)}`);
+                    }
+                })
+                .then((r) => r?.json())
+                .then((place) => {
+                    if (place?.lat && place?.lng) {
+                        setRouteACoords({ lat: place.lat, lng: place.lng });
+                    }
+                })
+                .catch(() => {});
         }
     }, [eventAddress, mapMode]);
 
