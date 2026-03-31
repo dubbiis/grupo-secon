@@ -255,7 +255,9 @@ const MapEditor = forwardRef(function MapEditor({
     const [useFill, setUseFill] = useState(false);
     const [textSize, setTextSize] = useState(22);
     const [elements, setElements] = useState([]);
-    const [selectedIdx, setSelectedIdx] = useState(null);
+    const [selectedIdx, _setSelectedIdx] = useState(null);
+    const selectedIdxRef = useRef(null);
+    const setSelectedIdx = (v) => { selectedIdxRef.current = v; _setSelectedIdx(v); };
     const [history, setHistory] = useState([[]]);
     const [historyStep, setHistoryStep] = useState(0);
     const [hasBg, setHasBg] = useState(false);
@@ -553,13 +555,14 @@ const MapEditor = forwardRef(function MapEditor({
 
         // Select tool: hit test + select + drag + resize
         if (tool === "select") {
+            const sel = selectedIdxRef.current;
             // Check resize corner on selected element first
-            if (selectedIdx !== null && elements[selectedIdx]) {
-                const corner = hitTestCorner(pos, elements[selectedIdx]);
+            if (sel !== null && elements[sel]) {
+                const corner = hitTestCorner(pos, elements[sel]);
                 if (corner) {
                     isResizingRef.current = true;
                     resizeCornerRef.current = corner;
-                    dragIdxRef.current = selectedIdx;
+                    dragIdxRef.current = sel;
                     return;
                 }
             }
@@ -577,7 +580,7 @@ const MapEditor = forwardRef(function MapEditor({
         }
 
         // Drawing tools: deselect any selected element and proceed to draw
-        if (selectedIdx !== null) {
+        if (selectedIdxRef.current !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
@@ -598,14 +601,14 @@ const MapEditor = forwardRef(function MapEditor({
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
-        // Change cursor: resize corner > move element > default tool cursor
+        // Change cursor
         if (!isDraggingRef.current && !isDrawingRef.current && !isResizingRef.current) {
             const defaultCursor = tool === "text" ? "text" : tool === "select" ? "default" : "crosshair";
 
             if (tool === "select") {
-                // Select: resize corners y move sobre cualquier elemento
-                if (selectedIdx !== null && elements[selectedIdx]) {
-                    const corner = hitTestCorner(pos, elements[selectedIdx]);
+                const sel = selectedIdxRef.current;
+                if (sel !== null && elements[sel]) {
+                    const corner = hitTestCorner(pos, elements[sel]);
                     if (corner) {
                         canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
                     } else {
@@ -617,7 +620,6 @@ const MapEditor = forwardRef(function MapEditor({
                     canvas.style.cursor = hoverIdx >= 0 ? "move" : defaultCursor;
                 }
             } else {
-                // Herramientas de dibujo: siempre cursor de la herramienta
                 canvas.style.cursor = defaultCursor;
             }
         }
@@ -635,7 +637,7 @@ const MapEditor = forwardRef(function MapEditor({
 
             els[dragIdxRef.current] = el;
             setElements(els);
-            redraw(els, selectedIdx);
+            redraw(els, dragIdxRef.current);
             return;
         }
 
@@ -669,7 +671,7 @@ const MapEditor = forwardRef(function MapEditor({
 
             els[dragIdxRef.current] = el;
             setElements(els);
-            redraw(els, selectedIdx);
+            redraw(els, dragIdxRef.current);
             return;
         }
 
@@ -725,6 +727,7 @@ const MapEditor = forwardRef(function MapEditor({
         }
         if (isDraggingRef.current) {
             isDraggingRef.current = false;
+            dragIdxRef.current = null;
             pushHistory(elements);
             return;
         }
