@@ -763,7 +763,7 @@ class ContentPageBuilder
         $drawMdHeader = function () use ($headerCells, $numCols, $colWidths, $startX, $rowH) {
             $this->pdf->SetFillColor(34, 58, 129);
             $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 8);
             $x = $startX;
             $y = $this->pdf->GetY();
             $padded = $headerCells;
@@ -803,7 +803,7 @@ class ContentPageBuilder
             if ($isHeader) {
                 $this->pdf->SetFillColor(34, 58, 129);
                 $this->pdf->SetTextColor(255, 255, 255);
-                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 8);
             } else {
                 $bg = ($rowIdx % 2 === 0) ? [240, 243, 248] : [255, 255, 255];
                 $this->pdf->SetFillColor($bg[0], $bg[1], $bg[2]);
@@ -918,7 +918,7 @@ class ContentPageBuilder
             $this->pdf->RoundedRect($contentX, $y, 155, $rowH, 1.5, '1111', 'F');
 
             // Phase badge
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 7);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 7);
             $badgeW = $this->pdf->GetStringWidth($day['phase']) + 6;
             $this->pdf->SetFillColor($day['color'][0], $day['color'][1], $day['color'][2]);
             $this->pdf->SetTextColor(255, 255, 255);
@@ -1003,7 +1003,7 @@ class ContentPageBuilder
         $drawHeader = function () use ($cols, $startX, $headerH) {
             $this->pdf->SetFillColor(34, 58, 129);
             $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 8);
             $x = $startX;
             $y = $this->pdf->GetY();
             foreach ($cols as [$label, $field, $w, $align]) {
@@ -1038,7 +1038,7 @@ class ContentPageBuilder
                 }
                 $y = $this->pdf->GetY();
                 $this->pdf->SetFillColor(230, 244, 255);
-                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 8);
                 $this->pdf->SetTextColor(32, 141, 202);
                 $this->pdf->SetXY($startX, $y);
                 $this->pdf->Cell($totalW, $rowH, mb_strtoupper($day), 0, 0, 'L', true);
@@ -1083,7 +1083,7 @@ class ContentPageBuilder
         $y = $this->pdf->GetY();
         $this->pdf->SetFillColor(34, 58, 129);
         $this->pdf->SetTextColor(255, 255, 255);
-        $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
+        $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 9);
         $this->pdf->SetXY($startX, $y);
         $this->pdf->Cell($totalW - 22, $headerH, 'TOTAL', 0, 0, 'R', true);
         $this->pdf->Cell(22, $headerH, number_format($totalHours / 2, 1) . 'h', 0, 0, 'R', true);
@@ -1116,7 +1116,7 @@ class ContentPageBuilder
             $drawStaffHeader = function () use ($sumCols, $startX, $headerH) {
                 $this->pdf->SetFillColor(34, 58, 129);
                 $this->pdf->SetTextColor(255, 255, 255);
-                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 8);
+                $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 8);
                 $x = $startX;
                 $y = $this->pdf->GetY();
                 foreach ($sumCols as [$label, $w, $align]) {
@@ -1164,7 +1164,7 @@ class ContentPageBuilder
             $y = $this->pdf->GetY();
             $this->pdf->SetFillColor(34, 58, 129);
             $this->pdf->SetTextColor(255, 255, 255);
-            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, '', 9);
+            $this->pdf->SetFont(FontManager::BOLD_CONDENSED, 'B', 9);
             $this->pdf->SetXY($startX, $y);
             $this->pdf->Cell(120, $headerH, count($staffMap) . ' trabajadores', 0, 0, 'L', true);
             $this->pdf->Cell(30, $headerH, number_format($totalStaffHours, 1) . 'h', 0, 0, 'R', true);

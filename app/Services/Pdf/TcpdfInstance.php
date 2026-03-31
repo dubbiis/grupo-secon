@@ -73,7 +73,7 @@ class TcpdfInstance extends Fpdi
     {
         // Position text centered vertically on the blue bar (~last 8mm of page)
         $this->SetY(-8);
-        $this->SetFont('helveticaneueroman', '', 8);
+        $this->SetFont('helvetica', '', 8);
         $this->SetTextColor(255, 255, 255);
 
         // Event name centered (skip logo area on the left ~25mm)

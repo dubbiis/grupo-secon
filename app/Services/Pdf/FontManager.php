@@ -4,61 +4,50 @@ namespace App\Services\Pdf;
 
 class FontManager
 {
-    // TCPDF font names (from addTTFfont registration)
-    public const BLACK_CONDENSED = 'helveticaneueblackcondensed';
-    public const HEAVY = 'helveticaneueheavy';
-    public const BOLD_CONDENSED = 'helveticaneuebcondensed';
-    public const BOLD = 'helveticaneueb';
-    public const MEDIUM = 'helveticaneuemedium';
-    public const ROMAN = 'helveticaneueroman';
+    // Fuentes base — Helvetica estándar (Type1, embebida nativamente, 100% compatible Adobe)
+    public const BLACK_CONDENSED = 'helvetica';
+    public const HEAVY = 'helvetica';
+    public const BOLD_CONDENSED = 'helvetica';
+    public const BOLD = 'helvetica';
+    public const MEDIUM = 'helvetica';
+    public const ROMAN = 'helvetica';
 
     // Color constants [R, G, B]
     public const COLOR_PRIMARY = [34, 58, 129];    // #223A81
     public const COLOR_BODY = [114, 112, 112];      // #727070
     public const COLOR_WHITE = [255, 255, 255];
 
-    // Style presets: [font, size, color]
+    // Style presets: [font, tcpdfStyle, size, color]
+    // Helvetica con B/I simula las variantes: BlackCondensed→HelvB, Roman→Helv, etc.
     public const STYLES = [
-        'cover_title'    => [self::BLACK_CONDENSED, 72, self::COLOR_PRIMARY],
-        'cover_event'    => [self::MEDIUM, 32, self::COLOR_PRIMARY],
-        'cover_location' => [self::BOLD, 22, self::COLOR_PRIMARY],
-        'section_title'  => [self::BLACK_CONDENSED, 20, self::COLOR_PRIMARY],
-        'index_title'    => [self::BLACK_CONDENSED, 24, self::COLOR_PRIMARY],
-        'index_entry'    => [self::BOLD_CONDENSED, 11, self::COLOR_BODY],
-        'subsection'     => [self::BOLD, 11, self::COLOR_PRIMARY],
-        'label'          => [self::HEAVY, 11, self::COLOR_BODY],
-        'sub_label'      => [self::MEDIUM, 11, self::COLOR_BODY],
-        'body'           => [self::ROMAN, 11, self::COLOR_BODY],
-        'footer'         => [self::ROMAN, 9, self::COLOR_WHITE],
+        'cover_title'    => ['helvetica', 'B', 72, self::COLOR_PRIMARY],
+        'cover_event'    => ['helvetica', '',  32, self::COLOR_PRIMARY],
+        'cover_location' => ['helvetica', 'B', 22, self::COLOR_PRIMARY],
+        'section_title'  => ['helvetica', 'B', 20, self::COLOR_PRIMARY],
+        'index_title'    => ['helvetica', 'B', 24, self::COLOR_PRIMARY],
+        'index_entry'    => ['helvetica', 'B', 11, self::COLOR_BODY],
+        'subsection'     => ['helvetica', 'B', 11, self::COLOR_PRIMARY],
+        'label'          => ['helvetica', 'B', 11, self::COLOR_BODY],
+        'sub_label'      => ['helvetica', '',  11, self::COLOR_BODY],
+        'body'           => ['helvetica', '',  11, self::COLOR_BODY],
+        'footer'         => ['helvetica', '',  9,  self::COLOR_WHITE],
     ];
 
     public static function apply(TcpdfInstance $pdf, string $style): void
     {
         $config = self::STYLES[$style] ?? self::STYLES['body'];
-        [$font, $size, $color] = $config;
+        [$font, $tcpdfStyle, $size, $color] = $config;
 
-        $pdf->SetFont($font, '', $size);
+        $pdf->SetFont($font, $tcpdfStyle, $size);
         $pdf->SetTextColor($color[0], $color[1], $color[2]);
     }
 
     public static function registerFonts(TcpdfInstance $pdf): void
     {
-        $fontsPath = config('pdf.fonts_path') . '/';
-
-        // Disable font subsetting — embed full fonts for Adobe compatibility
+        // Helvetica es fuente core de TCPDF — no necesita registro
+        // Solo desactivamos subsetting por si se usan fuentes custom en el futuro
         $pdf->setFontSubsetting(false);
 
-        $fontFiles = [
-            self::BLACK_CONDENSED => 'helveticaneueblackcondensed',
-            self::HEAVY           => 'helveticaneueheavy',
-            self::BOLD_CONDENSED  => 'helveticaneuebcondensed',
-            self::BOLD            => 'helveticaneueb',
-            self::MEDIUM          => 'helveticaneuemedium',
-            self::ROMAN           => 'helveticaneueroman',
-        ];
-
-        foreach ($fontFiles as $name => $file) {
-            $pdf->AddFont($name, '', $fontsPath . $file . '.php');
-        }
+        \Log::info('PDF: usando Helvetica estándar (compatible Adobe Acrobat)');
     }
 }
