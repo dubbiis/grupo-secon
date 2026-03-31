@@ -373,12 +373,7 @@ const MapEditor = forwardRef(function MapEditor({
                 return;
             }
             const keyMap = { s: "select", p: "pen", l: "line", a: "arrow", r: "rect", c: "circle", t: "text" };
-            if (keyMap[e.key.toLowerCase()]) {
-                const newTool = keyMap[e.key.toLowerCase()];
-                setTool(newTool);
-                if (newTool !== "select") setSelectedIdx(null);
-                return;
-            }
+            if (keyMap[e.key.toLowerCase()]) { setTool(keyMap[e.key.toLowerCase()]); return; }
             if ((e.key === "Delete" || e.key === "Backspace") && selectedIdx !== null) {
                 e.preventDefault(); deleteSelected();
             }
@@ -625,7 +620,7 @@ const MapEditor = forwardRef(function MapEditor({
             const defaultCursor = tool === "text" ? "text" : tool === "select" ? "default" : "crosshair";
 
             if (tool === "select") {
-                // Solo en select: resize corners y move sobre elementos
+                // Select: resize corners y move sobre cualquier elemento
                 if (selectedIdx !== null && elements[selectedIdx]) {
                     const corner = hitTestCorner(pos, elements[selectedIdx]);
                     if (corner) {
@@ -638,8 +633,18 @@ const MapEditor = forwardRef(function MapEditor({
                     const hoverIdx = hitTestElement(pos);
                     canvas.style.cursor = hoverIdx >= 0 ? "move" : defaultCursor;
                 }
+            } else if (selectedIdx !== null && elements[selectedIdx]) {
+                // Herramienta de dibujo con elemento seleccionado (vía click derecho):
+                // mostrar move/resize sobre el elemento seleccionado
+                const corner = hitTestCorner(pos, elements[selectedIdx]);
+                if (corner) {
+                    canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
+                } else {
+                    const hitIdx = hitTestElement(pos);
+                    canvas.style.cursor = hitIdx === selectedIdx ? "move" : defaultCursor;
+                }
             } else {
-                // Herramientas de dibujo: siempre el cursor de la herramienta
+                // Herramientas de dibujo sin selección: cursor de la herramienta
                 canvas.style.cursor = defaultCursor;
             }
         }
@@ -1049,7 +1054,7 @@ const MapEditor = forwardRef(function MapEditor({
                         {TOOLS.map((tl, i) => (
                             <motion.button
                                 key={tl.id}
-                                onClick={() => { setTool(tl.id); if (tl.id !== "select") setSelectedIdx(null); }}
+                                onClick={() => setTool(tl.id)}
                                 title={`${tl.label} (${tl.shortcut})`}
                                 whileHover={{ scale: 1.15, y: -2 }}
                                 whileTap={{ scale: 0.85 }}
