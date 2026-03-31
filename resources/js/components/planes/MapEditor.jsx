@@ -373,7 +373,12 @@ const MapEditor = forwardRef(function MapEditor({
                 return;
             }
             const keyMap = { s: "select", p: "pen", l: "line", a: "arrow", r: "rect", c: "circle", t: "text" };
-            if (keyMap[e.key.toLowerCase()]) { setTool(keyMap[e.key.toLowerCase()]); return; }
+            if (keyMap[e.key.toLowerCase()]) {
+                const newTool = keyMap[e.key.toLowerCase()];
+                setTool(newTool);
+                if (newTool !== "select") setSelectedIdx(null);
+                return;
+            }
             if ((e.key === "Delete" || e.key === "Backspace") && selectedIdx !== null) {
                 e.preventDefault(); deleteSelected();
             }
@@ -617,18 +622,25 @@ const MapEditor = forwardRef(function MapEditor({
 
         // Change cursor: resize corner > move element > default tool cursor
         if (!isDraggingRef.current && !isDrawingRef.current && !isResizingRef.current) {
-            // Check resize corners on selected element first
-            if (selectedIdx !== null && elements[selectedIdx]) {
-                const corner = hitTestCorner(pos, elements[selectedIdx]);
-                if (corner) {
-                    canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
+            const defaultCursor = tool === "text" ? "text" : tool === "select" ? "default" : "crosshair";
+
+            if (tool === "select") {
+                // Solo en select: resize corners y move sobre elementos
+                if (selectedIdx !== null && elements[selectedIdx]) {
+                    const corner = hitTestCorner(pos, elements[selectedIdx]);
+                    if (corner) {
+                        canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
+                    } else {
+                        const hoverIdx = hitTestElement(pos);
+                        canvas.style.cursor = hoverIdx >= 0 ? "move" : defaultCursor;
+                    }
                 } else {
                     const hoverIdx = hitTestElement(pos);
-                    canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+                    canvas.style.cursor = hoverIdx >= 0 ? "move" : defaultCursor;
                 }
             } else {
-                const hoverIdx = hitTestElement(pos);
-                canvas.style.cursor = hoverIdx >= 0 ? "move" : (tool === "text" ? "text" : "crosshair");
+                // Herramientas de dibujo: siempre el cursor de la herramienta
+                canvas.style.cursor = defaultCursor;
             }
         }
 
@@ -968,17 +980,19 @@ const MapEditor = forwardRef(function MapEditor({
     const canUndo = historyStep > 0;
     const canRedo = historyStep < history.length - 1;
 
-    const cursorClass = selectedIdx !== null
+    const toolCursor = {
+        select: "cursor-default",
+        pen: "cursor-crosshair",
+        line: "cursor-crosshair",
+        arrow: "cursor-crosshair",
+        rect: "cursor-crosshair",
+        circle: "cursor-crosshair",
+        text: "cursor-text",
+    }[tool] ?? "cursor-crosshair";
+
+    const cursorClass = (selectedIdx !== null && tool === "select")
         ? "cursor-move"
-        : ({
-            select: "cursor-default",
-            pen: "cursor-crosshair",
-            line: "cursor-crosshair",
-            arrow: "cursor-crosshair",
-            rect: "cursor-crosshair",
-            circle: "cursor-crosshair",
-            text: "cursor-text",
-        }[tool] ?? "cursor-crosshair");
+        : toolCursor;
 
     // If we have a saved preview, show it instead of the editor
     if (savedPreviewUrl && mode === "section") {
@@ -1035,7 +1049,7 @@ const MapEditor = forwardRef(function MapEditor({
                         {TOOLS.map((tl, i) => (
                             <motion.button
                                 key={tl.id}
-                                onClick={() => setTool(tl.id)}
+                                onClick={() => { setTool(tl.id); if (tl.id !== "select") setSelectedIdx(null); }}
                                 title={`${tl.label} (${tl.shortcut})`}
                                 whileHover={{ scale: 1.15, y: -2 }}
                                 whileTap={{ scale: 0.85 }}
