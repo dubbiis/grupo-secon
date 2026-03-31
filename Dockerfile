@@ -35,6 +35,9 @@ RUN npm run build
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+# Volumen persistente — EasyPanel debe montar aquí para que los archivos sobrevivan al redeploy
+VOLUME ["/app/storage/app/public"]
+
 EXPOSE 8080
 
 CMD php artisan config:clear ; \
@@ -45,5 +48,4 @@ CMD php artisan config:clear ; \
     php artisan db:seed --force ; \
     php artisan storage:link --force ; \
     php artisan pdf:convert-fonts ; \
-    php artisan files:clean-orphans ; \
     php artisan serve --host=0.0.0.0 --port=8080
