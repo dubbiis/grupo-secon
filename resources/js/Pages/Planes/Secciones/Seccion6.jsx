@@ -14,7 +14,7 @@ const AMBITOS_GEOGRAFICOS = [
 ];
 
 // ── Inline VIP photo uploader ──────────────────────────────
-function VipPhotoUpload({ vip, uuid, onUploaded }) {
+function VipPhotoUpload({ vip, idx, uuid, onUploaded }) {
     const inputRef = useRef(null);
     const { t } = useTranslation();
     const [uploading,     setUploading]     = useState(false);
@@ -32,7 +32,7 @@ function VipPhotoUpload({ vip, uuid, onUploaded }) {
         try {
             const fd = new FormData();
             fd.append("file", file);
-            fd.append("file_category", "vip_foto");
+            fd.append("file_category", `vip_foto_${idx}`);
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
             const res = await fetch(`/planes/${uuid}/seccion/6/archivo`, {
                 method: "POST",
@@ -178,6 +178,7 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                             {/* Photo upload */}
                             <VipPhotoUpload
                                 vip={vip}
+                                idx={idx}
                                 uuid={uuid}
                                 onUploaded={(data) => onUpdate(idx, { ...vip, ...data })}
                             />
