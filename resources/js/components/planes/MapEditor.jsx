@@ -17,62 +17,62 @@ import { useTranslation } from "@/i18n";
 
 // ── Herramientas ──────────────────────────────────────────────
 const TOOLS = [
-    { id: "select", icon: MousePointer, label: "Seleccionar / Mover", shortcut: "S" },
-    { id: "pen",    icon: Pen,          label: "Lápiz libre",          shortcut: "P" },
-    { id: "line",   icon: Minus,        label: "Línea recta",          shortcut: "L" },
-    { id: "arrow",  icon: ArrowRight,   label: "Flecha",               shortcut: "A" },
-    { id: "rect",   icon: Square,       label: "Rectángulo",           shortcut: "R" },
-    { id: "circle", icon: Circle,       label: "Círculo / Elipse",     shortcut: "C" },
-    { id: "text",   icon: Type,         label: "Texto",                shortcut: "T" },
+    { id: "select", icon: MousePointer, labelKey: "map_editor.select_move",   shortcut: "S" },
+    { id: "pen",    icon: Pen,          labelKey: "map_editor.free_pen",      shortcut: "P" },
+    { id: "line",   icon: Minus,        labelKey: "map_editor.straight_line", shortcut: "L" },
+    { id: "arrow",  icon: ArrowRight,   labelKey: "map_editor.arrow",        shortcut: "A" },
+    { id: "rect",   icon: Square,       labelKey: "map_editor.rectangle",    shortcut: "R" },
+    { id: "circle", icon: Circle,       labelKey: "map_editor.circle_ellipse", shortcut: "C" },
+    { id: "text",   icon: Type,         labelKey: "map_editor.text",         shortcut: "T" },
 ];
 
 const ICON_CATEGORIES = {
     emergencia: {
-        label: "Emergencia", color: "#EF4444",
+        labelKey: "map_icons.emergency", color: "#EF4444",
         icons: [
-            { emoji: "🏥", label: "Hospital" }, { emoji: "🚑", label: "Ambulancia" },
-            { emoji: "🚒", label: "Bomberos" }, { emoji: "👮", label: "Policía" },
-            { emoji: "🚓", label: "Patrulla" }, { emoji: "⛑️", label: "Primeros Auxilios" },
-            { emoji: "💊", label: "Farmacia" }, { emoji: "🩺", label: "Médico" },
+            { emoji: "🏥", labelKey: "map_icons.hospital" }, { emoji: "🚑", labelKey: "map_icons.ambulance" },
+            { emoji: "🚒", labelKey: "map_icons.fire_dept" }, { emoji: "👮", labelKey: "map_icons.police" },
+            { emoji: "🚓", labelKey: "map_icons.patrol" }, { emoji: "⛑️", labelKey: "map_icons.first_aid" },
+            { emoji: "💊", labelKey: "map_icons.pharmacy" }, { emoji: "🩺", labelKey: "map_icons.doctor" },
         ],
     },
     transporte: {
-        label: "Transporte", color: "#208DCA",
+        labelKey: "map_icons.transport", color: "#208DCA",
         icons: [
-            { emoji: "🅿️", label: "Parking" }, { emoji: "🚪", label: "Entrada" },
-            { emoji: "🚧", label: "Salida" },  { emoji: "🚇", label: "Metro" },
-            { emoji: "🚌", label: "Autobús" }, { emoji: "🚆", label: "Tren" },
-            { emoji: "🚕", label: "Taxi" },    { emoji: "🚲", label: "Bicicleta" },
-            { emoji: "🚁", label: "Helicóptero" }, { emoji: "⛽", label: "Gasolinera" },
+            { emoji: "🅿️", labelKey: "map_icons.parking" }, { emoji: "🚪", labelKey: "map_icons.entrance" },
+            { emoji: "🚧", labelKey: "map_icons.exit" },  { emoji: "🚇", labelKey: "map_icons.metro" },
+            { emoji: "🚌", labelKey: "map_icons.bus" }, { emoji: "🚆", labelKey: "map_icons.train" },
+            { emoji: "🚕", labelKey: "map_icons.taxi" },    { emoji: "🚲", labelKey: "map_icons.bicycle" },
+            { emoji: "🚁", labelKey: "map_icons.helicopter" }, { emoji: "⛽", labelKey: "map_icons.gas_station" },
         ],
     },
     ubicaciones: {
-        label: "Ubicaciones", color: "#273887",
+        labelKey: "map_icons.locations", color: "#273887",
         icons: [
-            { emoji: "📍", label: "Punto" },   { emoji: "🏟️", label: "Recinto" },
-            { emoji: "🏢", label: "Edificio" }, { emoji: "⭐", label: "VIP" },
-            { emoji: "🎪", label: "Evento" },  { emoji: "🏨", label: "Hotel" },
-            { emoji: "🏫", label: "Centro" },  { emoji: "🎭", label: "Teatro" },
-            { emoji: "🏖️", label: "Playa" },   { emoji: "⛪", label: "Iglesia" },
+            { emoji: "📍", labelKey: "map_icons.point" },   { emoji: "🏟️", labelKey: "map_icons.venue" },
+            { emoji: "🏢", labelKey: "map_icons.building" }, { emoji: "⭐", labelKey: "map_icons.vip" },
+            { emoji: "🎪", labelKey: "map_icons.event" },  { emoji: "🏨", labelKey: "map_icons.hotel" },
+            { emoji: "🏫", labelKey: "map_icons.center" },  { emoji: "🎭", labelKey: "map_icons.theater" },
+            { emoji: "🏖️", labelKey: "map_icons.beach" },   { emoji: "⛪", labelKey: "map_icons.church" },
         ],
     },
     senalizacion: {
-        label: "Señalización", color: "#F59E0B",
+        labelKey: "map_icons.signage", color: "#F59E0B",
         icons: [
-            { emoji: "⚠️", label: "Atención" }, { emoji: "🔴", label: "Peligro" },
-            { emoji: "ℹ️", label: "Info" },     { emoji: "✅", label: "OK" },
-            { emoji: "🚫", label: "Prohibido" }, { emoji: "🔒", label: "Restringido" },
-            { emoji: "🔊", label: "Sonido" },   { emoji: "📢", label: "Altavoz" },
-            { emoji: "🎯", label: "Objetivo" }, { emoji: "🔑", label: "Acceso" },
+            { emoji: "⚠️", labelKey: "map_icons.attention" }, { emoji: "🔴", labelKey: "map_icons.danger" },
+            { emoji: "ℹ️", labelKey: "map_icons.info" },     { emoji: "✅", labelKey: "map_icons.ok" },
+            { emoji: "🚫", labelKey: "map_icons.forbidden" }, { emoji: "🔒", labelKey: "map_icons.restricted" },
+            { emoji: "🔊", labelKey: "map_icons.sound" },   { emoji: "📢", labelKey: "map_icons.speaker" },
+            { emoji: "🎯", labelKey: "map_icons.objective" }, { emoji: "🔑", labelKey: "map_icons.access" },
         ],
     },
     personal: {
-        label: "Personal", color: "#22C55E",
+        labelKey: "map_icons.staff_cat", color: "#22C55E",
         icons: [
-            { emoji: "🕵️", label: "Agente" },  { emoji: "👷", label: "Seguridad" },
-            { emoji: "🎤", label: "Speaker" },  { emoji: "📸", label: "Fotógrafo" },
-            { emoji: "🎬", label: "Cámara" },   { emoji: "🎧", label: "Técnico" },
-            { emoji: "🤵", label: "Staff" },    { emoji: "👨‍⚕️", label: "Sanitario" },
+            { emoji: "🕵️", labelKey: "map_icons.agent" },  { emoji: "👷", labelKey: "map_icons.security" },
+            { emoji: "🎤", labelKey: "map_icons.speaker_person" },  { emoji: "📸", labelKey: "map_icons.photographer" },
+            { emoji: "🎬", labelKey: "map_icons.camera" },   { emoji: "🎧", labelKey: "map_icons.technician" },
+            { emoji: "🤵", labelKey: "map_icons.staff" },    { emoji: "👨‍⚕️", labelKey: "map_icons.medic" },
         ],
     },
 };
@@ -87,11 +87,11 @@ const STROKE_WIDTHS = [1, 2, 4, 6, 10, 16];
 const TEXT_SIZES = [14, 20, 28, 36, 48];
 
 const CANVAS_PRESETS = [
-    { label: "A4 Horizontal", w: 1123, h: 794 },
-    { label: "A4 Vertical",   w: 794,  h: 1123 },
-    { label: "HD 16:9",       w: 1280, h: 720  },
-    { label: "Cuadrado",      w: 800,  h: 800  },
-    { label: "Panorámico",    w: 1600, h: 600  },
+    { labelKey: "map_canvas.a4_horizontal", w: 1123, h: 794 },
+    { labelKey: "map_canvas.a4_vertical",   w: 794,  h: 1123 },
+    { labelKey: "map_canvas.hd_16_9",       w: 1280, h: 720  },
+    { labelKey: "map_canvas.square",        w: 800,  h: 800  },
+    { labelKey: "map_canvas.panoramic",     w: 1600, h: 600  },
 ];
 
 // ── Drawing helper ─────────────────────────────────────────────
@@ -1007,7 +1007,7 @@ const MapEditor = forwardRef(function MapEditor({
                             <div className="w-6 h-6 rounded-full bg-green-500/15 flex items-center justify-center">
                                 <Check size={12} className="text-green-600" />
                             </div>
-                            <span className="text-sm font-medium text-green-700">Imagen guardada en el plan</span>
+                            <span className="text-sm font-medium text-green-700">{t("map_editor.image_saved_plan")}</span>
                         </div>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -1016,7 +1016,7 @@ const MapEditor = forwardRef(function MapEditor({
                             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#208DCA] hover:border-[#208DCA]/30 transition-all"
                         >
                             <ImagePlus size={12} />
-                            Crear otra imagen
+                            {t("map_editor.create_another")}
                         </motion.button>
                     </div>
                     <div className="p-4">
@@ -1048,7 +1048,7 @@ const MapEditor = forwardRef(function MapEditor({
                             <motion.button
                                 key={tl.id}
                                 onClick={() => setTool(tl.id)}
-                                title={`${tl.label} (${tl.shortcut})`}
+                                title={`${t(tl.labelKey)} (${tl.shortcut})`}
                                 whileHover={{ scale: 1.15, y: -2 }}
                                 whileTap={{ scale: 0.85 }}
                                 initial={{ opacity: 0, y: 8 }}
@@ -1202,7 +1202,7 @@ const MapEditor = forwardRef(function MapEditor({
                                                         ? "text-white bg-gradient-to-r from-[#253C87] to-[#208DCA] font-semibold shadow-md shadow-[#208DCA]/30"
                                                         : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                                                 }`}
-                                            >{cat.label}</motion.button>
+                                            >{t(cat.labelKey)}</motion.button>
                                         ))}
                                         <button onClick={() => setShowIconLabels((v) => !v)}
                                             className={`flex-shrink-0 text-[10px] px-2 py-1.5 rounded-lg transition-all font-medium ${showIconLabels ? "text-[#208DCA] bg-[#208DCA]/10" : "text-slate-500 hover:text-slate-800"}`}
@@ -1211,7 +1211,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     <div className="grid grid-cols-8 gap-2 p-3">
                                         {ICON_CATEGORIES[openIconCat]?.icons.map((ic, i) => (
                                             <motion.button key={ic.emoji}
-                                                onClick={() => addEmoji(ic.emoji, ic.label)}
+                                                onClick={() => addEmoji(ic.emoji, t(ic.labelKey))}
                                                 initial={{ opacity: 0, scale: 0.5 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 transition={{ delay: i * 0.02, type: "spring", stiffness: 400 }}
@@ -1220,7 +1220,7 @@ const MapEditor = forwardRef(function MapEditor({
                                                 className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-gradient-to-b hover:from-[#208DCA]/5 hover:to-[#208DCA]/10 transition-colors group cursor-pointer"
                                             >
                                                 <span className="text-2xl leading-none drop-shadow-sm">{ic.emoji}</span>
-                                                {showIconLabels && <span className="text-[8px] text-slate-400 group-hover:text-[#208DCA] truncate w-full text-center font-medium">{ic.label}</span>}
+                                                {showIconLabels && <span className="text-[8px] text-slate-400 group-hover:text-[#208DCA] truncate w-full text-center font-medium">{t(ic.labelKey)}</span>}
                                             </motion.button>
                                         ))}
                                     </div>
@@ -1231,18 +1231,18 @@ const MapEditor = forwardRef(function MapEditor({
 
                     {/* Undo / Redo / Clear — glass pill */}
                     <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-300/60">
-                        <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)"
+                        <motion.button whileHover={{ scale: 1.15, rotate: -15 }} whileTap={{ scale: 0.8 }} onClick={undo} disabled={!canUndo} title={t("map_editor.undo_shortcut")}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
                             <Undo2 size={16} />
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)"
+                        <motion.button whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.8 }} onClick={redo} disabled={!canRedo} title={t("map_editor.redo_shortcut")}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-[#208DCA] hover:bg-[#208DCA]/10 disabled:opacity-30 transition-all">
                             <Redo2 size={16} />
                         </motion.button>
                         <AnimatePresence>
                             {selectedIdx !== null && (
                                 <motion.button initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
-                                    onClick={deleteSelected} title="Eliminar (Del)"
+                                    onClick={deleteSelected} title={t("map_editor.delete_del")}
                                     className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 transition-all">
                                     <Trash2 size={16} />
                                 </motion.button>
@@ -1267,7 +1267,7 @@ const MapEditor = forwardRef(function MapEditor({
                             <ZoomOut size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }}
-                            onClick={() => setZoom(1)} title="Zoom 100%"
+                            onClick={() => setZoom(1)} title={t("map_editor.zoom_100")}
                             className="text-[10px] text-[#208DCA] font-bold font-mono px-1.5 hover:bg-[#208DCA]/8 rounded-md transition-colors">
                             {Math.round(zoom * 100)}%
                         </motion.button>
@@ -1290,7 +1290,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     }`}
                                 >
                                     <Search size={12} />
-                                    Buscar
+                                    {t("map_editor.search_btn")}
                                 </motion.button>
                             </Shine>
                             <Shine enableOnHover color="#208DCA" opacity={0.2} duration={400} asChild>
@@ -1303,7 +1303,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     }`}
                                 >
                                     <Navigation size={12} />
-                                    Ruta
+                                    {t("map_editor.route_btn")}
                                 </motion.button>
                             </Shine>
                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
@@ -1329,7 +1329,7 @@ const MapEditor = forwardRef(function MapEditor({
                                         title={t("map_editor.capture_map")}
                                     >
                                         <Camera size={12} />
-                                        Captura
+                                        {t("map_editor.capture_btn")}
                                     </motion.button>
                                 </Shine>
                             )}
@@ -1346,7 +1346,7 @@ const MapEditor = forwardRef(function MapEditor({
                                         !satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
                                     }`}
                                 >
-                                    Mapa
+                                    {t("map_editor.map_view")}
                                 </motion.button>
                                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                                     onClick={() => setSatelliteView(true)}
@@ -1354,7 +1354,7 @@ const MapEditor = forwardRef(function MapEditor({
                                         satelliteView ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
                                     }`}
                                 >
-                                    Satélite
+                                    {t("map_editor.satellite_view")}
                                 </motion.button>
                             </div>
                         )}
@@ -1369,7 +1369,7 @@ const MapEditor = forwardRef(function MapEditor({
                                         setMapQuery(place.displayName);
                                         setMapCommand({ type: "search", query: { lat: place.lat, lng: place.lng } });
                                     }}
-                                    placeholder="Buscar dirección, hospital..."
+                                    placeholder={t("map_editor.search_address_ph")}
                                     biasLat={routeACoords?.lat}
                                     biasLng={routeACoords?.lng}
                                 />
@@ -1473,10 +1473,10 @@ const MapEditor = forwardRef(function MapEditor({
                                     <Shine enableOnHover color="white" opacity={0.4} duration={500} asChild>
                                         <RippleButton size="sm" onClick={handleSave} disabled={saving}
                                             className={`gap-1.5 text-xs border-0 ${saved ? "bg-green-600 hover:bg-green-600" : "bg-gradient-to-r from-[#253C87] to-[#208DCA]"} text-white shadow-lg shadow-[#208DCA]/30`}>
-                                            {saved ? <><Check size={12} /> Guardado</>
-                                                : saving ? "Guardando..."
-                                                : mode === "standalone" ? <><Download size={12} /> Descargar</>
-                                                : <><Save size={12} /> Guardar</>}
+                                            {saved ? <><Check size={12} /> {t("common.saved")}</>
+                                                : saving ? t("common.saving")
+                                                : mode === "standalone" ? <><Download size={12} /> {t("common.download")}</>
+                                                : <><Save size={12} /> {t("common.save")}</>}
                                         </RippleButton>
                                     </Shine>
                                 </>
@@ -1525,14 +1525,14 @@ const MapEditor = forwardRef(function MapEditor({
                                                         const categories = {};
                                                         planAddresses.forEach((addr) => {
                                                             const isEmoji = /^\p{Emoji}/u.test(addr.label || "");
-                                                            let cat = "📍 Ubicaciones";
+                                                            let cat = `📍 ${t("map_icons.locations")}`;
                                                             if (isEmoji) {
                                                                 const emoji = addr.label.slice(0, 2);
-                                                                if (emoji === "🏥") cat = "🏥 Hospitales";
-                                                                else if (emoji === "🚔") cat = "🚔 Policía";
-                                                                else if (emoji === "🚇") cat = "🚇 Transporte";
-                                                                else if (emoji === "🅿") cat = "🅿️ Parkings";
-                                                                else cat = `${emoji} Otros`;
+                                                                if (emoji === "🏥") cat = `🏥 ${t("places.hospitals_urgencies")}`;
+                                                                else if (emoji === "🚔") cat = `🚔 ${t("places.police")}`;
+                                                                else if (emoji === "🚇") cat = `🚇 ${t("map_icons.transport")}`;
+                                                                else if (emoji === "🅿") cat = `🅿️ ${t("places.parkings")}`;
+                                                                else cat = `${emoji} ${t("forms.other")}`;
                                                             }
                                                             if (!categories[cat]) categories[cat] = [];
                                                             categories[cat].push(addr);
@@ -1636,7 +1636,7 @@ const MapEditor = forwardRef(function MapEditor({
                                                 className="flex items-center gap-3 bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white px-6 py-3 rounded-2xl shadow-2xl"
                                             >
                                                 <Check size={20} />
-                                                <span className="text-sm font-bold">Captura realizada</span>
+                                                <span className="text-sm font-bold">{t("map_editor.capture_done")}</span>
                                             </motion.div>
                                         </motion.div>
                                     )}
@@ -1730,23 +1730,23 @@ const MapEditor = forwardRef(function MapEditor({
                         >
                             <div className="text-center space-y-2">
                                 <FileImage size={40} className="text-slate-900 mx-auto" />
-                                <p className="text-sm font-medium text-slate-900">Sube una imagen o captura de pantalla</p>
-                                <p className="text-xs text-slate-900">Arrastra aquí · Ctrl+V para pegar · clic para seleccionar</p>
+                                <p className="text-sm font-medium text-slate-900">{t("map_editor.upload_image")}</p>
+                                <p className="text-xs text-slate-900">{t("map_editor.upload_instructions")}</p>
                             </div>
 
                             <div className="flex items-center gap-2 flex-wrap justify-center px-8">
-                                <span className="text-xs text-slate-900">— o empezar con lienzo en blanco —</span>
+                                <span className="text-xs text-slate-900">{t("map_editor.blank_canvas")}</span>
                             </div>
 
                             {/* Canvas presets */}
                             <div className="flex flex-wrap gap-2 justify-center px-8">
                                 {CANVAS_PRESETS.map((p) => (
                                     <button
-                                        key={p.label}
+                                        key={p.labelKey}
                                         onClick={(e) => { e.stopPropagation(); initBlankCanvas(p.w, p.h); }}
                                         className="text-xs px-3 py-1.5 rounded-xl bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                                     >
-                                        {p.label}
+                                        {t(p.labelKey)}
                                         <span className="text-slate-900 ml-1.5 text-[10px]">{p.w}×{p.h}</span>
                                     </button>
                                 ))}
@@ -1775,7 +1775,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     <input autoFocus value={textValue}
                                         onChange={(e) => setTextValue(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === "Enter") confirmText(); if (e.key === "Escape") setTextPrompt(null); }}
-                                        className="bg-transparent text-sm text-slate-900 outline-none w-44" placeholder="Escribe el texto..."
+                                        className="bg-transparent text-sm text-slate-900 outline-none w-44" placeholder={t("map_editor.write_text")}
                                     />
                                     <button onClick={confirmText} className="text-[#208DCA] hover:text-slate-900 transition-colors"><Check size={14} /></button>
                                     <button onClick={() => setTextPrompt(null)} className="text-slate-900 hover:text-slate-900 transition-colors"><X size={13} /></button>
@@ -1794,7 +1794,7 @@ const MapEditor = forwardRef(function MapEditor({
                         {tool === "select" && selectedIdx !== null && (
                             <div className="absolute bottom-2 left-2 bg-[#208DCA]/90 text-slate-900 text-[10px] px-2 py-1 rounded-lg flex items-center gap-1.5">
                                 <Crosshair size={10} />
-                                Elemento seleccionado — <kbd className="bg-slate-2000 px-1 rounded">Del</kbd> para eliminar · arrastrar para mover
+                                {t("map_editor.element_selected")}
                             </div>
                         )}
                     </div>

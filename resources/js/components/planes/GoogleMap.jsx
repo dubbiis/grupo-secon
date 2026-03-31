@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import { usePage } from "@inertiajs/react";
+import { useTranslation } from "@/i18n";
 
 const SECON_MARKER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40"><defs><style>.st0{fill:#273887}.st1{fill:#fff}</style></defs><path class="st0" d="M256,0C153.8,0,70.6,83.2,70.6,185.4s165.9,313.2,173,321c6.6,7.4,18.2,7.4,24.8,0,7.1-7.9,173-194.1,173-321C441.4,83.2,358.2,0,256,0Z"/><path class="st0" d="M398.5,184.9c0,78.7-63.8,142.5-142.5,142.5s-142.5-63.8-142.5-142.5S177.3,42.5,256,42.5s142.5,63.8,142.5,142.5"/><path class="st1" d="M256,42.5c-78.6,0-142.5,63.9-142.5,142.5s63.9,142.5,142.5,142.5,142.5-63.9,142.5-142.5S334.6,42.5,256,42.5ZM256,313.1c-22.8,0-44.1-6-62.7-16.5h39.9c1.7,0,3.4,0,5.1,0h1.5c2.5,0,4.9-.2,7.2-.3,14.9-1.1,26.3-2.8,34.2-5,19.5-5.6,32.7-15.1,39.5-28.5,6.7-13.2,8.2-26.3,4.5-39.2-3.8-13.1-11.4-22.3-23-27.4-12-5.3-29.9-8.1-53.6-8.5-18.2-.4-31.5-1.7-39.8-3.7-8.3-1.9-16-6-23-12.4-6.9-6.2-11.8-14.2-14.6-24.2-1.1-3.7-1.5-8.3-1.4-13.7-4,11.6-4.5,22.5-1.6,32.6,2.6,9.1,7.4,16.5,14.5,22.4,6.6,5.8,14.7,9.7,24,11.5,8,1.6,21.1,2.7,39.3,3.4,22.6.8,38.2,2.9,46.8,6.2,8.9,3.4,14.7,10.1,17.6,20,2.7,9.4,1.3,18.6-4.3,27.6-5.6,8.9-14.6,14.4-26.4,18.5-12.1,4.3-24.7,5-39.8,5.1h0s-68.4,0-68.4,0c-5.1-4.5-9.8-9.3-14.1-14.5,20.1,0,67.2.2,94.9,0,41.7-.4,46.4-25.5,46.4-25.5,0,0-10,8.9-41.9,8.9h-111.1c-11.3-19.1-17.8-41.3-17.8-65,0-70.6,57.5-128.1,128.1-128.1s45.4,6.4,64.4,17.4h-51.3c-10.7.3-20.1.8-29.5,2.7-22,4.4-38.3,14-47.8,25.5-9.4,11.7-11.9,24.8-7.8,39.3,3.6,12.6,10.1,20.8,19.5,24.6,9.4,3.7,27.8,6.1,55.3,7.1,18.3.7,31.8,2.4,40.6,5.1,8.6,2.6,16.6,7.3,23.9,13.9,7,6.6,12,14.9,14.9,25.2,3.1,10.8,3.4,19.9.8,27.1,9.1-12.5,11.4-26.6,6.8-42.6-3-10.5-8.4-19.2-16.2-26.2-7.7-6.8-16.3-11.2-25.6-13.4-8.7-1.9-23.4-3.4-44.2-4.5-22.3-1.2-37.6-3.3-46-6.5-8-2.8-13.2-8.3-15.5-16.5-2.2-7.7.1-15.5,7-23.4,6.7-7.9,16.5-13.6,29.4-17.4,13.5-3.9,30.5-4.6,43.9-4.6h3.3c1.5,0,2.9,0,4.3,0,.2,0,.3,0,.5,0h55.1c5.1,4.6,9.8,9.7,14.2,15h-96.9c-41.7,0-46.4,25.5-46.4,25.5,0,0,10-8.9,41.9-8.9h112.8c10.8,18.7,17,40.4,17,63.6,0,70.7-57.5,128.1-128.1,128.1Z"/></svg>`;
 
@@ -16,6 +17,7 @@ const GoogleMap = forwardRef(function GoogleMap(
     { command, onStatus, onRouteData, onMarkerDrag, interactionDisabled, satellite = false },
     ref
 ) {
+    const { t } = useTranslation();
     const containerRef     = useRef(null);
     const mapRef           = useRef(null);
     const markersRef       = useRef([]);
@@ -313,7 +315,7 @@ const GoogleMap = forwardRef(function GoogleMap(
         if (selected.distanceMeters && selected.durationSeconds) {
             const dist = (selected.distanceMeters / 1000).toFixed(1);
             const mins = Math.round(selected.durationSeconds / 60);
-            onStatus?.(`${dist} km · ${mins} min en coche`);
+            onStatus?.(t("map_editor.driving_status", { dist, mins }));
         }
         onRouteData?.({ routes, selectedIndex: selectedIdx });
     }, [clearAll, onStatus, onRouteData]);
@@ -373,8 +375,8 @@ const GoogleMap = forwardRef(function GoogleMap(
                             infoContent.innerHTML = `
                                 <div style="font-weight:600;margin-bottom:6px;color:#1e293b">${newAddress}</div>
                                 <div style="display:flex;gap:6px">
-                                    <button id="__gm_use_new" style="flex:1;padding:5px 8px;border-radius:8px;border:none;background:#208DCA;color:white;font-size:11px;font-weight:600;cursor:pointer">Usar esta dirección</button>
-                                    <button id="__gm_keep" style="flex:1;padding:5px 8px;border-radius:8px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:11px;cursor:pointer">Mantener actual</button>
+                                    <button id="__gm_use_new" style="flex:1;padding:5px 8px;border-radius:8px;border:none;background:#208DCA;color:white;font-size:11px;font-weight:600;cursor:pointer">${t("map_editor.use_this_address")}</button>
+                                    <button id="__gm_keep" style="flex:1;padding:5px 8px;border-radius:8px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:11px;cursor:pointer">${t("map_editor.keep_current")}</button>
                                 </div>
                             `;
 

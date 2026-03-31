@@ -56,7 +56,17 @@
     "no_account": "No tienes cuenta?",
     "register": "Registrarse",
     "logout": "Cerrar sesion",
-    "app_subtitle": "Planes de Seguridad Privada"
+    "app_subtitle": "Planes de Seguridad Privada",
+    "create_account": "Crear cuenta",
+    "register_subtitle": "Registrate para acceder",
+    "full_name": "Nombre completo",
+    "full_name_placeholder": "Tu nombre",
+    "password_min_8": "Minimo 8 caracteres",
+    "confirm_password": "Confirmar contrasena",
+    "confirm_password_placeholder": "Repite la contrasena",
+    "creating_account": "Creando cuenta...",
+    "has_account": "Ya tienes cuenta?",
+    "login_link": "Iniciar sesion"
   },
   "dashboard": {
     "welcome": "Bienvenido, {{name}}",
@@ -135,6 +145,11 @@
     "ai_prompts": "Prompts IA",
     "ai_stats": "Estadisticas IA"
   },
+  "editor_mapas": {
+    "title": "Editor de Mapas",
+    "subtitle": "Crea planos, rutas de emergencia y anotaciones sobre imagenes",
+    "screenshot": "Captura de pantalla"
+  },
   "map_editor": {
     "custom_color": "Color personalizado",
     "fill": "Relleno",
@@ -185,7 +200,23 @@
     "context_delete": "Eliminar",
     "context_duplicate": "Duplicar",
     "context_bring_front": "Traer al frente",
-    "context_send_back": "Enviar al fondo"
+    "context_send_back": "Enviar al fondo",
+    "create_another": "Crear otra imagen",
+    "image_saved_plan": "Imagen guardada en el plan",
+    "search_btn": "Buscar",
+    "route_btn": "Ruta",
+    "capture_btn": "Captura",
+    "capture_done": "Captura realizada",
+    "map_view": "Mapa",
+    "satellite_view": "Satelite",
+    "search_address_ph": "Buscar direccion, hospital...",
+    "zoom_100": "Zoom 100%",
+    "delete_del": "Eliminar (Del)",
+    "undo_shortcut": "Deshacer (Ctrl+Z)",
+    "redo_shortcut": "Rehacer (Ctrl+Y)",
+    "use_this_address": "Usar esta direccion",
+    "keep_current": "Mantener actual",
+    "driving_status": "{{dist}} km · {{mins}} min en coche"
   },
   "map_icons": {
     "emergency": "Emergencia",
@@ -341,7 +372,13 @@
     "generate": "Generar",
     "changes": "Cambios",
     "no_generations": "Aun no hay generaciones registradas.",
-    "no_generations_desc": "Los datos aparecen aqui despues de generar texto en cualquier seccion."
+    "no_generations_desc": "Los datos aparecen aqui despues de generar texto en cualquier seccion.",
+    "file_storage": "Almacenamiento de archivos",
+    "files_on_disk": "archivos en disco",
+    "files_missing_warning": "{{count}} archivo(s) registrado(s) en BD pero no encontrado(s) en disco. Posiblemente perdidos en un rebuild del contenedor.",
+    "lost_count": "{{count}} perdido(s)",
+    "files_short": "arch.",
+    "no_files_uploaded": "No hay archivos subidos en ningun plan."
   },
   "forms": {
     "event_name": "Nombre del evento",
@@ -685,6 +722,10 @@
     "hospitals_urgencies": "Hospitales / Urgencias",
     "police": "Policia"
   },
+  "simple_section": {
+    "additional_notes": "Notas adicionales",
+    "placeholder": "Informacion relevante para esta seccion..."
+  },
   "loop": {
     "add_item": "Anadir item",
     "item": "Item"
@@ -707,6 +748,35 @@
     "hide_preview": "Ocultar previsualizacion",
     "show_preview": "Vista previa con ejemplos",
     "save_prompt": "Guardar prompt",
+    "back_to_prompts": "Volver a Prompts",
+    "model_config": "Configuracion del modelo IA",
+    "gpt_model": "Modelo GPT",
+    "model_mini_full_desc": "Rapido y economico. Recomendado para la mayoria de secciones. Buena calidad con menor coste.",
+    "model_4o_full_desc": "Maxima calidad. Usa para secciones criticas (analisis de riesgos, dispositivo de seguridad). Mas lento y caro.",
+    "model_turbo_full_desc": "Equilibrio entre calidad y velocidad. Alternativa a gpt-4o con contexto muy largo.",
+    "max_tokens": "Maximo de tokens",
+    "token_explanation": "Un token equivale aproximadamente a 3/4 de una palabra en espanol. El modelo detiene la generacion al alcanzar este limite.",
+    "available_vars": "Variables disponibles — clic para insertar",
+    "system_prompt_desc": "Es la instruccion invisible que recibe el modelo antes de leer el mensaje del usuario. Define su rol, tono y restricciones. El usuario final nunca lo ve.",
+    "system_prompt_role": "Define el rol (\"Eres un experto en...\")",
+    "system_prompt_lang": "Idioma y formato de salida",
+    "system_prompt_tone": "Tono (formal, tecnico, conciso)",
+    "system_prompt_no_data": "No pongas datos del evento aqui",
+    "user_prompt_desc": "El mensaje que recibe el modelo con los datos reales del evento ya insertados. Escribe el texto del prompt y usa {{variable}} donde quieras que aparezca un dato del formulario.",
+    "preview_example_data": "Vista previa — datos de ejemplo",
+    "example_output_title": "Ejemplo de texto de salida",
+    "example_output_optional": "Opcional",
+    "example_output_desc": "Referencia del formato y estilo esperados para esta seccion. Sirve como guia visual para el equipo y, si se activa la opcion de abajo, se envia a la IA junto con el prompt para mejorar la consistencia del resultado.",
+    "example_output_placeholder": "Pega aqui un ejemplo de texto bien redactado para esta seccion...\n\nEj: El presente Plan de Seguridad tiene por objetivo...",
+    "send_example_ai": "Enviar ejemplo a la IA como guia de estilo",
+    "active": "ACTIVO",
+    "send_example_desc": "Cuando esta activo, el ejemplo se anade al final del mensaje del usuario con la instruccion \"usalo solo como guia de estructura y tono, no lo copies\". La IA tendra una referencia explicita del formato esperado.",
+    "example_extra_tokens": "El ejemplo anade aproximadamente ~{{count}} tokens extra por cada generacion. Para secciones con muchas generaciones, valorar si el beneficio compensa el coste.",
+    "users_count": "usuarios",
+    "new_user_label": "Nuevo usuario",
+    "edit_title": "Editar",
+    "delete_title": "Eliminar",
+    "email_placeholder": "email@ejemplo.com",
     "users_title": "Gestion de usuarios",
     "users_subtitle": "Crear, editar y gestionar usuarios y roles",
     "user_role": "Usuario",

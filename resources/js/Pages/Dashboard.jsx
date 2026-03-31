@@ -98,7 +98,7 @@ export default function Dashboard({ plans, auth }) {
                                 className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2"
                             >
                                 <Plus size={16} />
-                                Crear primer plan
+                                {t("dashboard.create_first_plan")}
                             </RippleButton>
                         </div>
                     </motion.div>
@@ -240,7 +240,7 @@ export default function Dashboard({ plans, auth }) {
                         onClick={() => setPlanToDelete(null)}
                         disabled={deleting}
                     >
-                        Cancelar
+                        {t("common.cancel")}
                     </Button>
                     <RippleButton
                         onClick={confirmDelete}

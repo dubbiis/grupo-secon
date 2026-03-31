@@ -6,15 +6,17 @@ import AppLayout from "@/components/AppLayout";
 import MapEditor from "@/components/planes/MapEditor";
 import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 export default function EditorMapas() {
+    const { t } = useTranslation();
     const editorRef = useRef(null);
 
     return (
         <GoogleMapsProvider>
         <AppLayout
-            title="Editor de Mapas"
-            subtitle="Crea planos, rutas de emergencia y anotaciones sobre imágenes"
+            title={t("editor_mapas.title")}
+            subtitle={t("editor_mapas.subtitle")}
             headerAction={
                 <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                     <motion.button
@@ -29,12 +31,12 @@ export default function EditorMapas() {
                         >
                             <Crosshair size={18} />
                         </motion.div>
-                        Captura de pantalla
+                        {t("editor_mapas.screenshot")}
                     </motion.button>
                 </Shine>
             }
         >
-            <Head title="Editor de Mapas" />
+            <Head title={t("editor_mapas.title")} />
             <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden px-6 pt-4">
                 <MapEditor ref={editorRef} mode="standalone" />
             </div>

@@ -56,7 +56,17 @@
     "no_account": "Don't have an account?",
     "register": "Sign up",
     "logout": "Log out",
-    "app_subtitle": "Private Security Plans"
+    "app_subtitle": "Private Security Plans",
+    "create_account": "Create account",
+    "register_subtitle": "Sign up to access",
+    "full_name": "Full name",
+    "full_name_placeholder": "Your name",
+    "password_min_8": "Minimum 8 characters",
+    "confirm_password": "Confirm password",
+    "confirm_password_placeholder": "Repeat your password",
+    "creating_account": "Creating account...",
+    "has_account": "Already have an account?",
+    "login_link": "Log in"
   },
   "dashboard": {
     "welcome": "Welcome, {{name}}",
@@ -135,6 +145,11 @@
     "ai_prompts": "AI Prompts",
     "ai_stats": "AI Stats"
   },
+  "editor_mapas": {
+    "title": "Map Editor",
+    "subtitle": "Create floor plans, emergency routes and annotations on images",
+    "screenshot": "Screenshot"
+  },
   "map_editor": {
     "custom_color": "Custom color",
     "fill": "Fill",
@@ -185,7 +200,23 @@
     "context_delete": "Delete",
     "context_duplicate": "Duplicate",
     "context_bring_front": "Bring to front",
-    "context_send_back": "Send to back"
+    "context_send_back": "Send to back",
+    "create_another": "Create another image",
+    "image_saved_plan": "Image saved to plan",
+    "search_btn": "Search",
+    "route_btn": "Route",
+    "capture_btn": "Capture",
+    "capture_done": "Capture done",
+    "map_view": "Map",
+    "satellite_view": "Satellite",
+    "search_address_ph": "Search address, hospital...",
+    "zoom_100": "Zoom 100%",
+    "delete_del": "Delete (Del)",
+    "undo_shortcut": "Undo (Ctrl+Z)",
+    "redo_shortcut": "Redo (Ctrl+Y)",
+    "use_this_address": "Use this address",
+    "keep_current": "Keep current",
+    "driving_status": "{{dist}} km · {{mins}} min by car"
   },
   "map_icons": {
     "emergency": "Emergency",
@@ -341,7 +372,13 @@
     "generate": "Generate",
     "changes": "Changes",
     "no_generations": "No generations recorded yet.",
-    "no_generations_desc": "Data will appear here after generating text in any section."
+    "no_generations_desc": "Data will appear here after generating text in any section.",
+    "file_storage": "File storage",
+    "files_on_disk": "files on disk",
+    "files_missing_warning": "{{count}} file(s) registered in DB but not found on disk. Possibly lost during a container rebuild.",
+    "lost_count": "{{count}} lost",
+    "files_short": "files",
+    "no_files_uploaded": "No files uploaded in any plan."
   },
   "forms": {
     "event_name": "Event name",
@@ -685,6 +722,10 @@
     "hospitals_urgencies": "Hospitals / Emergencies",
     "police": "Police"
   },
+  "simple_section": {
+    "additional_notes": "Additional notes",
+    "placeholder": "Relevant information for this section..."
+  },
   "loop": {
     "add_item": "Add item",
     "item": "Item"
@@ -707,6 +748,35 @@
     "hide_preview": "Hide preview",
     "show_preview": "Preview with examples",
     "save_prompt": "Save prompt",
+    "back_to_prompts": "Back to Prompts",
+    "model_config": "AI model configuration",
+    "gpt_model": "GPT Model",
+    "model_mini_full_desc": "Fast and affordable. Recommended for most sections. Good quality at lower cost.",
+    "model_4o_full_desc": "Highest quality. Use for critical sections (risk analysis, security device). Slower and more expensive.",
+    "model_turbo_full_desc": "Balance between quality and speed. Alternative to gpt-4o with very long context.",
+    "max_tokens": "Maximum tokens",
+    "token_explanation": "A token is approximately 3/4 of a word in English. The model stops generating when this limit is reached.",
+    "available_vars": "Available variables — click to insert",
+    "system_prompt_desc": "This is the invisible instruction the model receives before reading the user message. It defines its role, tone and restrictions. The end user never sees it.",
+    "system_prompt_role": "Define the role (\"You are an expert in...\")",
+    "system_prompt_lang": "Language and output format",
+    "system_prompt_tone": "Tone (formal, technical, concise)",
+    "system_prompt_no_data": "Do not put event data here",
+    "user_prompt_desc": "The message the model receives with the actual event data already inserted. Write the prompt text and use {{variable}} where you want a form field to appear.",
+    "preview_example_data": "Preview — example data",
+    "example_output_title": "Example output text",
+    "example_output_optional": "Optional",
+    "example_output_desc": "Reference for the expected format and style for this section. Serves as a visual guide for the team and, if the option below is enabled, it is sent to the AI along with the prompt to improve result consistency.",
+    "example_output_placeholder": "Paste here an example of well-written text for this section...\n\nE.g.: The purpose of this Security Plan is...",
+    "send_example_ai": "Send example to AI as style guide",
+    "active": "ACTIVE",
+    "send_example_desc": "When active, the example is appended to the user message with the instruction \"use it only as a guide for structure and tone, do not copy it\". The AI will have an explicit reference of the expected format.",
+    "example_extra_tokens": "The example adds approximately ~{{count}} extra tokens per generation. For sections with many generations, consider whether the benefit justifies the cost.",
+    "users_count": "users",
+    "new_user_label": "New user",
+    "edit_title": "Edit",
+    "delete_title": "Delete",
+    "email_placeholder": "email@example.com",
     "users_title": "User Management",
     "users_subtitle": "Create, edit and manage users and roles",
     "user_role": "User",

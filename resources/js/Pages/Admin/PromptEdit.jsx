@@ -96,7 +96,7 @@ export default function PromptEdit({ prompt, flash }) {
             <div className="px-8 py-6 max-w-4xl mx-auto">
                 <div className="mb-2">
                     <Link href="/admin/prompts" className="text-xs text-slate-900 hover:text-slate-900 transition-colors">
-                        ← Volver a Prompts
+                        ← {t("admin.back_to_prompts")}
                     </Link>
                 </div>
 
@@ -117,13 +117,13 @@ export default function PromptEdit({ prompt, flash }) {
                             <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#273887]/60 to-[#208DCA]/60 flex items-center justify-center flex-shrink-0">
                                 <Code2 size={11} className="text-white" />
                             </div>
-                            <p className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Configuración del modelo IA</p>
+                            <p className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{t("admin.model_config")}</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-5">
                             {/* Modelo */}
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-slate-900 block uppercase tracking-wide">Modelo GPT</label>
+                                <label className="text-xs font-semibold text-slate-900 block uppercase tracking-wide">{t("admin.gpt_model")}</label>
                                 <select
                                     value={data.model}
                                     onChange={(e) => setData("model", e.target.value)}
@@ -133,9 +133,9 @@ export default function PromptEdit({ prompt, flash }) {
                                 </select>
                                 <div className="space-y-1.5 pt-1">
                                     {[
-                                        { name: "gpt-4o-mini", desc: "Rápido y económico. Recomendado para la mayoría de secciones. Buena calidad con menor coste." },
-                                        { name: "gpt-4o",      desc: "Máxima calidad. Usa para secciones críticas (análisis de riesgos, dispositivo de seguridad). Más lento y caro." },
-                                        { name: "gpt-4-turbo", desc: "Equilibrio entre calidad y velocidad. Alternativa a gpt-4o con contexto muy largo." },
+                                        { name: "gpt-4o-mini", desc: t("admin.model_mini_full_desc") },
+                                        { name: "gpt-4o",      desc: t("admin.model_4o_full_desc") },
+                                        { name: "gpt-4-turbo", desc: t("admin.model_turbo_full_desc") },
                                     ].map(({ name, desc }) => (
                                         <div key={name} className={`flex gap-2 p-2 rounded-lg transition-colors ${data.model === name ? "bg-[#208DCA]/8 border border-[#208DCA]/15" : "opacity-40"}`}>
                                             <span className="font-mono text-[10px] text-[#208DCA] flex-shrink-0 mt-0.5">{name}</span>
@@ -147,7 +147,7 @@ export default function PromptEdit({ prompt, flash }) {
 
                             {/* Max tokens */}
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-slate-900 block uppercase tracking-wide">Máximo de tokens</label>
+                                <label className="text-xs font-semibold text-slate-900 block uppercase tracking-wide">{t("admin.max_tokens")}</label>
                                 <Input
                                     type="number"
                                     value={data.max_tokens}
@@ -156,14 +156,14 @@ export default function PromptEdit({ prompt, flash }) {
                                 />
                                 <div className="space-y-2 pt-1">
                                     <p className="text-[10px] text-slate-900 leading-relaxed">
-                                        Un <span className="text-slate-900 font-medium">token</span> equivale aproximadamente a ¾ de una palabra en español. El modelo detiene la generación al alcanzar este límite.
+                                        {t("admin.token_explanation")}
                                     </p>
                                     <div className="space-y-1">
                                         {[
-                                            { range: "512 – 1.024",  label: "Respuesta corta",   hint: "Secciones de contactos o anexos" },
-                                            { range: "2.048 – 4.096", label: "Respuesta media",  hint: "Mayoría de secciones (recomendado)" },
-                                            { range: "6.000 – 8.000", label: "Respuesta larga",  hint: "Análisis de riesgos, dispositivo" },
-                                            { range: "16.000",        label: "Máximo absoluto",  hint: "Solo si la sección es muy extensa" },
+                                            { range: "512 – 1.024",  label: t("admin.tokens_short"),  hint: t("admin.tokens_short_hint") },
+                                            { range: "2.048 – 4.096", label: t("admin.tokens_medium"), hint: t("admin.tokens_medium_hint") },
+                                            { range: "6.000 – 8.000", label: t("admin.tokens_long"),   hint: t("admin.tokens_long_hint") },
+                                            { range: "16.000",        label: t("admin.tokens_max"),    hint: t("admin.tokens_max_hint") },
                                         ].map(({ range, label, hint }) => (
                                             <div key={range} className="flex items-start gap-2">
                                                 <span className="font-mono text-[10px] text-slate-900 w-24 flex-shrink-0 pt-px">{range}</span>
@@ -183,7 +183,7 @@ export default function PromptEdit({ prompt, flash }) {
                     <div className="p-5 rounded-2xl bg-white border border-slate-200">
                         <div className="flex items-center gap-2 mb-3">
                             <Code2 size={13} className="text-[#208DCA]" />
-                            <p className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Variables disponibles — clic para insertar</p>
+                            <p className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{t("admin.available_vars")}</p>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             {COMMON_VARS.map((v) => (
@@ -206,13 +206,13 @@ export default function PromptEdit({ prompt, flash }) {
                         <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-900 block uppercase tracking-wide">System Prompt</label>
                             <p className="text-xs text-slate-900 leading-relaxed">
-                                Es la <span className="text-slate-900 font-medium">instrucción invisible</span> que recibe el modelo antes de leer el mensaje del usuario. Define su rol, tono y restricciones. El usuario final nunca lo ve.
+                                {t("admin.system_prompt_desc")}
                             </p>
                             <div className="flex flex-wrap gap-2 text-[10px]">
-                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ Define el rol ("Eres un experto en...")</span>
-                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ Idioma y formato de salida</span>
-                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ Tono (formal, técnico, conciso)</span>
-                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✗ No pongas datos del evento aquí</span>
+                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ {t("admin.system_prompt_role")}</span>
+                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ {t("admin.system_prompt_lang")}</span>
+                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✓ {t("admin.system_prompt_tone")}</span>
+                                <span className="px-2 py-1 rounded-md bg-slate-200 border border-slate-200 text-slate-900">✗ {t("admin.system_prompt_no_data")}</span>
                             </div>
                         </div>
                         <Textarea value={data.system_prompt} onChange={(e) => setData("system_prompt", e.target.value)} rows={6} className="font-mono text-xs" />
@@ -226,7 +226,7 @@ export default function PromptEdit({ prompt, flash }) {
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold text-slate-900 uppercase tracking-wide">User Prompt Template</label>
                                 <p className="text-xs text-slate-900 leading-relaxed max-w-lg">
-                                    El mensaje que recibe el modelo <span className="text-slate-900 font-medium">con los datos reales del evento</span> ya insertados. Escribe el texto del prompt y usa <code className="bg-slate-200 px-1.5 py-0.5 rounded text-[#208DCA] font-mono">{"{{variable}}"}</code> donde quieras que aparezca un dato del formulario.
+                                    {t("admin.user_prompt_desc")}
                                 </p>
                             </div>
                             <button
@@ -266,7 +266,7 @@ export default function PromptEdit({ prompt, flash }) {
                                         <div className="rounded-xl border border-[#208DCA]/20 bg-[#208DCA]/4 overflow-hidden">
                                             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#208DCA]/15 bg-[#208DCA]/6">
                                                 <Eye size={12} className="text-[#208DCA]" />
-                                                <span className="text-xs font-semibold text-[#208DCA] uppercase tracking-wide">Vista previa — datos de ejemplo</span>
+                                                <span className="text-xs font-semibold text-[#208DCA] uppercase tracking-wide">{t("admin.preview_example_data")}</span>
                                                 <span className="ml-auto text-xs text-slate-900 font-mono">Concierto Aitana · Madrid Arena 2025</span>
                                             </div>
                                             <pre className="px-5 py-4 text-xs text-slate-900 leading-relaxed whitespace-pre-wrap font-sans overflow-y-auto max-h-96">
@@ -285,12 +285,11 @@ export default function PromptEdit({ prompt, flash }) {
                         <div className="px-5 pt-5 pb-4 border-b border-slate-200 space-y-2">
                             <div className="flex items-center gap-2">
                                 <BookOpen size={13} className="text-amber-400" />
-                                <label className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Ejemplo de texto de salida</label>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">Opcional</span>
+                                <label className="text-xs font-semibold text-slate-900 uppercase tracking-wide">{t("admin.example_output_title")}</label>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400">{t("admin.example_output_optional")}</span>
                             </div>
                             <p className="text-xs text-slate-900 leading-relaxed max-w-2xl">
-                                Referencia del formato y estilo esperados para esta sección. Sirve como guía visual para el equipo y,
-                                si se activa la opción de abajo, se envía a la IA junto con el prompt para mejorar la consistencia del resultado.
+                                {t("admin.example_output_desc")}
                             </p>
                         </div>
 
@@ -300,7 +299,7 @@ export default function PromptEdit({ prompt, flash }) {
                                 onChange={(e) => setData("example_output", e.target.value)}
                                 rows={12}
                                 className="text-xs leading-relaxed"
-                                placeholder={"Pega aquí un ejemplo de texto bien redactado para esta sección...\n\nEj: El presente Plan de Seguridad tiene por objetivo..."}
+                                placeholder={t("admin.example_output_placeholder")}
                             />
 
                             {/* Toggle few-shot */}
@@ -314,29 +313,23 @@ export default function PromptEdit({ prompt, flash }) {
                                         <div className="flex items-center gap-2">
                                             <Zap size={12} className={data.use_example_output ? "text-amber-400" : "text-slate-900"} />
                                             <span className={`text-xs font-semibold ${data.use_example_output ? "text-amber-300" : "text-slate-900"}`}>
-                                                Enviar ejemplo a la IA como guía de estilo
+                                                {t("admin.send_example_ai")}
                                             </span>
                                             {data.use_example_output && (
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400 font-semibold">
-                                                    ACTIVO
+                                                    {t("admin.active")}
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-[11px] text-slate-900 leading-relaxed">
-                                            Cuando está activo, el ejemplo se añade al final del mensaje del usuario con la instrucción{" "}
-                                            <em>"úsalo solo como guía de estructura y tono, no lo copies"</em>.
-                                            La IA tendrá una referencia explícita del formato esperado.
+                                            {t("admin.send_example_desc")}
                                         </p>
                                         {data.use_example_output && data.example_output && (
                                             <div className="flex items-start gap-1.5 mt-2">
                                                 <AlertTriangle size={11} className="text-amber-400/60 mt-px flex-shrink-0" />
                                                 <p className="text-[10px] text-amber-400/60 leading-relaxed">
-                                                    El ejemplo añade aproximadamente{" "}
-                                                    <span className="font-semibold text-amber-400/80">
-                                                        ~{Math.round(data.example_output.length / 3)} tokens extra
-                                                    </span>{" "}
-                                                    por cada generación (≈ ${(Math.round(data.example_output.length / 3) * 0.00000015).toFixed(6)} con gpt-4o-mini).
-                                                    Para secciones con muchas generaciones, valorar si el beneficio compensa el coste.
+                                                    {t("admin.example_extra_tokens", { count: Math.round(data.example_output.length / 3) })}
+                                                    {" "}(≈ ${(Math.round(data.example_output.length / 3) * 0.00000015).toFixed(6)} con gpt-4o-mini).
                                                 </p>
                                             </div>
                                         )}
@@ -368,7 +361,7 @@ export default function PromptEdit({ prompt, flash }) {
                             {processing ? t("common.saving") : t("admin.save_prompt")}
                         </RippleButton>
                         <Link href="/admin/prompts">
-                            <Button type="button" variant="outline">Cancelar</Button>
+                            <Button type="button" variant="outline">{t("common.cancel")}</Button>
                         </Link>
                     </div>
                 </form>

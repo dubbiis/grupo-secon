@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { MapPin, Building2, Train, TreePine, Search, Loader2 } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 const TYPE_ICONS = {
     street_address: MapPin, route: MapPin, premise: MapPin,
@@ -23,10 +24,12 @@ export default function AddressAutocomplete({
     labelColor = "#208DCA",
     biasLat,
     biasLng,
-    placeholder = "Buscar dirección...",
+    placeholder,
     className = "",
     quickAddresses = [],
 }) {
+    const { t } = useTranslation();
+    const resolvedPlaceholder = placeholder || t("map_editor.search_address_ph");
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -186,7 +189,7 @@ export default function AddressAutocomplete({
                         ref={inputRef} type="text" value={value}
                         onChange={handleChange} onKeyDown={handleKeyDown}
                         onFocus={() => results.length > 0 && setOpen(true)}
-                        placeholder={placeholder}
+                        placeholder={resolvedPlaceholder}
                         className="w-full pl-8 pr-8 py-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#208DCA]/40 focus:border-[#208DCA]/30 transition-all"
                     />
                     {loading && <Loader2 size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#208DCA] animate-spin" />}

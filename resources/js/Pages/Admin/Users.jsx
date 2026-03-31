@@ -62,14 +62,14 @@ export default function UserManagement({ users }) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <UsersIcon size={20} className="text-[#208DCA]" />
-                        <h2 className="text-lg font-semibold text-slate-800">{users.length} usuarios</h2>
+                        <h2 className="text-lg font-semibold text-slate-800">{users.length} {t("admin.users_count")}</h2>
                     </div>
                     <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                         <button
                             onClick={openCreate}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-[#273887] to-[#208DCA] text-white shadow-md shadow-[#273887]/25 hover:opacity-90 transition-all"
                         >
-                            <Plus size={14} /> Nuevo usuario
+                            <Plus size={14} /> {t("admin.new_user_label")}
                         </button>
                     </Shine>
                 </div>
@@ -119,11 +119,11 @@ export default function UserManagement({ users }) {
                                         <td className="px-3 py-3 text-slate-500 text-xs">{user.created_at}</td>
                                         <td className="px-5 py-3 text-right">
                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => openEdit(user)} title="Editar"
+                                                <button onClick={() => openEdit(user)} title={t("admin.edit_title")}
                                                     className="p-1.5 rounded-lg text-slate-400 hover:text-[#208DCA] hover:bg-[#208DCA]/10 transition-colors">
                                                     <Pencil size={14} />
                                                 </button>
-                                                <button onClick={() => setDeleteUser(user)} title="Eliminar"
+                                                <button onClick={() => setDeleteUser(user)} title={t("admin.delete_title")}
                                                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors">
                                                     <Trash2 size={14} />
                                                 </button>
@@ -150,7 +150,7 @@ export default function UserManagement({ users }) {
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1.5 block">Email</label>
-                                <Input type="email" value={data.email} onChange={(e) => setData("email", e.target.value)} placeholder="email@ejemplo.com" />
+                                <Input type="email" value={data.email} onChange={(e) => setData("email", e.target.value)} placeholder={t("admin.email_placeholder")} />
                                 {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                             </div>
                             <div>
@@ -200,7 +200,7 @@ export default function UserManagement({ users }) {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDeleteUser(null)}>{t("common.cancel")}</Button>
                         <RippleButton onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white border-0 gap-2">
-                            <Trash2 size={14} /> Eliminar
+                            <Trash2 size={14} /> {t("common.delete")}
                         </RippleButton>
                     </DialogFooter>
                 </Dialog>

@@ -4,12 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number";
 import { useTranslation } from "@/i18n";
 
-const SECTION_NAMES = {
-    1: "Objetivo", 2: "Descripción", 3: "Titulares", 4: "Accesos",
-    5: "Recursos Sanitarios", 6: "Perfil Público", 7: "Análisis Riesgos",
-    8: "Dispositivo", 9: "Personal", 10: "Transporte", 11: "Run of Show",
-    12: "Acreditaciones", 13: "Contactos", 14: "Anexos", 15: "Branding",
-};
+// SECTION_NAMES removed — now using t("section_names.N") from i18n
 
 const MODEL_COLORS = {
     "gpt-4o-mini": "text-emerald-600 bg-emerald-50 border-emerald-200",
@@ -75,9 +70,9 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                 {/* KPIs */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard icon={Zap}        label={t("stats.total_generations")} value={<SlidingNumber number={totalCalls} inView={true} />}                                     color="text-[#208DCA]" delay={0} />
-                    <StatCard icon={Hash}        label={t("stats.total_tokens")}       value={<SlidingNumber number={totalTokens} inView={true} />}                                   color="text-purple-500" delay={0.05} sub={`${formatNumber(totalPrompt)} entrada · ${formatNumber(totalCompletion)} salida`} />
-                    <StatCard icon={DollarSign}  label={t("stats.estimated_cost")} value={formatCost(totalCost)}                                                                 color="text-amber-500" delay={0.1} sub="Tipo de cambio fijo aprox. 1 $ = 0.92 €" />
-                    <StatCard icon={TrendingUp}  label={t("stats.tokens_per_call")}   value={totalCalls > 0 ? <SlidingNumber number={Math.round(totalTokens / totalCalls)} inView={true} /> : "—"} color="text-emerald-500" delay={0.15} sub="Promedio" />
+                    <StatCard icon={Hash}        label={t("stats.total_tokens")}       value={<SlidingNumber number={totalTokens} inView={true} />}                                   color="text-purple-500" delay={0.05} sub={`${formatNumber(totalPrompt)} ${t("stats.input")} · ${formatNumber(totalCompletion)} ${t("stats.output")}`} />
+                    <StatCard icon={DollarSign}  label={t("stats.estimated_cost")} value={formatCost(totalCost)}                                                                 color="text-amber-500" delay={0.1} sub={t("stats.exchange_rate")} />
+                    <StatCard icon={TrendingUp}  label={t("stats.tokens_per_call")}   value={totalCalls > 0 ? <SlidingNumber number={Math.round(totalTokens / totalCalls)} inView={true} /> : "—"} color="text-emerald-500" delay={0.15} sub={t("stats.average")} />
                 </div>
 
                 {/* Por modelo */}
@@ -97,7 +92,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between text-xs mb-1">
                                             <span className="text-slate-600">{formatNumber(m.total_tokens)} tokens</span>
-                                            <span className="text-slate-500">{m.calls} llamadas</span>
+                                            <span className="text-slate-500">{m.calls} {t("stats.calls")}</span>
                                         </div>
                                         <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                                             <motion.div
@@ -163,13 +158,13 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wide text-xs">
-                                        <th className="px-5 py-3 text-left font-medium">Plan</th>
+                                        <th className="px-5 py-3 text-left font-medium">{t("stats.plan")}</th>
                                         <th className="px-3 py-3 text-left font-medium">§</th>
-                                        <th className="px-3 py-3 text-left font-medium">Modelo</th>
-                                        <th className="px-3 py-3 text-left font-medium">Tipo</th>
-                                        <th className="px-3 py-3 text-right font-medium">Tokens</th>
-                                        <th className="px-3 py-3 text-right font-medium">Coste</th>
-                                        <th className="px-5 py-3 text-right font-medium">Fecha</th>
+                                        <th className="px-3 py-3 text-left font-medium">{t("stats.model")}</th>
+                                        <th className="px-3 py-3 text-left font-medium">{t("stats.type")}</th>
+                                        <th className="px-3 py-3 text-right font-medium">{t("stats.tokens")}</th>
+                                        <th className="px-3 py-3 text-right font-medium">{t("stats.cost")}</th>
+                                        <th className="px-5 py-3 text-right font-medium">{t("stats.date")}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -209,12 +204,12 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <HardDrive size={14} className="text-[#208DCA]" />
-                                <h3 className="text-sm font-semibold text-slate-800">Almacenamiento de archivos</h3>
+                                <h3 className="text-sm font-semibold text-slate-800">{t("stats.file_storage")}</h3>
                             </div>
                             <div className="flex items-center gap-4 text-xs text-slate-500">
                                 <span className="flex items-center gap-1">
                                     <FileImage size={12} />
-                                    {storage.total_files} archivos en disco
+                                    {storage.total_files} {t("stats.files_on_disk")}
                                 </span>
                                 <span className="font-mono font-bold text-slate-800">{formatBytes(storage.total_bytes)}</span>
                             </div>
@@ -225,8 +220,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                             <div className="px-5 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
                                 <AlertTriangle size={13} className="text-amber-500 flex-shrink-0" />
                                 <p className="text-xs text-amber-700">
-                                    {storage.db_files - storage.total_files} archivo{storage.db_files - storage.total_files > 1 ? "s" : ""} registrado{storage.db_files - storage.total_files > 1 ? "s" : ""} en BD pero no encontrado{storage.db_files - storage.total_files > 1 ? "s" : ""} en disco.
-                                    Posiblemente perdidos en un rebuild del contenedor.
+                                    {t("stats.files_missing_warning", { count: storage.db_files - storage.total_files })}
                                 </p>
                             </div>
                         )}
@@ -253,7 +247,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                                                         />
                                                     </div>
                                                     <span className="text-[10px] text-slate-500 w-12 text-right flex-shrink-0">
-                                                        {p.files_exist} arch.
+                                                        {p.files_exist} {t("stats.files_short")}
                                                     </span>
                                                 </div>
                                             </div>
@@ -262,7 +256,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                                             </span>
                                             {missing > 0 && (
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-600 flex-shrink-0">
-                                                    {missing} perdido{missing > 1 ? "s" : ""}
+                                                    {t("stats.lost_count", { count: missing })}
                                                 </span>
                                             )}
                                         </div>
@@ -271,7 +265,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                             </div>
                         ) : (
                             <div className="px-5 py-8 text-center text-slate-400 text-sm">
-                                No hay archivos subidos en ningún plan.
+                                {t("stats.no_files_uploaded")}
                             </div>
                         )}
                     </motion.div>
@@ -282,7 +276,7 @@ export default function Stats({ totals, byModel, bySection, recent, daily, stora
                     <div className="text-center py-20 text-slate-400">
                         <BarChart2 size={32} className="mx-auto mb-3 opacity-30" />
                         <p className="text-sm text-slate-500">{t("stats.no_generations")}</p>
-                        <p className="text-xs text-slate-400 mt-1">Los datos aparecen aquí después de generar texto en cualquier sección.</p>
+                        <p className="text-xs text-slate-400 mt-1">{t("stats.no_generations_desc")}</p>
                     </div>
                 )}
             </div>

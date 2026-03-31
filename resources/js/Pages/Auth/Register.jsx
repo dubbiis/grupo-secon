@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/i18n";
 
 export default function Register() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         name: "", email: "", password: "", password_confirmation: "",
     });
@@ -30,19 +31,19 @@ export default function Register() {
                         <Shield size={28} className="text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Grupo Secon</h1>
-                    <p className="text-sm text-slate-900 mt-1">Planes de Seguridad Privada</p>
+                    <p className="text-sm text-slate-900 mt-1">{t("auth.app_subtitle")}</p>
                 </div>
 
                 <div className="bg-slate-200 border border-slate-200 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
-                    <h2 className="text-lg font-semibold text-slate-900 mb-1">Crear cuenta</h2>
-                    <p className="text-sm text-slate-900 mb-6">Regístrate para acceder</p>
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">{t("auth.create_account")}</h2>
+                    <p className="text-sm text-slate-900 mb-6">{t("auth.register_subtitle")}</p>
 
                     <form onSubmit={submit} className="space-y-4">
                         {[
-                            { key: "name", label: "Nombre completo", type: "text", placeholder: "Tu nombre" },
-                            { key: "email", label: "Email", type: "email", placeholder: "tu@email.com" },
-                            { key: "password", label: "Contraseña", type: "password", placeholder: "Mínimo 8 caracteres" },
-                            { key: "password_confirmation", label: "Confirmar contraseña", type: "password", placeholder: "Repite la contraseña" },
+                            { key: "name", label: t("auth.full_name"), type: "text", placeholder: t("auth.full_name_placeholder") },
+                            { key: "email", label: t("auth.email"), type: "email", placeholder: t("auth.email_placeholder") },
+                            { key: "password", label: t("auth.password"), type: "password", placeholder: t("auth.password_min_8") },
+                            { key: "password_confirmation", label: t("auth.confirm_password"), type: "password", placeholder: t("auth.confirm_password_placeholder") },
                         ].map(({ key, label, type, placeholder }) => (
                             <div key={key}>
                                 <label className="text-xs font-medium text-slate-900 mb-1.5 block uppercase tracking-wide">{label}</label>
@@ -62,15 +63,15 @@ export default function Register() {
                             disabled={processing}
                             className="w-full bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 h-10 font-medium shadow-lg shadow-[#273887]/30 mt-2"
                         >
-                            {processing ? "Creando cuenta..." : <span className="flex items-center gap-2">Crear cuenta <ArrowRight size={16} /></span>}
+                            {processing ? t("auth.creating_account") : <span className="flex items-center gap-2">{t("auth.create_account")} <ArrowRight size={16} /></span>}
                         </RippleButton>
                     </form>
                 </div>
 
                 <p className="text-center text-sm text-slate-900 mt-5">
-                    ¿Ya tienes cuenta?{" "}
+                    {t("auth.has_account")}{" "}
                     <Link href="/login" className="text-[#208DCA] hover:text-[#208DCA]/80 font-medium transition-colors">
-                        Iniciar sesión
+                        {t("auth.login_link")}
                     </Link>
                 </p>
             </motion.div>
