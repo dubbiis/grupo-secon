@@ -20,6 +20,11 @@ class TcpdfInstance extends Fpdi
         $this->setPrintHeader(false);
         $this->setPrintFooter(true);
         $this->setFooterMargin(10);
+
+        // PDF 1.4 — máxima compatibilidad con Adobe Acrobat
+        $this->SetPDFVersion('1.4');
+        // Compresión compatible con PDF 1.4
+        $this->SetCompression(true);
     }
 
     public function setBackgroundTemplate(string $templatePath): void
