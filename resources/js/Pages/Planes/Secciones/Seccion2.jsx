@@ -145,7 +145,7 @@ function Timeline({ setupDays, eventDays, teardownDays, setupHorarios, eventHora
                                             {item.label}
                                         </span>
                                         <span className="text-xs text-slate-600 ml-2">
-                                            {formatDay(item.date, "es")}
+                                            {formatDay(item.date, t("common.lang_code"))}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1 text-xs text-slate-700 font-medium">
@@ -212,7 +212,7 @@ export default function Seccion2({ plan, section }) {
             .map((d) => {
                 const k = formatDateKey(d);
                 const h = horarios?.[k];
-                return h?.inicio ? `${formatDay(d, "es")}: ${h.inicio} - ${h.fin || "?"}` : null;
+                return h?.inicio ? `${formatDay(d, t("common.lang_code"))}: ${h.inicio} - ${h.fin || "?"}` : null;
             })
             .filter(Boolean)
             .join("\n");

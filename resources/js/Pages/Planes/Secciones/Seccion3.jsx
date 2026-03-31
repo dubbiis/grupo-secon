@@ -3,17 +3,17 @@ import SectionShell from "@/components/planes/SectionShell";
 import LoopItems from "@/components/planes/LoopItems";
 import { useTranslation } from "@/i18n";
 
-const FIELDS = [
-    { key: "nombre_espacio", label: "Nombre del espacio", placeholder: "Ej: Sala principal, Backstage, Zona VIP...", required: true, wide: true },
-    { key: "tipo_espacio", label: "Tipo de espacio", placeholder: "Ej: Recinto principal, Backstage, Zona VIP..." },
-    { key: "direccion", label: "Dirección", placeholder: "Dirección completa del espacio", wide: true },
-    { key: "telefono", label: "Teléfono", type: "tel", placeholder: "+34 000 000 000" },
-    { key: "email", label: "Email de contacto", type: "email", placeholder: "contacto@ejemplo.com" },
-    { key: "persona_contacto", label: "Persona de contacto", placeholder: "Nombre y cargo" },
-];
-
 export default function Seccion3({ plan, section, sections }) {
     const { t } = useTranslation();
+
+    const FIELDS = [
+        { key: "nombre_espacio", label: t("s3.space_name"), placeholder: t("s3.space_name_ph"), required: true, wide: true },
+        { key: "tipo_espacio", label: t("s3.space_type"), placeholder: t("s3.space_type_ph") },
+        { key: "direccion", label: t("s3.address"), placeholder: t("s3.address_ph"), wide: true },
+        { key: "telefono", label: t("s3.phone"), type: "tel", placeholder: t("s3.phone_ph") },
+        { key: "email", label: t("s3.email"), type: "email", placeholder: t("s3.email_ph") },
+        { key: "persona_contacto", label: t("s3.contact_person"), placeholder: t("s3.contact_person_ph") },
+    ];
 
     // Read section 1 data to pre-populate first space
     const sec1 = sections?.find((s) => s.section_number === 1);
@@ -51,7 +51,7 @@ export default function Seccion3({ plan, section, sections }) {
                 onChange={setItems}
                 fields={FIELDS}
                 addLabel={t("s3.add")}
-                itemLabel={(item) => item.nombre_espacio || item.tipo_espacio || "Espacio sin nombre"}
+                itemLabel={(item) => item.nombre_espacio || item.tipo_espacio || t("s3.unnamed_space")}
             />
         </SectionShell>
     );

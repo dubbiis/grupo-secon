@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DoorOpen, ImagePlus } from "lucide-react";
 
 
-function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded }) {
+function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded, t }) {
     const inputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
     const [localPreview, setLocalPreview] = useState(null);
@@ -56,11 +56,11 @@ function AccessPhotoUpload({ uuid, accessIdx, currentUrl, onUploaded }) {
                     </div>
                 </>
             ) : uploading ? (
-                <div className="text-xs text-[#208DCA] animate-pulse">Subiendo...</div>
+                <div className="text-xs text-[#208DCA] animate-pulse">{t("files.uploading")}</div>
             ) : (
                 <>
                     <ImagePlus size={18} className="text-slate-400 group-hover:text-[#208DCA]/50 transition-colors" />
-                    <span className="text-[10px] text-slate-400">Foto del acceso</span>
+                    <span className="text-[10px] text-slate-400">{t("s4.access_photo")}</span>
                 </>
             )}
             <input
@@ -129,7 +129,7 @@ export default function Seccion4({ plan, section }) {
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
             <div>
                 <label className="text-sm font-medium mb-1.5 block">{t("s4.accesses")}</label>
-                <Input type="number" {...field("num_accesos")} placeholder="Número de entradas/salidas" min={1} />
+                <Input type="number" {...field("num_accesos")} placeholder={t("s4.accesses_ph")} min={1} />
             </div>
 
             {/* Access detail cards */}
@@ -152,14 +152,14 @@ export default function Seccion4({ plan, section }) {
                                 <Input
                                     value={acceso.nombre}
                                     onChange={(e) => updateAcceso(i, "nombre", e.target.value)}
-                                    placeholder={`Nombre del acceso ${i + 1}`}
+                                    placeholder={t("s4.access_name_ph", { n: i + 1 })}
                                     className="text-sm font-medium"
                                 />
                             </div>
                             <Textarea
                                 value={acceso.descripcion}
                                 onChange={(e) => updateAcceso(i, "descripcion", e.target.value)}
-                                placeholder="Ubicación, tipo de público, controles de seguridad, ancho, señalización..."
+                                placeholder={t("s4.access_detail_ph")}
                                 rows={2}
                             />
                             <AccessPhotoUpload
@@ -167,13 +167,14 @@ export default function Seccion4({ plan, section }) {
                                 accessIdx={i}
                                 currentUrl={acceso.foto_url}
                                 onUploaded={(url) => updateAcceso(i, "foto_url", url)}
+                                t={t}
                             />
                         </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
 
-            {/* Acceso vehículos de emergencia */}
+            {/* Acceso vehiculos de emergencia */}
             <div>
                 <label className="text-sm font-medium mb-1.5 block">{t("s4.emergency_access")}</label>
                 <Textarea
@@ -183,7 +184,7 @@ export default function Seccion4({ plan, section }) {
                 />
             </div>
 
-            {/* Búsqueda automática de transporte */}
+            {/* Busqueda automatica de transporte */}
             <div className="space-y-3">
                 <label className="text-sm font-medium block">{t("s4.transport")}</label>
                 <PlacesPanel
@@ -198,12 +199,12 @@ export default function Seccion4({ plan, section }) {
                 <Textarea
                     ref={transportRef}
                     {...field("datos_transporte_googlemaps")}
-                    placeholder="Metro: L1 - Estación Plaza España (200m), L3 - Estación Sants (400m)&#10;Autobús: Líneas 9, 50, 56 - Parada Calle Mayor&#10;Renfe: Estación Sants (1.2km, 12min a pie)"
+                    placeholder={t("s4.transport_ph")}
                     rows={2}
                     style={{ minHeight: "3rem", overflow: "hidden" }}
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                    Rellenado automáticamente o escribe manualmente.
+                    {t("s4.auto_hint")}
                 </p>
             </div>
 
@@ -212,7 +213,7 @@ export default function Seccion4({ plan, section }) {
                 <Textarea
                     ref={parkingRef}
                     {...field("datos_parkings_googlemaps")}
-                    placeholder="Parking Arenas de Barcelona (150m, 800 plazas)&#10;Parking Pl. España (300m, 500 plazas)&#10;Zona regulada ORA en Calle de Lleida"
+                    placeholder={t("s4.parking_ph")}
                     rows={2}
                     style={{ minHeight: "3rem", overflow: "hidden" }}
                 />

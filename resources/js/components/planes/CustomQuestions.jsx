@@ -158,7 +158,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                             <span className="flex-1 text-xs font-medium text-slate-900">{q.question_text}</span>
                             <button
                                 onClick={() => toggleTemplate(q.id)}
-                                title={q.is_template ? "Quitar de plantilla" : "Añadir a plantilla (aparecerá en futuros planes)"}
+                                title={q.is_template ? t("questions.remove_template") : t("questions.add_template")}
                                 className={`p-1 rounded transition-all ${q.is_template ? "text-amber-400 hover:text-amber-300" : "text-white/15 hover:text-amber-400"}`}
                             >
                                 <Star size={13} fill={q.is_template ? "currentColor" : "none"} />
@@ -231,7 +231,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
 
                                 {availableQuestions.length === 0 && !canCreate && (
                                     <p className="px-3 py-3 text-[11px] text-slate-900 text-center">
-                                        {search ? "No se encontraron preguntas" : "No hay preguntas anteriores"}
+                                        {search ? t("questions.no_results") : t("questions.no_previous")}
                                     </p>
                                 )}
                             </div>
@@ -244,7 +244,7 @@ export default function CustomQuestions({ sectionNumber, customAnswers = {}, onC
                                     className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-[#208DCA] hover:bg-[#208DCA]/8 transition-colors border-t border-slate-200"
                                 >
                                     <Plus size={12} />
-                                    <span>Crear: "{search.trim()}"</span>
+                                    <span>{t("questions.create_new", { text: search.trim() })}</span>
                                 </button>
                             )}
                         </motion.div>

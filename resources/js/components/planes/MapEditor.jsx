@@ -13,6 +13,7 @@ import AddressAutocomplete from "@/components/planes/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/animate-ui/components/buttons/ripple";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
+import { useTranslation } from "@/i18n";
 
 // ── Herramientas ──────────────────────────────────────────────
 const TOOLS = [
@@ -229,6 +230,7 @@ const MapEditor = forwardRef(function MapEditor({
     eventAddress = "",
     planAddresses = [],
 }, ref) {
+    const { t } = useTranslation();
     const canvasRef = useRef(null);
     const bgRef = useRef(null);
     const iconBtnRef = useRef(null);
@@ -1020,7 +1022,7 @@ const MapEditor = forwardRef(function MapEditor({
                     <div className="p-4">
                         <img
                             src={savedPreviewUrl}
-                            alt="Imagen guardada"
+                            alt={t("map_editor.saved_image")}
                             className="w-full max-h-[400px] object-contain rounded-xl border border-slate-200 shadow-sm"
                         />
                     </div>
@@ -1090,7 +1092,7 @@ const MapEditor = forwardRef(function MapEditor({
                             />
                         ))}
                         <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
-                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent" title="Color personalizado" />
+                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent" title={t("map_editor.custom_color")} />
                     </div>
 
                     {/* Stroke widths — glass pill */}
@@ -1114,7 +1116,7 @@ const MapEditor = forwardRef(function MapEditor({
                                 animate={{ opacity: 1, scale: 1, x: 0 }}
                                 exit={{ opacity: 0, scale: 0.5, x: -10 }}
                                 onClick={() => setUseFill((v) => !v)}
-                                title="Relleno"
+                                title={t("map_editor.fill")}
                                 className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-all ${
                                     useFill ? "bg-[#208DCA]/15 border-[#208DCA]/30 text-[#208DCA] shadow-sm shadow-[#208DCA]/20" : "bg-white border-slate-300/50 text-slate-500 hover:text-slate-800"
                                 }`}
@@ -1246,7 +1248,7 @@ const MapEditor = forwardRef(function MapEditor({
                                 </motion.button>
                             )}
                         </AnimatePresence>
-                        <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title="Borrar todo"
+                        <motion.button whileHover={{ scale: 1.15, rotate: 90 }} whileTap={{ scale: 0.8 }} onClick={clearAll} disabled={elements.length === 0} title={t("map_editor.clear_all")}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-800 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 transition-all">
                             <X size={16} />
                         </motion.button>
@@ -1255,12 +1257,12 @@ const MapEditor = forwardRef(function MapEditor({
                     {/* View controls — glass pill */}
                     <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-xl bg-gradient-to-b from-white to-slate-100 border border-slate-300/50">
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                            onClick={() => setShowGrid((v) => !v)} title="Cuadrícula"
+                            onClick={() => setShowGrid((v) => !v)} title={t("map_editor.grid")}
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${showGrid ? "text-[#208DCA] bg-[#208DCA]/15 shadow-sm shadow-[#208DCA]/20" : "text-slate-800 hover:text-slate-900 hover:bg-white"}`}>
                             <Grid size={14} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
-                            onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title="Alejar"
+                            onClick={() => setZoom((z) => Math.max(0.3, z - 0.25))} title={t("map_editor.zoom_out")}
                             className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-800 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomOut size={14} />
                         </motion.button>
@@ -1270,7 +1272,7 @@ const MapEditor = forwardRef(function MapEditor({
                             {Math.round(zoom * 100)}%
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.85 }}
-                            onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Acercar"
+                            onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title={t("map_editor.zoom_in")}
                             className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-800 hover:text-slate-900 hover:bg-white transition-all">
                             <ZoomIn size={14} />
                         </motion.button>
@@ -1324,7 +1326,7 @@ const MapEditor = forwardRef(function MapEditor({
                                                 ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50"
                                                 : "bg-white/80 text-slate-600 hover:bg-white hover:shadow-md"
                                         }`}
-                                        title="Capturar mapa como imagen"
+                                        title={t("map_editor.capture_map")}
                                     >
                                         <Camera size={12} />
                                         Captura
@@ -1392,7 +1394,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     }}
                                     biasLat={routeACoords?.lat}
                                     biasLng={routeACoords?.lng}
-                                    placeholder="Origen"
+                                    placeholder={t("map_editor.origin")}
                                     className="flex-1 min-w-0"
                                 />
                                 <AddressAutocomplete
@@ -1411,7 +1413,7 @@ const MapEditor = forwardRef(function MapEditor({
                                     }}
                                     biasLat={routeACoords?.lat || routeBCoords?.lat}
                                     biasLng={routeACoords?.lng || routeBCoords?.lng}
-                                    placeholder="Destino"
+                                    placeholder={t("map_editor.destination")}
                                     className="flex-1 min-w-0"
                                 />
                                 {mapStatus === "loading" && (
@@ -1425,7 +1427,7 @@ const MapEditor = forwardRef(function MapEditor({
                         {showMap && planAddresses.length > 0 && (
                             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                                 onClick={() => setShowAddressPanel((v) => !v)}
-                                title="Direcciones del plan"
+                                title={t("map_editor.plan_addresses")}
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
                                     showAddressPanel ? "bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/30 shadow-sm shadow-[#208DCA]/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
                                 }`}
@@ -1437,7 +1439,7 @@ const MapEditor = forwardRef(function MapEditor({
                         {/* Fullscreen toggle */}
                         <motion.button whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.9, rotate: -5 }}
                             onClick={() => setFullscreen((v) => !v)}
-                            title={fullscreen ? "Salir (Esc)" : "Pantalla completa"}
+                            title={fullscreen ? t("map_editor.exit_fullscreen") : t("map_editor.fullscreen")}
                             className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
                                 fullscreen ? "bg-gradient-to-br from-purple-500/20 to-purple-600/15 text-purple-500 shadow-sm shadow-purple-500/20" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"
                             }`}
@@ -1464,7 +1466,7 @@ const MapEditor = forwardRef(function MapEditor({
                                         </div>
                                     )}
                                     <motion.button whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.85 }}
-                                        onClick={copyToClipboard} title="Copiar al portapapeles"
+                                        onClick={copyToClipboard} title={t("map_editor.copy_clipboard")}
                                         className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${copiedMsg ? "bg-green-100 text-green-600 shadow-sm shadow-green-200/50" : "bg-white border border-slate-300/50 text-slate-500 hover:text-slate-900 hover:shadow-md"}`}>
                                         {copiedMsg ? <Check size={14} /> : <Copy size={14} />}
                                     </motion.button>
@@ -1784,7 +1786,7 @@ const MapEditor = forwardRef(function MapEditor({
                         <button
                             onClick={() => { setHasBg(false); bgRef.current = null; setElements([]); setSelectedIdx(null); }}
                             className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-white/90 border border-slate-200 text-slate-900 hover:text-slate-900 flex items-center justify-center transition-colors"
-                            title="Cambiar imagen"
+                            title={t("map_editor.change_image")}
                         >
                             <X size={12} />
                         </button>
@@ -1815,10 +1817,10 @@ const MapEditor = forwardRef(function MapEditor({
                         onClick={(e) => e.stopPropagation()}
                     >
                         {[
-                            { label: "Eliminar",        action: () => { deleteSelected(); setContextMenu(null); }, cls: "text-red-400 hover:bg-red-500/10" },
-                            { label: "Duplicar",         action: () => { duplicateElement(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
-                            { label: "Traer al frente",  action: () => { bringToFront(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
-                            { label: "Enviar al fondo",  action: () => { sendToBack(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
+                            { label: t("map_editor.context_delete"),      action: () => { deleteSelected(); setContextMenu(null); }, cls: "text-red-400 hover:bg-red-500/10" },
+                            { label: t("map_editor.context_duplicate"),   action: () => { duplicateElement(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
+                            { label: t("map_editor.context_bring_front"), action: () => { bringToFront(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
+                            { label: t("map_editor.context_send_back"),   action: () => { sendToBack(contextMenu.elIdx); setContextMenu(null); }, cls: "text-slate-900 hover:bg-slate-200" },
                         ].map(({ label, action, cls }) => (
                             <button key={label} onClick={action}
                                 className={`w-full text-left text-xs px-3 py-2 transition-colors ${cls}`}>

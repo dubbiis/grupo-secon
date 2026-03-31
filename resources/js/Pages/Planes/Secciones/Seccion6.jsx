@@ -6,24 +6,17 @@ import SectionShell from "@/components/planes/SectionShell";
 import { Plus, Trash2, ChevronDown, User, ImagePlus, Sparkles, Loader2 } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
-const AMBITOS_GEOGRAFICOS = [
-    "Local (ciudad)",
-    "Regional",
-    "Nacional",
-    "Internacional",
-];
+const GEO_SCOPE_KEYS = ["local", "regional", "national", "international"];
 
-// ── Inline VIP photo uploader ──────────────────────────────
+// -- Inline VIP photo uploader --
 function VipPhotoUpload({ vip, idx, uuid, onUploaded }) {
     const inputRef = useRef(null);
     const { t } = useTranslation();
     const [uploading,     setUploading]     = useState(false);
-    const [localPreview,  setLocalPreview]  = useState(null); // base64 inmediato
+    const [localPreview,  setLocalPreview]  = useState(null);
 
     const upload = async (file) => {
         if (!file) return;
-
-        // Mostrar preview local de inmediato (sin esperar al servidor)
         const reader = new FileReader();
         reader.onload = (e) => setLocalPreview(e.target.result);
         reader.readAsDataURL(file);
@@ -42,7 +35,7 @@ function VipPhotoUpload({ vip, idx, uuid, onUploaded }) {
             if (res.ok) {
                 const data = await res.json();
                 onUploaded({ foto_id: data.id, foto_url: data.url });
-                setLocalPreview(null); // usar URL del servidor a partir de ahora
+                setLocalPreview(null);
             }
         } finally {
             setUploading(false);
@@ -55,7 +48,7 @@ function VipPhotoUpload({ vip, idx, uuid, onUploaded }) {
         <div
             className="w-20 h-24 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden flex-shrink-0"
             onClick={() => inputRef.current?.click()}
-            title="Foto del VIP (opcional)"
+            title={t("s6.vip_photo_title")}
         >
             {displayUrl ? (
                 <img src={displayUrl} alt="foto" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
@@ -83,9 +76,10 @@ function VipPhotoUpload({ vip, idx, uuid, onUploaded }) {
     );
 }
 
-// ── VIP item card ──────────────────────────────────────────
+// -- VIP item card --
 function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
     const [generating, setGenerating] = useState(false);
+    const { t } = useTranslation();
 
     const generateDescription = async () => {
         if (!vip.nombre?.trim() || generating) return;
@@ -142,7 +136,6 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                 className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none transition-colors ${isOpen ? "bg-slate-200" : "hover:bg-slate-200"}`}
                 onClick={onToggle}
             >
-                {/* Avatar thumbnail */}
                 <div className="w-7 h-7 rounded-lg bg-slate-200 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {vip.foto_url
                         ? <img src={vip.foto_url} alt="" className="w-full h-full object-cover" />
@@ -187,36 +180,36 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
                             <div className="flex-1 grid grid-cols-1 gap-3">
                                 <div>
                                     <label className="text-[10px] font-semibold text-slate-900 mb-1 block uppercase tracking-wide">
-                                        Nombre / Artista / Personalidad <span className="text-[#208DCA]">*</span>
+                                        {t("s6.vip_name")} <span className="text-[#208DCA]">*</span>
                                     </label>
                                     <Input
                                         value={vip.nombre ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...vip, nombre: e.target.value })}
-                                        placeholder="Nombre completo"
+                                        placeholder={t("s6.full_name")}
                                     />
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
                                         <label className="text-[10px] font-semibold text-slate-900 uppercase tracking-wide">
-                                            Perfil y consideraciones de seguridad
+                                            {t("s6.security_profile")}
                                         </label>
                                         <button
                                             type="button"
                                             onClick={generateDescription}
                                             disabled={generating || !vip.nombre?.trim()}
                                             className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-lg bg-[#208DCA]/12 border border-[#208DCA]/25 text-[#208DCA] hover:bg-[#208DCA]/22 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                            title={!vip.nombre?.trim() ? "Escribe el nombre primero" : "Generar perfil con IA"}
+                                            title={!vip.nombre?.trim() ? t("s6.write_name_first") : t("s6.generate_ai")}
                                         >
                                             {generating
-                                                ? <><Loader2 size={9} className="animate-spin" /> Generando…</>
-                                                : <><Sparkles size={9} /> Generar con IA</>
+                                                ? <><Loader2 size={9} className="animate-spin" /> {t("s6.generating")}</>
+                                                : <><Sparkles size={9} /> {t("s6.generate_with_ai")}</>
                                             }
                                         </button>
                                     </div>
                                     <Textarea
                                         value={vip.descripcion ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...vip, descripcion: e.target.value })}
-                                        placeholder="Describe el perfil y qué implica su presencia para la seguridad..."
+                                        placeholder={t("s6.vip_desc_ph")}
                                         rows={3}
                                     />
                                 </div>
@@ -229,9 +222,12 @@ function VipCard({ vip, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
     );
 }
 
-// ── Main section ───────────────────────────────────────────
+// -- Main section --
 export default function Seccion6({ plan, section, files = [] }) {
     const { t } = useTranslation();
+
+    const AMBITOS_GEOGRAFICOS = GEO_SCOPE_KEYS.map((k) => ({ key: k, label: t(`s6_geo_scopes.${k}`) }));
+
     const [form, setForm] = useState({
         perfil_publico: "",
         rango_edad: "",
@@ -242,7 +238,6 @@ export default function Seccion6({ plan, section, files = [] }) {
     const [vips, setVips] = useState(() => {
         try {
             const parsed = JSON.parse(section.form_data?.vips_json ?? "[]");
-            // Resolve foto_url from files (in case URLs changed)
             return parsed.map((vip) => {
                 if (vip.foto_id) {
                     const file = files.find((f) => f.id === vip.foto_id);
@@ -295,7 +290,7 @@ export default function Seccion6({ plan, section, files = [] }) {
 
                 <div>
                     <label className="text-sm font-medium mb-1.5 block">{t("forms.age_range")}</label>
-                    <Input {...field("rango_edad")} placeholder="Ej: 18-45 años, mayoritariamente 25-35" />
+                    <Input {...field("rango_edad")} placeholder={t("s6.age_range_ph")} />
                 </div>
 
                 <div className="md:col-span-2">
@@ -306,7 +301,7 @@ export default function Seccion6({ plan, section, files = [] }) {
                         className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#208DCA]/50 focus-visible:border-[#208DCA]/40"
                     >
                         <option value="">{t("forms.select")}</option>
-                        {AMBITOS_GEOGRAFICOS.map((a) => <option key={a} value={a}>{a}</option>)}
+                        {AMBITOS_GEOGRAFICOS.map((a) => <option key={a.key} value={a.label}>{a.label}</option>)}
                     </select>
                 </div>
             </div>
@@ -316,11 +311,11 @@ export default function Seccion6({ plan, section, files = [] }) {
                 <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium">{t("s6.vips_title")}</label>
                     {vips.length > 0 && (
-                        <span className="text-xs text-slate-900">{vips.length} registrado{vips.length !== 1 ? "s" : ""}</span>
+                        <span className="text-xs text-slate-900">{vips.length} {t("s6.registered")}</span>
                     )}
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                    Añade cada artista, VIP o personalidad relevante. Puedes añadir su foto para el plan.
+                    {t("s6.vips_desc")}
                 </p>
 
                 <div className="space-y-2">
@@ -347,7 +342,7 @@ export default function Seccion6({ plan, section, files = [] }) {
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-slate-200 text-slate-900 hover:text-slate-900 hover:border-[#208DCA]/40 hover:bg-[#208DCA]/5 transition-all text-xs font-medium"
                     >
                         <Plus size={13} />
-                        Añadir artista / VIP
+                        {t("s6.add_vip")}
                     </motion.button>
                 </div>
             </div>

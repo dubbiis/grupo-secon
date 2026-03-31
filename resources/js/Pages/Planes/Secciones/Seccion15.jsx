@@ -62,18 +62,18 @@ export default function Seccion15({ plan, section, files = [] }) {
             <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-6 shadow-xl shadow-slate-200/50">
 
                 <p className="text-sm text-slate-500">
-                    Configura el título y la imagen de portada del PDF final. El documento se genera con la tipografía y diseño corporativo de Grupo Secon.
+                    {t("section15.pdf_description")}
                 </p>
 
                 {/* PDF Title */}
                 <div>
                     <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
-                        Título del PDF
+                        {t("section15.pdf_title")}
                     </label>
                     <Input
                         value={form.titulo_pdf}
                         onChange={(e) => setForm((prev) => ({ ...prev, titulo_pdf: e.target.value }))}
-                        placeholder="Nombre del evento o título del plan"
+                        placeholder={t("section15.pdf_title_ph")}
                     />
                 </div>
 
@@ -81,12 +81,12 @@ export default function Seccion15({ plan, section, files = [] }) {
                 <div>
                     <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
                         <Globe size={11} className="inline mr-1 -mt-0.5" />
-                        Idioma del documento
+                        {t("section15.doc_language")}
                     </label>
                     <div className="flex items-center gap-2">
                         {[
-                            { value: "es", label: "Español" },
-                            { value: "en", label: "English" },
+                            { value: "es", label: t("section15.lang_es") },
+                            { value: "en", label: t("section15.lang_en") },
                         ].map(({ value, label }) => (
                             <motion.button
                                 key={value}
@@ -108,8 +108,8 @@ export default function Seccion15({ plan, section, files = [] }) {
                 {/* Cover image */}
                 <div>
                     <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
-                        Imagen de portada
-                        <span className="text-slate-400 normal-case tracking-normal font-normal ml-1">(opcional)</span>
+                        {t("section15.cover_image")}
+                        <span className="text-slate-400 normal-case tracking-normal font-normal ml-1">({t("common.optional")})</span>
                     </label>
                     <FileUpload
                         uuid={plan.uuid}
@@ -118,8 +118,8 @@ export default function Seccion15({ plan, section, files = [] }) {
                         accept="image/*"
                         multiple={false}
                         existingFiles={portadaFiles}
-                        label="Subir imagen de portada"
-                        description="JPG o PNG — se mostrará en la primera página del documento"
+                        label={t("section15.cover_label")}
+                        description={t("section15.cover_desc")}
                     />
                 </div>
             </div>
@@ -145,7 +145,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-600 border border-slate-200 text-sm font-medium hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all"
                         >
                             <Eye size={14} />
-                            Previsualizar
+                            {t("common.preview")}
                         </motion.a>
                     </Shine>
                     <Shine enableOnHover color="white" opacity={0.25} duration={500} asChild>
@@ -157,7 +157,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                             className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white text-sm font-bold shadow-lg shadow-[#208DCA]/30 hover:shadow-xl hover:shadow-[#208DCA]/40 transition-all"
                         >
                             <FileDown size={14} />
-                            Descargar PDF
+                            {t("common.download_pdf")}
                         </motion.a>
                     </Shine>
                 </div>

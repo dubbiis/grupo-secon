@@ -4,18 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { useTranslation } from "@/i18n";
 
-const GROUPS = {
-    transporte: [
-        { key: "metro_tren", label: "Metro / Tren / Tranvía", emoji: "🚇" },
-        { key: "autobus",    label: "Autobús",                emoji: "🚌" },
-        { key: "parking",    label: "Parkings",               emoji: "🅿️" },
-    ],
-    emergencia: [
-        { key: "hospitales", label: "Hospitales / Urgencias", emoji: "🏥" },
-        { key: "policia",    label: "Policía",                emoji: "👮" },
-    ],
-};
-
 const RADIUS_OPTIONS = [
     { value: 1000,  label: "1 km" },
     { value: 2000,  label: "2 km" },
@@ -69,16 +57,30 @@ function buildOutputFields(type, data, checked) {
     };
 }
 
+function getGroups(type, t) {
+    if (type === "transporte") {
+        return [
+            { key: "metro_tren", label: t("places.metro_train"), emoji: "🚇" },
+            { key: "autobus",    label: t("places.bus"),         emoji: "🚌" },
+            { key: "parking",    label: t("places.parkings"),    emoji: "🅿️" },
+        ];
+    }
+    return [
+        { key: "hospitales", label: t("places.hospitals_urgencies"), emoji: "🏥" },
+        { key: "policia",    label: t("places.police"),              emoji: "👮" },
+    ];
+}
+
 export default function PlacesPanel({ uuid, type, onResult }) {
     const { t } = useTranslation();
-    const [status,      setStatus]      = useState("idle"); // idle | loading | results | error
+    const [status,      setStatus]      = useState("idle");
     const [data,        setData]        = useState(null);
     const [checked,     setChecked]     = useState({});
     const [addressUsed, setAddressUsed] = useState("");
     const [errorMsg,    setErrorMsg]    = useState("");
     const [radius,      setRadius]      = useState(DEFAULT_RADIUS[type] ?? 5000);
 
-    const groups = GROUPS[type] ?? [];
+    const groups = getGroups(type, t);
 
     const search = async (skipCache = false) => {
         setStatus("loading");
@@ -101,7 +103,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 let merged = {};
                 let addr = "";
 
-                // 1. Transit (metro + bus)
                 try {
                     const r1 = await fetch(`/planes/${uuid}/maps/transit`, { method: "POST", headers, body });
                     if (r1.ok) {
@@ -115,7 +116,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     }
                 } catch {}
 
-                // 2. Parking
                 try {
                     const r2 = await fetch(`/planes/${uuid}/maps/parking`, { method: "POST", headers, body });
                     if (r2.ok) {
@@ -128,15 +128,13 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 } catch {}
 
                 if (!merged.metro_tren?.length && !merged.autobus?.length && !merged.parking?.length) {
-                    setErrorMsg("No se encontraron datos de transporte en esta zona. Prueba a ampliar el radio.");
+                    setErrorMsg(t("places.no_transport"));
                     setStatus("error");
                 }
             } else {
-                // Emergencia — split into 2 requests
                 let merged = {};
                 let addr = "";
 
-                // 1. Hospitales
                 try {
                     const r1 = await fetch(`/planes/${uuid}/maps/hospitales`, { method: "POST", headers, body });
                     if (r1.ok) {
@@ -150,7 +148,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     }
                 } catch {}
 
-                // 2. Policía
                 try {
                     const r2 = await fetch(`/planes/${uuid}/maps/policia`, { method: "POST", headers, body });
                     if (r2.ok) {
@@ -163,12 +160,12 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 } catch {}
 
                 if (!merged.hospitales?.length && !merged.policia?.length) {
-                    setErrorMsg("No se encontraron recursos de emergencia en esta zona. Prueba a ampliar el radio.");
+                    setErrorMsg(t("places.no_emergency"));
                     setStatus("error");
                 }
             }
         } catch {
-            setErrorMsg("No se pudo conectar. Los campos manuales siguen disponibles.");
+            setErrorMsg(t("places.connection_error"));
             setStatus("error");
         }
     };
@@ -186,7 +183,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
     return (
         <div className="rounded-xl border border-slate-200 bg-slate-200 overflow-hidden">
-            {/* ── Header ── */}
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="flex items-center gap-2 min-w-0">
                     <MapPin size={13} className="text-[#208DCA] flex-shrink-0" />
@@ -197,7 +194,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
-                    {/* Radio selector */}
                     <div className="relative">
                         <select
                             value={radius}
@@ -219,12 +215,12 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-[#208DCA]/15 border border-[#208DCA]/30 text-[#208DCA] hover:bg-[#208DCA]/25 transition-all"
                         >
                             <Search size={11} />
-                            Buscar cerca del evento
+                            {t("places.search_nearby")}
                         </button>
                     ) : status === "loading" ? (
                         <div className="flex items-center gap-1.5 text-xs text-slate-900">
                             <Loader2 size={12} className="animate-spin" />
-                            Buscando…
+                            {t("places.searching")}
                         </div>
                     ) : (
                         <button
@@ -232,14 +228,14 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                             className="flex items-center gap-1 text-xs text-slate-900 hover:text-slate-900 transition-colors"
                         >
                             <RefreshCw size={11} />
-                            Volver a buscar
+                            {t("places.retry")}
                         </button>
                     )}
                 </div>
             </div>
 
             <AnimatePresence mode="wait">
-                {/* ── Error ── */}
+                {/* Error */}
                 {status === "error" && (
                     <motion.div
                         key="error"
@@ -253,7 +249,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                     </motion.div>
                 )}
 
-                {/* ── Results ── */}
+                {/* Results */}
                 {status === "results" && data && (
                     <motion.div
                         key="results"
@@ -297,7 +293,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                                                                 : "bg-white border-slate-200/80 hover:border-slate-300"
                                                         }`}
                                                     >
-                                                        {/* Check indicator */}
                                                         <motion.div
                                                             className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                                                                 isChecked
@@ -330,7 +325,6 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                                                             )}
                                                         </div>
 
-                                                        {/* Selected glow */}
                                                         {isChecked && (
                                                             <motion.div
                                                                 initial={{ opacity: 0 }}
@@ -349,11 +343,11 @@ export default function PlacesPanel({ uuid, type, onResult }) {
 
                         {totalItems === 0 && (
                             <p className="px-4 py-6 text-sm text-slate-400 text-center">
-                                No se encontraron lugares en este radio. Prueba a ampliarlo.
+                                {t("places.no_places_radius")}
                             </p>
                         )}
 
-                        {/* ── Confirm ── */}
+                        {/* Confirm */}
                         {totalItems > 0 && (
                             <div className="px-4 py-4">
                                 <Shine enableOnHover color="white" opacity={0.3} duration={500} asChild>
@@ -364,7 +358,7 @@ export default function PlacesPanel({ uuid, type, onResult }) {
                                         className="w-full flex items-center justify-center gap-2.5 text-sm py-3.5 rounded-2xl bg-gradient-to-r from-[#253C87] to-[#208DCA] text-white font-bold shadow-xl shadow-[#208DCA]/30 hover:shadow-2xl transition-all"
                                     >
                                         <Check size={16} strokeWidth={3} />
-                                        Usar datos seleccionados
+                                        {t("places.use_selected")}
                                     </motion.button>
                                 </Shine>
                             </div>

@@ -22,16 +22,15 @@ export default function Seccion14({ plan, section, files = [] }) {
         } catch { return []; }
     });
 
-    // Build readable summary for AI
     const anexosResumen = items.length > 0
         ? items.map((a, i) => {
             const itemFiles = files.filter((f) => f.file_category === `anexo_${a.id}`);
             const fileInfo = itemFiles.length > 0
-                ? `(${itemFiles.length} archivo${itemFiles.length > 1 ? "s" : ""}: ${itemFiles.map((f) => f.original_name).join(", ")})`
-                : "(sin archivo adjunto)";
-            return `${i + 1}. ${a.nombre || "Sin nombre"}${a.descripcion ? ` — ${a.descripcion}` : ""} ${fileInfo}`;
+                ? `(${itemFiles.length} ${itemFiles.length > 1 ? t("common.files") : t("common.file")}: ${itemFiles.map((f) => f.original_name).join(", ")})`
+                : `(${t("s14.no_file")})`;
+            return `${i + 1}. ${a.nombre || t("common.unnamed")}${a.descripcion ? ` — ${a.descripcion}` : ""} ${fileInfo}`;
         }).join("\n")
-        : "No se han añadido anexos todavía.";
+        : "";
 
     const formData = {
         anexos_json: JSON.stringify(items),
@@ -58,7 +57,7 @@ export default function Seccion14({ plan, section, files = [] }) {
     return (
         <SectionShell plan={plan} section={section} formData={formData} onFormChange={() => {}}>
             <p className="text-sm text-slate-500">
-                Lista y sube los documentos que se adjuntan al plan de seguridad como anexos.
+                {t("s14.desc")}
             </p>
 
             <div className="space-y-2">
@@ -87,11 +86,11 @@ export default function Seccion14({ plan, section, files = [] }) {
                                         <Paperclip size={13} className={hasFile ? "text-[#208DCA]" : "text-slate-400"} />
                                     </div>
                                     <span className="flex-1 text-xs font-medium text-slate-800 truncate">
-                                        {hasName ? item.nombre : `Anexo ${i + 1}`}
+                                        {hasName ? item.nombre : t("s14.annex_n", { n: i + 1 })}
                                     </span>
                                     {hasFile && (
                                         <span className="text-[10px] font-medium text-[#208DCA] bg-[#208DCA]/10 px-2 py-0.5 rounded-full">
-                                            {itemFiles.length} archivo{itemFiles.length > 1 ? "s" : ""}
+                                            {itemFiles.length} {itemFiles.length > 1 ? t("common.files") : t("common.file")}
                                         </span>
                                     )}
                                     <motion.button
@@ -125,27 +124,27 @@ export default function Seccion14({ plan, section, files = [] }) {
                                             <div className="p-4 space-y-3 border-t border-slate-100">
                                                 <div>
                                                     <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
-                                                        Nombre del anexo <span className="text-[#208DCA]">*</span>
+                                                        {t("s14.annex_name")} <span className="text-[#208DCA]">*</span>
                                                     </label>
                                                     <Input
                                                         value={item.nombre}
                                                         onChange={(e) => updateItem(i, "nombre", e.target.value)}
-                                                        placeholder="Ej: Contrato de servicios, Licencia municipal, Seguro de responsabilidad..."
+                                                        placeholder={t("s14.annex_name_ph")}
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">
-                                                        Descripción <span className="text-slate-400 normal-case tracking-normal font-normal">(opcional)</span>
+                                                        {t("s14.annex_desc")} <span className="text-slate-400 normal-case tracking-normal font-normal">({t("common.optional")})</span>
                                                     </label>
                                                     <Textarea
                                                         value={item.descripcion}
                                                         onChange={(e) => updateItem(i, "descripcion", e.target.value)}
-                                                        placeholder="Breve descripción del documento adjunto..."
+                                                        placeholder={t("s14.annex_desc_ph")}
                                                         rows={2}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Archivo</label>
+                                                    <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">{t("s14.annex_file")}</label>
                                                     <FileUpload
                                                         uuid={plan.uuid}
                                                         sectionNumber={14}
@@ -153,8 +152,8 @@ export default function Seccion14({ plan, section, files = [] }) {
                                                         accept="*"
                                                         multiple
                                                         existingFiles={itemFiles}
-                                                        label="Subir documento"
-                                                        description="PDF, Word, Excel u otros formatos"
+                                                        label={t("s14.upload_doc")}
+                                                        description={t("s14.upload_doc_desc")}
                                                     />
                                                 </div>
                                             </div>

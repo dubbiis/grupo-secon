@@ -8,7 +8,7 @@ import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 import { Map } from "lucide-react";
 import { useTranslation } from "@/i18n";
 
-/** Parse "Nombre (dist): Dirección. Tel: ..." lines into { label, address } */
+/** Parse "Nombre (dist): Direccion. Tel: ..." lines into { label, address } */
 function parseResourceLines(text, prefix) {
     if (!text) return [];
     return text.split("\n").reduce((acc, line) => {
@@ -51,9 +51,9 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
         <GoogleMapsProvider>
         <SectionShell plan={plan} section={section} formData={form} onFormChange={setForm}>
 
-            {/* ── Búsqueda automática de emergencias ── */}
+            {/* Busqueda automatica de emergencias */}
             <div className="space-y-3">
-                <label className="text-sm font-medium block">Recursos de emergencia cercanos</label>
+                <label className="text-sm font-medium block">{t("s5.emergency")}</label>
                 <PlacesPanel
                     uuid={plan.uuid}
                     type="emergencia"
@@ -69,7 +69,7 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                     rows={5}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                    Rellenado automáticamente o escribe manualmente. Nombre, distancia, dirección y teléfono.
+                    {t("s5.hospitals_hint")}
                 </p>
             </div>
 
@@ -77,15 +77,15 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                 <label className="text-sm font-medium mb-1.5 block">{t("s5.police")}</label>
                 <Textarea
                     {...field("comisarias_reales")}
-                    placeholder={"Comisaría Policía Nacional (0.5km, 5min): Carrer de Rosselló 65, 091\nComisaría Policía Local (0.8km): Carrer de Nou de la Rambla 76-78\nCuartel Guardia Civil (2.1km): Carrer de Provença 337, 062"}
+                    placeholder={"Comisaria Policia Nacional (0.5km, 5min): Carrer de Rossello 65, 091\nComisaria Policia Local (0.8km): Carrer de Nou de la Rambla 76-78\nCuartel Guardia Civil (2.1km): Carrer de Provenca 337, 062"}
                     rows={4}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                    Rellenado automáticamente o escribe manualmente. Policía Nacional, Local y Guardia Civil.
+                    {t("s5.police_hint")}
                 </p>
             </div>
 
-            {/* ── Map editor ── */}
+            {/* Map editor */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <label className="text-sm font-medium">{t("s5.route_map")}</label>
@@ -98,7 +98,7 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                         }`}
                     >
                         <Map size={12} />
-                        {showMapEditor ? "Cerrar editor" : "Abrir editor de mapas"}
+                        {showMapEditor ? t("s5.close_editor") : t("s5.open_editor")}
                     </button>
                 </div>
 
@@ -122,8 +122,8 @@ export default function Seccion5({ plan, section, files = [], eventAddress = "",
                     accept="image/*"
                     multiple
                     existingFiles={mapFiles}
-                    label="O sube una imagen de rutas"
-                    description="PNG, JPG o PDF con la ubicación de recursos de emergencia"
+                    label={t("s5.upload_routes")}
+                    description={t("s5.upload_routes_desc")}
                 />
             </div>
         </SectionShell>

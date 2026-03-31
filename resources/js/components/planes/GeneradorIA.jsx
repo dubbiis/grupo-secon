@@ -114,7 +114,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                         className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 shadow-lg shadow-[#273887]/25 hover:shadow-[#273887]/40 hover:opacity-90"
                     >
                         <Zap size={15} />
-                        Generar con IA
+                        {t("ai.generate")}
                     </RippleButton>
                 </motion.div>
             )}
@@ -170,7 +170,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-purple-500/15 text-purple-400 border border-purple-500/25 hover:bg-purple-500/25 hover:border-purple-500/40 hover:shadow-md hover:shadow-purple-500/10"
                                         >
                                             <RefreshCw size={12} />
-                                            Regenerar
+                                            {t("ai.regenerate")}
                                         </button>
                                     </Shine>
                                 )}
@@ -234,7 +234,7 @@ export default function GeneradorIA({ uuid, section, formData, initialText, onTe
                                                 <Textarea
                                                     value={instrucciones}
                                                     onChange={(e) => setInstrucciones(e.target.value)}
-                                                    placeholder="Ej: Cambia el número de asistentes a 5.000, añade información sobre accesibilidad..."
+                                                    placeholder={t("ai.changes_placeholder")}
                                                     rows={3}
                                                 />
                                                 <RippleButton

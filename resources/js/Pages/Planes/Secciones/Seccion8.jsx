@@ -43,7 +43,6 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
         setPlanos((prev) => prev.map((p, idx) => idx === i ? { ...p, [key]: val } : p));
     };
 
-    // Legacy files uploaded before per-item system
     const legacyFiles = files.filter((f) => f.file_category === "plano");
 
     return (
@@ -75,7 +74,7 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                     }`}
                 >
                     <Upload size={12} />
-                    Subir planos
+                    {t("s8.upload_plans")}
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.97 }}
@@ -87,7 +86,7 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                     }`}
                 >
                     <Map size={12} />
-                    Editor de mapas
+                    {t("s8.map_editor")}
                 </motion.button>
             </div>
 
@@ -128,11 +127,11 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                                             <FileImage size={13} className={hasFile ? "text-[#208DCA]" : "text-slate-400"} />
                                         </div>
                                         <span className="flex-1 text-xs font-medium text-slate-800 truncate">
-                                            {plano.nombre || `Plano ${i + 1}`}
+                                            {plano.nombre || t("s8.plan_n", { n: i + 1 })}
                                         </span>
                                         {hasFile && (
                                             <span className="text-[10px] font-medium text-[#208DCA] bg-[#208DCA]/10 px-2 py-0.5 rounded-full">
-                                                {planoFiles.length} archivo{planoFiles.length > 1 ? "s" : ""}
+                                                {planoFiles.length} {planoFiles.length > 1 ? t("common.files") : t("common.file")}
                                             </span>
                                         )}
                                         {planos.length > 1 && (
@@ -167,24 +166,24 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                                             >
                                                 <div className="p-4 space-y-3 border-t border-slate-100">
                                                     <div>
-                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Nombre del plano</label>
+                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">{t("s8.plan_name")}</label>
                                                         <Input
                                                             value={plano.nombre}
                                                             onChange={(e) => updatePlano(i, "nombre", e.target.value)}
-                                                            placeholder="Ej: Planta baja, Zona VIP, Plano de evacuación..."
+                                                            placeholder={t("s8.plan_name_ph")}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Descripción <span className="text-slate-400 normal-case tracking-normal font-normal">(opcional)</span></label>
+                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">{t("s8.plan_desc")} <span className="text-slate-400 normal-case tracking-normal font-normal">({t("common.optional")})</span></label>
                                                         <Textarea
                                                             value={plano.descripcion}
                                                             onChange={(e) => updatePlano(i, "descripcion", e.target.value)}
-                                                            placeholder="Qué muestra este plano, zonas destacadas, notas para el lector..."
+                                                            placeholder={t("s8.plan_desc_ph")}
                                                             rows={2}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Archivo</label>
+                                                        <label className="text-[10px] font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">{t("s8.plan_file")}</label>
                                                         <FileUpload
                                                             uuid={plan.uuid}
                                                             sectionNumber={8}
@@ -192,8 +191,8 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                                                             accept="image/*,application/pdf"
                                                             multiple
                                                             existingFiles={planoFiles}
-                                                            label="Subir plano"
-                                                            description="PNG, JPG o PDF — se incluirá en el plan de seguridad"
+                                                            label={t("s8.upload_plan_file")}
+                                                            description={t("s8.upload_plan_desc")}
                                                         />
                                                     </div>
                                                 </div>
@@ -214,7 +213,7 @@ export default function Seccion8({ plan, section, files = [], eventAddress = "",
                             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-200 text-slate-500 hover:text-[#208DCA] hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3 transition-all text-xs font-medium"
                         >
                             <Plus size={13} />
-                            Añadir plano
+                            {t("s8.add_plan")}
                         </motion.button>
                     </Shine>
                 </div>

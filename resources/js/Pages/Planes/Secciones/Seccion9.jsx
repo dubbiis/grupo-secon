@@ -11,7 +11,7 @@ import * as XLSX from "xlsx";
 import { useTranslation } from "@/i18n";
 
 const FIELDS = ["dia", "nombre", "inicio", "fin", "cantidad", "categoria", "horas"];
-const LABELS = { dia: "Día", nombre: "Nombre / Posición", inicio: "Inicio", fin: "Fin", cantidad: "Nº", categoria: "Categoría", horas: "Horas" };
+// LABELS removed - now using t() keys directly
 
 const GUARD_TYPES = ["Guard", "Guard*", "CPO", "CPO*", "Team Leader", "Team Leader*", "SSIAP1", "SSIAP2", "SSIAP3", "Transport"];
 
@@ -182,6 +182,7 @@ function calcStaff(rows) {
 
 /** Draggable row component */
 function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
+    const { t } = useTranslation();
     const dragControls = useDragControls();
     return (
         <Reorder.Item
@@ -236,7 +237,7 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
                 <div className="px-0.5">
                     <select value={row.categoria ?? ""} onChange={(e) => onUpdate("categoria", e.target.value)}
                         className="w-full bg-transparent text-slate-900 text-[11px] px-0.5 py-1.5 rounded focus:outline-none focus:bg-slate-200 focus:ring-1 focus:ring-[#208DCA]/30 appearance-none cursor-pointer">
-                        <option value="" className="bg-white">Seleccionar...</option>
+                        <option value="" className="bg-white">{t("section9.select_category")}</option>
                         {GUARD_TYPES.map((gt) => <option key={gt} value={gt} className="bg-white">{gt}</option>)}
                     </select>
                 </div>
@@ -248,8 +249,8 @@ function DraggableRow({ row, onUpdate, onRemove, onInsert, onDuplicate }) {
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-0 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                    <button onClick={onDuplicate} title="Duplicar fila" className="text-slate-900 hover:text-[#208DCA] p-1"><Copy size={11} /></button>
-                    <button onClick={onInsert} title="Insertar fila debajo" className="text-slate-900 hover:text-[#208DCA] p-1"><Plus size={11} /></button>
+                    <button onClick={onDuplicate} title={t("section9.duplicate_row")} className="text-slate-900 hover:text-[#208DCA] p-1"><Copy size={11} /></button>
+                    <button onClick={onInsert} title={t("section9.insert_row_below")} className="text-slate-900 hover:text-[#208DCA] p-1"><Plus size={11} /></button>
                     <button onClick={onRemove} className="text-slate-900 hover:text-red-400 p-1"><X size={11} /></button>
                 </div>
             </div>
@@ -326,7 +327,7 @@ export default function Seccion9({ plan, section, files = [] }) {
         });
     };
     const addDayHeader = () => {
-        const name = newDayName.trim() || "Nuevo día";
+        const name = newDayName.trim() || t("section9.new_day");
         setRows((prev) => [...prev, emptyRow(name)]);
         setNewDayName("");
     };
@@ -353,13 +354,13 @@ export default function Seccion9({ plan, section, files = [] }) {
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-200 border border-slate-200 text-slate-900 uppercase tracking-wide">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" /> Sección 9
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" /> {t("common.section")} 9
                         </span>
                         <AnimatePresence>
                             {saved && (
                                 <motion.span initial={{ opacity: 0, scale: 0.8, x: -8 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.8, x: -8 }}
                                     className="inline-flex items-center gap-1 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg">
-                                    <CheckCircle2 size={11} /> Guardado
+                                    <CheckCircle2 size={11} /> {t("common.saved")}
                                 </motion.span>
                             )}
                         </AnimatePresence>
@@ -370,7 +371,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     {rows.length > 0 && (
                         <button onClick={() => setRows([])}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-red-500/10 text-red-400/70 border border-red-500/20 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30">
-                            <X size={12} /> Limpiar
+                            <X size={12} /> {t("section9.clear")}
                         </button>
                     )}
                     <button onClick={() => save(section.status)} disabled={saving}
@@ -380,7 +381,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     </button>
                     <RippleButton size="sm" onClick={confirm}
                         className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-1.5 shadow-md shadow-[#273887]/25 text-xs">
-                        Confirmar <ChevronRight size={13} />
+                        {t("common.confirm")} <ChevronRight size={13} />
                     </RippleButton>
                 </div>
             </div>
@@ -394,8 +395,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                 <div>
                     <p className="text-sm font-semibold text-green-400 mb-0.5">{t("section9.title")}</p>
                     <p className="text-sm text-slate-900 leading-relaxed">
-                        Importa un Excel o crea la planificación directamente. Arrastra filas para reordenar.
-                        Las horas se calculan automáticamente.
+                        {t("section9.description")}
                     </p>
                 </div>
             </motion.div>
@@ -413,8 +413,8 @@ export default function Seccion9({ plan, section, files = [] }) {
                 >
                     <CloudUpload size={20} className={`${dragOver ? "text-green-400" : "text-slate-900 group-hover:text-green-400"} transition-colors`} />
                     <div className="text-center">
-                        <p className="text-xs font-medium text-slate-900 group-hover:text-slate-900">{rows.length > 0 ? "Reimportar Excel" : "Importar Excel"}</p>
-                        <p className="text-[10px] text-slate-900 mt-0.5">{uploading ? "Procesando..." : ".xlsx, .xls o .csv"}</p>
+                        <p className="text-xs font-medium text-slate-900 group-hover:text-slate-900">{rows.length > 0 ? t("section9.reimport_excel") : t("section9.import_excel")}</p>
+                        <p className="text-[10px] text-slate-900 mt-0.5">{uploading ? t("common.processing") : t("section9.excel_formats")}</p>
                     </div>
                 </div>
                 <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleInputChange} />
@@ -424,7 +424,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                     <Plus size={20} className="text-slate-900 group-hover:text-[#208DCA] transition-colors" />
                     <div className="text-center">
                         <p className="text-xs font-medium text-slate-900 group-hover:text-slate-900">{t("section9.create_manually")}</p>
-                        <p className="text-[10px] text-slate-900 mt-0.5">Añadir filas una a una</p>
+                        <p className="text-[10px] text-slate-900 mt-0.5">{t("section9.add_rows_one")}</p>
                     </div>
                 </button>
             </div>
@@ -432,7 +432,7 @@ export default function Seccion9({ plan, section, files = [] }) {
             {excelFiles.length > 0 && (
                 <div className="flex items-center gap-2 text-xs text-slate-900 -mt-3">
                     <CheckCircle2 size={12} className="text-green-400" />
-                    <span>Archivo: {excelFiles[0].original_name}</span>
+                    <span>{t("section9.file_label", { name: excelFiles[0].original_name })}</span>
                 </div>
             )}
 
@@ -444,26 +444,26 @@ export default function Seccion9({ plan, section, files = [] }) {
                         <div className="flex items-center gap-2">
                             <Table2 size={14} className="text-[#208DCA]" />
                             <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">
-                                {rows.length} registros
+                                {rows.length} {t("section9.records")}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
                             {/* Add day header */}
                             <div className="flex items-center gap-1">
-                                <input type="text" placeholder="Nombre del día..." value={newDayName} onChange={(e) => setNewDayName(e.target.value)}
+                                <input type="text" placeholder={t("section9.day_name_placeholder")} value={newDayName} onChange={(e) => setNewDayName(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && addDayHeader()}
                                     className="bg-slate-200 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-900 placeholder:text-slate-400 w-32 focus:outline-none focus:border-[#208DCA]/40" />
                                 <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                                     <button onClick={addDayHeader}
                                         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium bg-purple-500/15 text-purple-400 border border-purple-500/25 hover:bg-purple-500/25">
-                                        <FolderPlus size={11} /> Día
+                                        <FolderPlus size={11} /> {t("section9.add_day")}
                                     </button>
                                 </Shine>
                             </div>
                             <Shine enableOnHover color="white" opacity={0.4} duration={600} asChild>
                                 <button onClick={addRow}
                                     className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/25 hover:bg-[#208DCA]/25">
-                                    <Plus size={11} /> Fila
+                                    <Plus size={11} /> {t("section9.add_row")}
                                 </button>
                             </Shine>
                         </div>
@@ -475,11 +475,11 @@ export default function Seccion9({ plan, section, files = [] }) {
                             style={{ gridTemplateColumns: "32px 1fr 80px 80px 40px 1fr 60px 56px" }}>
                             <div />
                             <div className="px-1.5 py-2">{t("section9.name_position")}</div>
-                            <div className="px-1.5 py-2">Inicio</div>
-                            <div className="px-1.5 py-2">Fin</div>
-                            <div className="px-1.5 py-2 text-center">Nº</div>
-                            <div className="px-1.5 py-2">Categoría</div>
-                            <div className="px-1.5 py-2 text-right">Horas</div>
+                            <div className="px-1.5 py-2">{t("section9.start")}</div>
+                            <div className="px-1.5 py-2">{t("section9.end")}</div>
+                            <div className="px-1.5 py-2 text-center">{t("section9.number")}</div>
+                            <div className="px-1.5 py-2">{t("section9.category")}</div>
+                            <div className="px-1.5 py-2 text-right">{t("common.hours")}</div>
                             <div />
                         </div>
 
@@ -539,7 +539,7 @@ export default function Seccion9({ plan, section, files = [] }) {
 
                     {/* Summary footer */}
                     <div className="px-4 py-2.5 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-900">
-                        <span>{rows.length} filas</span>
+                        <span>{rows.length} {t("common.rows")}</span>
                         <span className="font-medium font-mono">
                             Total: {rows.reduce((sum, r) => sum + (parseFloat(r.horas) || 0), 0).toFixed(1)}h
                         </span>

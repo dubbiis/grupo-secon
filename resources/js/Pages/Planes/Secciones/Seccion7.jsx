@@ -38,17 +38,17 @@ export default function Seccion7({ plan, section }) {
 
     // UI state
     const [expandedRisk, setExpandedRisk] = useState(null);
-    const [editModes, setEditModes] = useState({}); // { [i]: bool }
-    const [showCambios, setShowCambios] = useState({}); // { [i]: bool }
-    const [instrucciones, setInstrucciones] = useState({}); // { [i]: string }
-    const [applyingCambios, setApplyingCambios] = useState({}); // { [i]: bool }
+    const [editModes, setEditModes] = useState({});
+    const [showCambios, setShowCambios] = useState({});
+    const [instrucciones, setInstrucciones] = useState({});
+    const [applyingCambios, setApplyingCambios] = useState({});
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const riskRefs = useRef({});
 
     const fullText = riskTexts.join("\n\n---\n\n");
 
-    // ── Paso 1: Identificar ──
+    // -- Paso 1: Identificar --
     const handleIdentificar = async () => {
         setIdentifying(true);
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
@@ -66,7 +66,7 @@ export default function Seccion7({ plan, section }) {
         setIdentifying(false);
     };
 
-    // ── Paso 2: Analizar ──
+    // -- Paso 2: Analizar --
     const handleAnalizar = async () => {
         if (riesgos.length === 0) return;
         setAnalyzing(true);
@@ -109,7 +109,6 @@ export default function Seccion7({ plan, section }) {
                         if (parsed.text) {
                             texts[idx] += parsed.text;
                             setRiskTexts([...texts]);
-                            // scroll active risk ref
                             const el = riskRefs.current[idx];
                             if (el) el.scrollTop = el.scrollHeight;
                         }
@@ -121,7 +120,7 @@ export default function Seccion7({ plan, section }) {
         setAnalyzing(false);
     };
 
-    // ── Cambios por riesgo ──
+    // -- Cambios por riesgo --
     const handleCambios = async (i) => {
         const instr = instrucciones[i] ?? "";
         if (!instr.trim()) return;
@@ -168,7 +167,7 @@ export default function Seccion7({ plan, section }) {
         setShowCambios((p) => ({ ...p, [i]: false }));
     };
 
-    // ── Guardar ──
+    // -- Guardar --
     const save = (status) => {
         setSaving(true);
         router.put(
@@ -193,11 +192,11 @@ export default function Seccion7({ plan, section }) {
 
     return (
         <div className="space-y-6">
-            {/* ── Header ── */}
+            {/* Header */}
             <div className="flex items-center gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 uppercase tracking-wide">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#208DCA] animate-pulse" />
-                    Sección 7
+                    {t("common.section")} 7
                 </span>
                 <AnimatePresence>
                     {saved && (
@@ -207,14 +206,14 @@ export default function Seccion7({ plan, section }) {
                             exit={{ opacity: 0, scale: 0.8, x: -8 }}
                             className="inline-flex items-center gap-1 text-xs text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg"
                         >
-                            <CheckCircle2 size={11} /> Guardado
+                            <CheckCircle2 size={11} /> {t("common.saved")}
                         </motion.span>
                     )}
                 </AnimatePresence>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
 
-            {/* ── Banner ── */}
+            {/* Banner */}
             <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -226,13 +225,12 @@ export default function Seccion7({ plan, section }) {
                 <div>
                     <p className="text-sm font-semibold text-amber-400 mb-0.5">{t("section7.banner_title")}</p>
                     <p className="text-sm text-slate-600 leading-relaxed">
-                        Primero se identifican los riesgos relevantes para el evento, luego se analiza cada uno con evaluación cuantitativa.
-                        Asegúrate de completar las secciones 1-6 antes de comenzar.
+                        {t("section7.banner_description")}
                     </p>
                 </div>
             </motion.div>
 
-            {/* ── Paso 1: Identificar ── */}
+            {/* Paso 1: Identificar */}
             <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4 shadow-xl shadow-slate-200/50">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -246,7 +244,7 @@ export default function Seccion7({ plan, section }) {
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#208DCA]/15 text-[#208DCA] border border-[#208DCA]/25 hover:bg-[#208DCA]/25 hover:border-[#208DCA]/40 transition-all disabled:opacity-50"
                         >
                             {identifying ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
-                            {identifying ? "Identificando..." : riesgos.length > 0 ? "Re-identificar" : "Identificar riesgos"}
+                            {identifying ? t("section7.identifying") : riesgos.length > 0 ? t("section7.re_identify") : t("section7.identify_risks")}
                         </button>
                     </Shine>
                 </div>
@@ -279,7 +277,7 @@ export default function Seccion7({ plan, section }) {
                             <textarea
                                 value={riesgo.contexto}
                                 onChange={(e) => updateRiesgo(i, "contexto", e.target.value)}
-                                placeholder="Breve descripción del escenario de riesgo..."
+                                placeholder={t("section7.risk_context_placeholder")}
                                 rows={2}
                                 className="w-full bg-transparent border-none text-xs text-slate-600 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
                             />
@@ -289,12 +287,12 @@ export default function Seccion7({ plan, section }) {
 
                 {riesgos.length > 0 && (
                     <button onClick={addRiesgo} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-[#208DCA] transition-colors">
-                        <Plus size={12} /> Añadir riesgo
+                        <Plus size={12} /> {t("section7.add_risk")}
                     </button>
                 )}
             </div>
 
-            {/* ── Paso 2: Analizar ── */}
+            {/* Paso 2: Analizar */}
             {riesgos.length > 0 && (
                 <div className="rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden">
                     <div className="px-6 pt-5 pb-5 space-y-4">
@@ -310,7 +308,7 @@ export default function Seccion7({ plan, section }) {
                                             onClick={handleAnalizar}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/15 text-purple-500 border border-purple-500/25 hover:bg-purple-500/25 transition-all"
                                         >
-                                            <RefreshCw size={12} /> Regenerar todo
+                                            <RefreshCw size={12} /> {t("common.regenerate_all")}
                                         </button>
                                     </Shine>
                                 )}
@@ -320,7 +318,7 @@ export default function Seccion7({ plan, section }) {
                                             onClick={handleAnalizar}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-[#273887] to-[#208DCA] text-white shadow-md shadow-[#273887]/25 hover:opacity-90 transition-all"
                                         >
-                                            <Zap size={12} /> Analizar {riesgos.length} riesgos
+                                            <Zap size={12} /> {t("section7.analyze_risks", { count: riesgos.length })}
                                         </button>
                                     </Shine>
                                 )}
@@ -336,7 +334,7 @@ export default function Seccion7({ plan, section }) {
                             >
                                 <Loader2 size={14} className="text-[#208DCA] animate-spin flex-shrink-0" />
                                 <span className="text-xs text-[#208DCA]">
-                                    Analizando riesgo {currentRiskIdx + 1} de {totalRisks}: <strong>{riesgos[currentRiskIdx]?.nombre}</strong>
+                                    {t("section7.analyzing_risk", { current: currentRiskIdx + 1, total: totalRisks })}: <strong>{riesgos[currentRiskIdx]?.nombre}</strong>
                                 </span>
                                 <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                     <motion.div
@@ -349,7 +347,7 @@ export default function Seccion7({ plan, section }) {
                             </motion.div>
                         )}
 
-                        {/* Risk cards — one per risk */}
+                        {/* Risk cards */}
                         <AnimatePresence>
                             {riesgos.map((riesgo, i) => {
                                 const text = riskTexts[i] ?? "";
@@ -378,16 +376,16 @@ export default function Seccion7({ plan, section }) {
                                                 {isStreaming ? <Loader2 size={11} className="animate-spin" /> : i + 1}
                                             </span>
                                             <span className="flex-1 text-sm font-semibold text-slate-800 uppercase tracking-wide truncate">
-                                                {riesgo.nombre || `Riesgo ${i + 1}`}
+                                                {riesgo.nombre || t("section7.risk_n", { n: i + 1 })}
                                             </span>
                                             {text && (
                                                 <span className="text-[10px] text-[#208DCA] bg-[#208DCA]/10 px-2 py-0.5 rounded-full font-medium flex-shrink-0">
-                                                    Analizado
+                                                    {t("common.analyzed")}
                                                 </span>
                                             )}
                                             {isStreaming && (
                                                 <span className="text-[10px] text-amber-500 bg-amber-400/10 px-2 py-0.5 rounded-full font-medium flex-shrink-0 animate-pulse">
-                                                    Generando...
+                                                    {t("common.generating")}
                                                 </span>
                                             )}
                                             <motion.div
@@ -418,7 +416,7 @@ export default function Seccion7({ plan, section }) {
                                                                         onClick={() => setEditModes((p) => ({ ...p, [i]: !p[i] }))}
                                                                         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[#208DCA]/10 text-[#208DCA] border border-[#208DCA]/20 hover:bg-[#208DCA]/20 transition-all"
                                                                     >
-                                                                        {isEditMode ? <><Eye size={11} /> Vista previa</> : <><Pencil size={11} /> Editar</>}
+                                                                        {isEditMode ? <><Eye size={11} /> {t("ai.preview")}</> : <><Pencil size={11} /> {t("common.edit")}</>}
                                                                     </button>
                                                                 </Shine>
                                                             </div>
@@ -437,7 +435,7 @@ export default function Seccion7({ plan, section }) {
                                                                     })}
                                                                     readOnly={isStreaming}
                                                                     className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800 resize-none focus:outline-none focus:border-[#208DCA]/40 focus:ring-1 focus:ring-[#208DCA]/30 transition-colors field-sizing-content min-h-[180px]"
-                                                                    placeholder="El análisis aparecerá aquí..."
+                                                                    placeholder={t("section7.analysis_placeholder")}
                                                                 />
                                                             ) : (
                                                                 <div
@@ -447,11 +445,11 @@ export default function Seccion7({ plan, section }) {
                                                             )
                                                         ) : (
                                                             <div className="py-6 text-center text-xs text-slate-400">
-                                                                Todavía no analizado. Pulsa "Analizar" para generar.
+                                                                {t("common.not_analyzed")}
                                                             </div>
                                                         )}
 
-                                                        {/* Solicitar cambios — per risk */}
+                                                        {/* Solicitar cambios */}
                                                         {text && !isStreaming && (
                                                             <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
                                                                 <button
@@ -460,7 +458,7 @@ export default function Seccion7({ plan, section }) {
                                                                 >
                                                                     <span className="flex items-center gap-1.5">
                                                                         <RefreshCw size={11} className="text-[#208DCA]" />
-                                                                        Solicitar cambios a este riesgo
+                                                                        {t("common.request_changes_risk")}
                                                                     </span>
                                                                     <motion.div animate={{ rotate: isCambiosOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                                                                         <ChevronDown size={12} />
@@ -479,7 +477,7 @@ export default function Seccion7({ plan, section }) {
                                                                                 <Textarea
                                                                                     value={instrucciones[i] ?? ""}
                                                                                     onChange={(e) => setInstrucciones((p) => ({ ...p, [i]: e.target.value }))}
-                                                                                    placeholder="Ej: Sube la probabilidad, añade una medida sobre evacuación..."
+                                                                                    placeholder={t("section7.changes_placeholder")}
                                                                                     rows={2}
                                                                                 />
                                                                                 <RippleButton
@@ -489,8 +487,8 @@ export default function Seccion7({ plan, section }) {
                                                                                     className="bg-gradient-to-r from-[#273887] to-[#208DCA] text-white border-0 gap-2 text-xs"
                                                                                 >
                                                                                     {isApplying
-                                                                                        ? <><Loader2 size={11} className="animate-spin" /> Aplicando...</>
-                                                                                        : <><Send size={11} /> Aplicar cambios</>
+                                                                                        ? <><Loader2 size={11} className="animate-spin" /> {t("common.applying")}</>
+                                                                                        : <><Send size={11} /> {t("ai.apply_changes")}</>
                                                                                     }
                                                                                 </RippleButton>
                                                                             </div>
@@ -511,7 +509,7 @@ export default function Seccion7({ plan, section }) {
                 </div>
             )}
 
-            {/* ── Botones guardar / confirmar (igual que otras secciones) ── */}
+            {/* Botones guardar / confirmar */}
             <div className="flex items-center justify-end gap-3">
                 <button
                     onClick={() => save(section.status)}

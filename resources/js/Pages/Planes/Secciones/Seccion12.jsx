@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { useTranslation } from "@/i18n";
 
-// ── Inline photo uploader ─────────────────────────────────
+// -- Inline photo uploader --
 function PhotoUpload({ person, uuid, onUploaded }) {
     const inputRef = useRef(null);
     const { t } = useTranslation();
@@ -46,17 +46,17 @@ function PhotoUpload({ person, uuid, onUploaded }) {
         <div
             className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#208DCA]/50 hover:bg-[#208DCA]/5 transition-all group relative overflow-hidden"
             onClick={() => inputRef.current?.click()}
-            title="Subir imagen de pulsera / acreditación"
+            title={t("s12.photo_title")}
         >
             {displayUrl ? (
-                <img src={displayUrl} alt="acreditación" className="absolute inset-0 w-full h-full object-contain rounded-xl p-1" />
+                <img src={displayUrl} alt={t("s12.item")} className="absolute inset-0 w-full h-full object-contain rounded-xl p-1" />
             ) : uploading ? (
                 <div className="text-xs text-[#208DCA] animate-pulse">{t("files.uploading")}</div>
             ) : (
                 <>
                     <User size={22} className="text-slate-300 group-hover:text-[#208DCA]/40 transition-colors" />
-                    <span className="text-xs text-slate-400 group-hover:text-[#208DCA]/60 transition-colors">Imagen de pulsera / acreditación</span>
-                    <span className="text-[10px] text-slate-300">PNG, JPG — formato apaisado recomendado</span>
+                    <span className="text-xs text-slate-400 group-hover:text-[#208DCA]/60 transition-colors">{t("s12.photo")}</span>
+                    <span className="text-[10px] text-slate-300">{t("s12.photo_format")}</span>
                 </>
             )}
             {displayUrl && (
@@ -69,7 +69,7 @@ function PhotoUpload({ person, uuid, onUploaded }) {
     );
 }
 
-// ── Accreditation card ────────────────────────────────────
+// -- Accreditation card --
 function AcreditacionCard({ person, idx, onUpdate, onRemove, uuid, isOpen, onToggle }) {
     const { t } = useTranslation();
 
@@ -93,7 +93,7 @@ function AcreditacionCard({ person, idx, onUpdate, onRemove, uuid, isOpen, onTog
                     }
                 </div>
                 <span className="flex-1 text-xs font-medium text-slate-800 truncate">
-                    {person.nombre || `Acreditación ${idx + 1}`}
+                    {person.nombre || t("s12.accreditation_n", { n: idx + 1 })}
                 </span>
                 {person.cargo && (
                     <span className="text-[10px] text-slate-400 truncate max-w-[120px]">{person.cargo}</span>
@@ -131,22 +131,22 @@ function AcreditacionCard({ person, idx, onUpdate, onRemove, uuid, isOpen, onTog
                             <div className="grid grid-cols-1 gap-3">
                                 <div>
                                     <label className="text-[10px] font-semibold text-slate-500 mb-1 block uppercase tracking-wide">
-                                        Nombre de la acreditación <span className="text-[#208DCA]">*</span>
+                                        {t("s12.name")} <span className="text-[#208DCA]">*</span>
                                     </label>
                                     <Input
                                         value={person.nombre ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...person, nombre: e.target.value })}
-                                        placeholder="Nombre completo"
+                                        placeholder={t("s12.name_placeholder")}
                                     />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-semibold text-slate-500 mb-1 block uppercase tracking-wide">
-                                        Zonas de acceso y permisos
+                                        {t("s12.role")}
                                     </label>
                                     <Input
                                         value={person.cargo ?? ""}
                                         onChange={(e) => onUpdate(idx, { ...person, cargo: e.target.value })}
-                                        placeholder="Ej: Director, Staff, Prensa, VIP..."
+                                        placeholder={t("s12.role_placeholder")}
                                     />
                                 </div>
                             </div>
@@ -158,14 +158,13 @@ function AcreditacionCard({ person, idx, onUpdate, onRemove, uuid, isOpen, onTog
     );
 }
 
-// ── Main section ──────────────────────────────────────────
+// -- Main section --
 export default function Seccion12({ plan, section, files = [] }) {
     const { t } = useTranslation();
     const [modo, setModo] = useState(section.form_data?.modo ?? "crear");
     const [items, setItems] = useState(() => {
         try {
             const parsed = JSON.parse(section.form_data?.personas_json ?? "[]");
-            // Resolve foto_url from files (in case URLs changed)
             return parsed.map((item) => {
                 if (item.foto_id) {
                     const file = files.find((f) => f.id === item.foto_id);
@@ -180,10 +179,9 @@ export default function Seccion12({ plan, section, files = [] }) {
 
     const acreditacionFiles = files.filter((f) => f.file_category === "acreditacion_img");
 
-    // Build readable summary for AI
     const acreditacionesResumen = items.length > 0
-        ? items.map((p, i) => `${i + 1}. ${p.nombre || "Sin nombre"} — Zonas: ${p.cargo || "No especificadas"}`).join("\n")
-        : "No se han creado acreditaciones todavía.";
+        ? items.map((p, i) => `${i + 1}. ${p.nombre || t("common.unnamed")} — Zonas: ${p.cargo || "-"}`).join("\n")
+        : "";
 
     const formData = {
         modo,
@@ -208,14 +206,14 @@ export default function Seccion12({ plan, section, files = [] }) {
     return (
         <SectionShell plan={plan} section={section} formData={formData} onFormChange={() => {}}>
             <p className="text-sm text-slate-500">
-                Añade las acreditaciones del evento: sube las imágenes si ya las tienes hechas, o créalas aquí con foto, nombre y cargo.
+                {t("s12.desc")}
             </p>
 
             {/* Mode toggle */}
             <div className="flex items-center gap-2">
                 {[
-                    { value: "subir", label: "Subir acreditaciones", icon: Upload },
-                    { value: "crear", label: "Crear acreditaciones", icon: CreditCard },
+                    { value: "subir", label: t("s12.upload_label"), icon: Upload },
+                    { value: "crear", label: t("s12.create_label"), icon: CreditCard },
                 ].map(({ value, label, icon: Icon }) => (
                     <motion.button
                         key={value}
@@ -234,7 +232,7 @@ export default function Seccion12({ plan, section, files = [] }) {
                 ))}
             </div>
 
-            {/* ── Subir mode ── */}
+            {/* Subir mode */}
             {modo === "subir" && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                     <FileUpload
@@ -244,19 +242,19 @@ export default function Seccion12({ plan, section, files = [] }) {
                         accept="image/*,application/pdf"
                         multiple
                         existingFiles={acreditacionFiles}
-                        label="Subir acreditaciones del evento"
-                        description="PNG, JPG o PDF — imágenes de las acreditaciones ya diseñadas"
+                        label={t("s12.upload_event_label")}
+                        description={t("s12.upload_desc")}
                     />
                 </motion.div>
             )}
 
-            {/* ── Crear mode ── */}
+            {/* Crear mode */}
             {modo === "crear" && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-slate-700">Acreditaciones del evento</label>
+                        <label className="text-sm font-medium text-slate-700">{t("s12.title")}</label>
                         {items.length > 0 && (
-                            <span className="text-xs text-slate-400">{items.length} {items.length === 1 ? "acreditación" : "acreditaciones"}</span>
+                            <span className="text-xs text-slate-400">{items.length} {items.length === 1 ? t("s12.single") : t("s12.registered")}</span>
                         )}
                     </div>
 
@@ -285,7 +283,7 @@ export default function Seccion12({ plan, section, files = [] }) {
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-200 text-slate-500 hover:text-[#208DCA] hover:border-[#208DCA]/40 hover:bg-[#208DCA]/3 transition-all text-xs font-medium"
                             >
                                 <Plus size={13} />
-                                Añadir acreditación
+                                {t("s12.add")}
                             </motion.button>
                         </Shine>
                     </div>

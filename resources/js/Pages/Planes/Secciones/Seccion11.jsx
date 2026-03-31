@@ -21,8 +21,8 @@ export default function Seccion11({ plan, section, files = [] }) {
                 <label className="text-sm font-medium mb-1.5 block">{t("s11.format")}</label>
                 <div className="flex gap-3">
                     {[
-                        { value: "imagen", label: "Imagen / Documento" },
-                        { value: "texto", label: "Texto / Tabla" },
+                        { value: "imagen", label: t("s11.image_doc") },
+                        { value: "texto", label: t("s11.text_table") },
                     ].map((opt) => (
                         <motion.button
                             key={opt.value}
@@ -50,8 +50,8 @@ export default function Seccion11({ plan, section, files = [] }) {
                     accept="image/*,application/pdf"
                     multiple
                     existingFiles={rosFiles}
-                    label="Subir run of show"
-                    description="Imagen o PDF con el cronograma del evento"
+                    label={t("s11.upload")}
+                    description={t("s11.upload_desc")}
                 />
             ) : (
                 <div>
