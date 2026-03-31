@@ -96,7 +96,7 @@ export default function SidebarSecciones({ uuid, sections, currentSection, progr
                                     "flex-1 leading-snug line-clamp-2 transition-colors",
                                     isActive ? "text-slate-900 font-medium" : "text-slate-900 group-hover:text-white/65"
                                 )}>
-                                    {section.section_name}
+                                    {t(`section_full_names.${section.section_number}`) || section.section_name}
                                 </span>
 
                                 <StatusDot status={section.status} />

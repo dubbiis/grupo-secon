@@ -56,7 +56,7 @@ export default function Seccion15({ plan, section, files = [] }) {
                     )}
                 </AnimatePresence>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{t(`section_full_names.${section.section_number}`) || section.section_name}</h2>
 
             {/* Form card */}
             <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-6 shadow-xl shadow-slate-200/50">

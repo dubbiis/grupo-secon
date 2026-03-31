@@ -365,7 +365,7 @@ export default function Seccion9({ plan, section, files = [] }) {
                             )}
                         </AnimatePresence>
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 leading-tight">{t(`section_full_names.${section.section_number}`) || section.section_name}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 pt-1">
                     {rows.length > 0 && (

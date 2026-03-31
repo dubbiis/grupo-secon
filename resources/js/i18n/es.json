@@ -744,5 +744,22 @@
     "13": "Contactos",
     "14": "Anexos",
     "15": "Branding"
+  },
+  "section_full_names": {
+    "1": "Objetivo del Plan de Seguridad",
+    "2": "Descripción General del Evento",
+    "3": "Identificación de Titulares y Espacios",
+    "4": "Establecimiento y Accesos",
+    "5": "Recursos Sanitarios y de Seguridad",
+    "6": "Perfil del Público Asistente",
+    "7": "Análisis de Riesgos y Medidas Preventivas",
+    "8": "Dispositivo de Seguridad",
+    "9": "Planificación del Personal",
+    "10": "Medios de Transporte",
+    "11": "Run of Show",
+    "12": "Acreditaciones",
+    "13": "Contactos de Interés",
+    "14": "Anexos y Documentación",
+    "15": "Branding y Generación de PDF"
   }
 }

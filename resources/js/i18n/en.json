@@ -744,5 +744,22 @@
     "13": "Contacts",
     "14": "Annexes",
     "15": "Branding"
+  },
+  "section_full_names": {
+    "1": "Security Plan Objective",
+    "2": "General Event Description",
+    "3": "Identification of Stakeholders and Spaces",
+    "4": "Venue and Access Points",
+    "5": "Health and Security Resources",
+    "6": "Audience Profile",
+    "7": "Risk Analysis and Preventive Measures",
+    "8": "Security Device",
+    "9": "Staff Planning",
+    "10": "Transport",
+    "11": "Run of Show",
+    "12": "Accreditations",
+    "13": "Key Contacts",
+    "14": "Annexes and Documentation",
+    "15": "Branding and PDF Generation"
   }
 }

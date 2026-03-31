@@ -211,7 +211,7 @@ export default function Seccion7({ plan, section }) {
                     )}
                 </AnimatePresence>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{section.section_name}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{t(`section_full_names.${section.section_number}`) || section.section_name}</h2>
 
             {/* Banner */}
             <motion.div
