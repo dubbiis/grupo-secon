@@ -576,25 +576,8 @@ const MapEditor = forwardRef(function MapEditor({
             return;
         }
 
-        // Drawing tools: if element selected (via right-click), allow drag/resize
-        if (selectedIdx !== null && elements[selectedIdx]) {
-            // Resize corner?
-            const corner = hitTestCorner(pos, elements[selectedIdx]);
-            if (corner) {
-                isResizingRef.current = true;
-                resizeCornerRef.current = corner;
-                dragIdxRef.current = selectedIdx;
-                return;
-            }
-            // Click on the selected element? → drag it
-            const hitIdx = hitTestElement(pos);
-            if (hitIdx === selectedIdx) {
-                isDraggingRef.current = true;
-                dragIdxRef.current = selectedIdx;
-                dragOffRef.current = getDragOff(elements[selectedIdx]);
-                return;
-            }
-            // Click elsewhere → deselect and draw
+        // Drawing tools: deselect any selected element and proceed to draw
+        if (selectedIdx !== null) {
             setSelectedIdx(null);
             redraw(elements, null);
         }
@@ -633,18 +616,8 @@ const MapEditor = forwardRef(function MapEditor({
                     const hoverIdx = hitTestElement(pos);
                     canvas.style.cursor = hoverIdx >= 0 ? "move" : defaultCursor;
                 }
-            } else if (selectedIdx !== null && elements[selectedIdx]) {
-                // Herramienta de dibujo con elemento seleccionado (vía click derecho):
-                // mostrar move/resize sobre el elemento seleccionado
-                const corner = hitTestCorner(pos, elements[selectedIdx]);
-                if (corner) {
-                    canvas.style.cursor = (corner === "tl" || corner === "br") ? "nwse-resize" : "nesw-resize";
-                } else {
-                    const hitIdx = hitTestElement(pos);
-                    canvas.style.cursor = hitIdx === selectedIdx ? "move" : defaultCursor;
-                }
             } else {
-                // Herramientas de dibujo sin selección: cursor de la herramienta
+                // Herramientas de dibujo: siempre cursor de la herramienta
                 canvas.style.cursor = defaultCursor;
             }
         }
