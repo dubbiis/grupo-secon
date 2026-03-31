@@ -1383,8 +1383,9 @@ const MapEditor = forwardRef(function MapEditor({
                                         setRouteA(place.displayName);
                                         const coordsA = { lat: place.lat, lng: place.lng };
                                         setRouteACoords(coordsA);
-                                        if (routeBCoords) {
-                                            setMapCommand({ type: "route", a: coordsA, b: routeBCoords });
+                                        const b = routeBCoords || (routeB.trim() ? routeB : null);
+                                        if (b) {
+                                            setMapCommand({ type: "route", a: coordsA, b });
                                         } else {
                                             setMapCommand({ type: "search", query: coordsA });
                                         }
@@ -1402,8 +1403,10 @@ const MapEditor = forwardRef(function MapEditor({
                                         setRouteB(place.displayName);
                                         const coordsB = { lat: place.lat, lng: place.lng };
                                         setRouteBCoords(coordsB);
-                                        if (routeACoords) {
-                                            setMapCommand({ type: "route", a: routeACoords, b: coordsB });
+                                        // Use coords if available, otherwise pass text (GoogleMap geocodes strings)
+                                        const a = routeACoords || (routeA.trim() ? routeA : null);
+                                        if (a) {
+                                            setMapCommand({ type: "route", a, b: coordsB });
                                         }
                                     }}
                                     biasLat={routeACoords?.lat || routeBCoords?.lat}
